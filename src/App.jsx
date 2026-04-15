@@ -1,0 +1,611 @@
+import { useState, useEffect, useRef } from "react";
+import { initializeApp } from "firebase/app";
+import { getDatabase, ref, set, get, onValue, update } from "firebase/database";
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyAY0yNyYqSuYlQT1NKgWsJnXY4z5X_6s1Q",
+  authDomain:        "blueswarm-efd39.firebaseapp.com",
+  databaseURL:       "https://blueswarm-efd39-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "blueswarm-efd39",
+  storageBucket:     "blueswarm-efd39.firebasestorage.app",
+  messagingSenderId: "487995747928",
+  appId:             "1:487995747928:web:e32487428aefc7a4f3a42d",
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+// Native Firebase path helpers — each participant writes to their own node, no race conditions
+const fbSet    = (path, val)  => set(ref(db, path), val);
+const fbGet    = async (path) => { const s = await get(ref(db, path)); return s.exists() ? s.val() : null; };
+const fbListen = (path, cb)   => { const r = ref(db, path); return onValue(r, s => cb(s.exists() ? s.val() : null)); };
+const fbUpdate = (path, val)  => update(ref(db, path), val);
+const sp       = (code)       => `swarm__${code}`;  // session root path
+
+const OC = { bg:"#010d1f",deep:"#020f24",card:"#041830",cardMid:"#061f3a",border:"#0c3358",borderGlow:"#1a5a8a",accent:"#00c8f5",accent2:"#00e5b0",text:"#b8dcff",textMid:"#4a80a8",textDim:"#173354" };
+
+const DIMS = {
+  O:{ color:"#00d4ff",label:"Openness",short:"Curiosity & new ideas",title:"Openness to Experience",tagline:"How much you seek novelty and embrace ambiguity",high:"Energised by new ideas · Pivots easily · Loves experiments",low:"Practical & grounded · Values what's proven · Consistent",teamHigh:"Sparks creative directions, challenges the status quo",teamLow:"Keeps the team focused and execution-oriented",tip:"High O: Validate ideas before optimising.\nLow O: Frame changes as improvements, not disruptions." },
+  C:{ color:"#ff6b9d",label:"Conscientiousness",short:"Structure & reliability",title:"Conscientiousness",tagline:"How you approach planning, structure, and follow-through",high:"Plans ahead · Delivers reliably · Detail-oriented",low:"Flexible · Adapts on the fly · Values autonomy",teamHigh:"Anchors execution, catches gaps others miss",teamLow:"Enables agility when plans need to shift",tip:"High C: Be specific — what worked, what to improve.\nLow C: Focus on outcomes, not process." },
+  E:{ color:"#ffd93d",label:"Extraversion",short:"Energy & social presence",title:"Extraversion",tagline:"Where you draw energy — from others or from solitude",high:"Takes initiative · Expressive · Energised by interaction",low:"Thoughtful · Measured · Recharges alone",teamHigh:"Drives momentum and keeps energy high in the room",teamLow:"Brings considered perspective, sees what others miss",tip:"High E: Give feedback in conversation, not in writing.\nLow E: Give space to process before expecting a response." },
+  A:{ color:"#a855f7",label:"Agreeableness",short:"Cooperation & empathy",title:"Agreeableness",tagline:"How you balance harmony with honesty",high:"Empathetic · Cooperative · Builds trust naturally",low:"Direct · Challenge-oriented · Comfortable with tension",teamHigh:"Holds the team together, gives supportive feedback",teamLow:"Names what others avoid, drives honest conversations",tip:"High A: Be clear — they may not push back.\nLow A: Can handle directness — match their style." },
+  N:{ color:"#00e5b0",label:"Neuroticism",short:"Stability under pressure",title:"Emotional Stability",tagline:"How you respond to pressure, setbacks, and uncertainty",high:"Deeply invested · Emotionally reactive · Highly sensitive",low:"Calm under fire · Resilient · Steady in uncertainty",teamHigh:"Brings intensity and care — needs psychological safety",teamLow:"Provides steadiness when things get difficult",tip:"High N: Start with what's working, be reassuring.\nLow N: Can handle blunt feedback — don't over-soften." },
+};
+
+const QUESTIONS = [
+  { dim:"O", text:"Your team proposes a completely unconventional approach. Your reaction?", opts:[{t:"Exciting — I'm already building on it",s:4},{t:"Interesting, I want to understand it first",s:3},{t:"Open to it, but I'd check if it's been tried",s:2},{t:"I'd steer back to what we know works",s:1}]},
+  { dim:"C", text:"It's Monday. Deadline is Friday. What does your week look like?", opts:[{t:"Day-by-day plan already ready",s:4},{t:"Rough plan — I'll adjust as I go",s:3},{t:"I'll figure it out as things come up",s:2},{t:"I work best under pressure closer to the deadline",s:1}]},
+  { dim:"E", text:"There's an awkward silence in a group meeting. What do you do?", opts:[{t:"Break it immediately — I'll get things moving",s:4},{t:"Wait a moment, then contribute if nobody does",s:3},{t:"Stay comfortable in silence, wait for others",s:2},{t:"Use the moment to think — I rarely fill silence",s:1}]},
+  { dim:"A", text:"A teammate submits work that clearly isn't good enough. What do you do?", opts:[{t:"Address it directly and honestly",s:1},{t:"Raise it carefully as a question",s:2},{t:"Mention it gently and offer to help",s:3},{t:"Fix it quietly and avoid confrontation",s:4}]},
+  { dim:"N", text:"Two hours before a big presentation, a key part is missing. How do you feel?", opts:[{t:"Calm — I switch to solution mode immediately",s:1},{t:"Briefly stressed, then focused",s:2},{t:"Quite stressed — takes me a while to recover",s:3},{t:"Very stressed — hard to think clearly under pressure",s:4}]},
+  { dim:"O", text:"Halfway through a project, you discover a completely different approach. What do you do?", opts:[{t:"Seriously consider pivoting — the better idea wins",s:4},{t:"Weigh up both paths carefully",s:3},{t:"Note it for next time, finish what I started",s:2},{t:"Stick to the plan — changing mid-way creates chaos",s:1}]},
+  { dim:"C", text:"How do you prefer to receive a task?", opts:[{t:"Clear steps, deadline, and defined deliverables",s:4},{t:"A clear goal with some guidelines",s:3},{t:"Just the goal — I figure out the how",s:2},{t:"As open as possible — I define my own approach",s:1}]},
+  { dim:"E", text:"After a full day of back-to-back team meetings, how do you feel?", opts:[{t:"Energised — I love the interaction",s:4},{t:"Fine, but ready for some quiet time",s:3},{t:"Drained — I need alone time to recharge",s:2},{t:"Exhausted — hard to be around people that long",s:1}]},
+  { dim:"A", text:"The team disagrees on a direction. Your instinct?", opts:[{t:"Keep debating until we reach real alignment",s:1},{t:"Push for the option I think is right",s:2},{t:"Look for a compromise everyone can live with",s:3},{t:"Go with the group — harmony matters more",s:4}]},
+  { dim:"N", text:"You made a visible mistake in front of your whole team. How long does it stay with you?", opts:[{t:"I note it, learn, and move on quickly",s:1},{t:"Lingers a bit but I shake it off",s:2},{t:"Bothers me for most of the day",s:3},{t:"I replay it a lot — hard to let go",s:4}]},
+];
+
+function calcScores(answers) {
+  const scores = {};
+  Object.keys(DIMS).forEach(dim => {
+    const qs = QUESTIONS.filter(q => q.dim === dim);
+    const total = qs.length * 4;
+    const sum = qs.reduce((acc, q) => acc + (answers[QUESTIONS.indexOf(q)] || 0), 0);
+    scores[dim] = Math.round((sum / total) * 100);
+  });
+  return scores;
+}
+
+function genCode() { return Math.random().toString(36).substr(2, 5).toUpperCase(); }
+function genPid()  { return Math.random().toString(36).substr(2, 10); }
+
+function BubblesBg() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current; if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width = window.innerWidth, H = canvas.height = window.innerHeight;
+    const bubbles = Array.from({length:28}, () => ({ x:Math.random()*W, y:H+Math.random()*H, r:1.5+Math.random()*4, speed:0.3+Math.random()*0.7, drift:(Math.random()-0.5)*0.4, alpha:0.04+Math.random()*0.1 }));
+    let raf;
+    function draw() {
+      ctx.clearRect(0,0,W,H);
+      bubbles.forEach(b => { ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.strokeStyle=`rgba(0,200,245,${b.alpha})`; ctx.lineWidth=0.8; ctx.stroke(); b.y-=b.speed; b.x+=b.drift; if(b.y<-b.r*2){b.y=H+b.r;b.x=Math.random()*W;} });
+      raf = requestAnimationFrame(draw);
+    }
+    draw();
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  return <canvas ref={canvasRef} style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0}} />;
+}
+
+function CausticLight() {
+  return <div style={{position:"fixed",top:0,left:0,right:0,height:220,background:"radial-gradient(ellipse at 50% -40%, rgba(0,180,220,0.07) 0%, transparent 70%)",pointerEvents:"none",zIndex:0}} />;
+}
+
+function MiniSchool({ size=200 }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current; if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    canvas.width=size*2; canvas.height=size*2; ctx.scale(2,2);
+    const W=size,H=size,cx=W/2,cy=H/2;
+    const dots = Array.from({length:14},(_,i) => { const a=(i/14)*Math.PI*2; return {x:cx+Math.cos(a)*40,y:cy+Math.sin(a)*40,vx:Math.cos(a+Math.PI/2)*1.0,vy:Math.sin(a+Math.PI/2)*1.0,col:Object.values(DIMS)[i%5].color}; });
+    let raf;
+    function draw() {
+      ctx.clearRect(0,0,W,H);
+      dots.forEach(d=>{ctx.beginPath();ctx.arc(d.x,d.y,3.5,0,Math.PI*2);ctx.fillStyle=d.col+"cc";ctx.fill();});
+      dots.forEach((d,i)=>dots.forEach((d2,j)=>{if(j<=i)return;const dist=Math.hypot(d.x-d2.x,d.y-d2.y);if(dist<55){const a=Math.round((1-dist/55)*20).toString(16).padStart(2,"0");ctx.beginPath();ctx.strokeStyle=`#00c8f5${a}`;ctx.lineWidth=0.5;ctx.moveTo(d.x,d.y);ctx.lineTo(d2.x,d2.y);ctx.stroke();}}));
+      dots.forEach(d=>{d.vx+=(cx-d.x)*0.0004+(Math.random()-0.5)*0.25;d.vy+=(cy-d.y)*0.0004+(Math.random()-0.5)*0.25;const spd=Math.sqrt(d.vx*d.vx+d.vy*d.vy)||0.001,c=Math.min(1.8,Math.max(0.5,spd));d.vx=d.vx/spd*c;d.vy=d.vy/spd*c;d.x+=d.vx;d.y+=d.vy;d.x=Math.max(8,Math.min(W-8,d.x));d.y=Math.max(8,Math.min(H-8,d.y));});
+      raf=requestAnimationFrame(draw);
+    }
+    draw();
+    return ()=>cancelAnimationFrame(raf);
+  },[size]);
+  return <canvas ref={canvasRef} style={{width:size,height:size,display:"block"}} />;
+}
+
+function FishSchool({ selectedDim, onFishClick, scores }) {
+  const canvasRef = useRef(null);
+  const selectedRef = useRef(selectedDim);
+  selectedRef.current = selectedDim;
+  useEffect(() => {
+    const canvas = canvasRef.current; if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W=canvas.offsetWidth,H=canvas.offsetHeight;
+    canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+    const cx=W/2,cy=H/2;
+    const fishes=["O","C","E","A","N"].map((dim,i)=>{const angle=(i/5)*Math.PI*2;return{dim,x:cx+Math.cos(angle)*40,y:cy+Math.sin(angle)*40,vx:Math.cos(angle+Math.PI/2)*1.2,vy:Math.sin(angle+Math.PI/2)*1.2,wobble:Math.random()*Math.PI*2,size:22};});
+    function updateFish() {
+      const SEP_R=55,VIEW_R=200,W_SEP=0.06,W_ALG=0.008,W_COH=0.0008,W_CTR=0.00015,MAX_SPD=2.2,MIN_SPD=0.8;
+      fishes.forEach(f=>{
+        if(selectedRef.current===f.dim)return;
+        let sx=0,sy=0,ax=0,ay=0,px=0,py=0,cnt=0;
+        fishes.forEach(o=>{if(o===f)return;const dx=f.x-o.x,dy=f.y-o.y,d=Math.sqrt(dx*dx+dy*dy)||0.001;if(d<SEP_R){sx+=dx/d;sy+=dy/d;}if(d<VIEW_R){ax+=o.vx;ay+=o.vy;px+=o.x;py+=o.y;cnt++;}});
+        if(cnt>0){ax/=cnt;ay/=cnt;px=px/cnt-f.x;py=py/cnt-f.y;}
+        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+(cx-f.x)*W_CTR; f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+(cy-f.y)*W_CTR;
+        const spd=Math.sqrt(f.vx*f.vx+f.vy*f.vy)||0.001,c=Math.min(MAX_SPD,Math.max(MIN_SPD,spd));
+        f.vx=f.vx/spd*c;f.vy=f.vy/spd*c;f.x+=f.vx;f.y+=f.vy;f.wobble+=0.08;
+        const m=40;if(f.x<m)f.vx+=0.15;if(f.x>W-m)f.vx-=0.15;if(f.y<m)f.vy+=0.15;if(f.y>H-m)f.vy-=0.15;
+      });
+    }
+    function drawFish(f) {
+      const{x,y,vx,vy,size,dim}=f,angle=Math.atan2(vy,vx),col=DIMS[dim].color,sel=selectedRef.current===dim,wb=Math.sin(f.wobble)*0.08;
+      ctx.save();ctx.translate(x,y);ctx.rotate(angle+wb);
+      if(sel){ctx.shadowColor=col;ctx.shadowBlur=28;}
+      const tx=-size*0.85;
+      ctx.beginPath();ctx.moveTo(tx,0);ctx.lineTo(tx-size*0.55,-size*0.42);ctx.lineTo(tx-size*0.12,0);ctx.lineTo(tx-size*0.55,size*0.42);ctx.closePath();ctx.fillStyle=col+"88";ctx.fill();
+      ctx.beginPath();ctx.moveTo(size*0.1,0);ctx.quadraticCurveTo(0,size*0.45,-size*0.3,size*0.28);ctx.quadraticCurveTo(-size*0.05,size*0.1,size*0.1,0);ctx.fillStyle=col+"55";ctx.fill();
+      ctx.beginPath();ctx.ellipse(0,0,size*0.72,size*0.3,0,0,Math.PI*2);ctx.fillStyle=col+(sel?"ff":"cc");ctx.fill();
+      ctx.beginPath();ctx.moveTo(-size*0.15,-size*0.3);ctx.quadraticCurveTo(size*0.12,-size*0.58,size*0.42,-size*0.3);ctx.strokeStyle=col+"aa";ctx.lineWidth=1.5;ctx.stroke();
+      ctx.beginPath();ctx.arc(size*0.44,-size*0.06,size*0.085,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.9)";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.46,-size*0.06,size*0.042,0,Math.PI*2);ctx.fillStyle="#001530";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.47,-size*0.085,size*0.018,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.85)";ctx.fill();
+      if(scores?.[dim]!==undefined){ctx.rotate(-angle-wb);ctx.fillStyle=col;ctx.font=`bold ${size*0.38}px sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(scores[dim]+"%",0,size*0.72);}
+      ctx.restore();
+      ctx.save();ctx.font=`${sel?"bold ":""}${size*0.42}px -apple-system,sans-serif`;ctx.textAlign="center";ctx.textBaseline="top";ctx.fillStyle=sel?col:col+"99";ctx.fillText(DIMS[dim].label,x,y+size*1.0);ctx.restore();
+      if(sel){ctx.save();ctx.beginPath();ctx.arc(x,y,size*1.6,0,Math.PI*2);ctx.strokeStyle=col+"40";ctx.lineWidth=2;ctx.setLineDash([4,6]);ctx.stroke();ctx.restore();}
+    }
+    let raf;
+    function loop(){ctx.clearRect(0,0,W,H);updateFish();fishes.forEach((f,i)=>fishes.forEach((f2,j)=>{if(j<=i)return;const d=Math.hypot(f.x-f2.x,f.y-f2.y);if(d<120){const a=Math.floor((1-d/120)*18).toString(16).padStart(2,"0");ctx.beginPath();ctx.strokeStyle=`#00c8f5${a}`;ctx.lineWidth=0.6;ctx.moveTo(f.x,f.y);ctx.lineTo(f2.x,f2.y);ctx.stroke();}}));fishes.forEach(f=>drawFish(f));raf=requestAnimationFrame(loop);}
+    loop();
+    function handleClick(e){const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;let hit=null,minD=Infinity;fishes.forEach(f=>{const d=Math.hypot(mx-f.x,my-f.y);if(d<f.size*1.8&&d<minD){minD=d;hit=f.dim;}});onFishClick(hit);}
+    canvas.addEventListener("click",handleClick);
+    return ()=>{cancelAnimationFrame(raf);canvas.removeEventListener("click",handleClick);};
+  },[]);
+  return <canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block",cursor:"pointer"}} />;
+}
+
+function RefCard({ dim, score, onClose }) {
+  const d = DIMS[dim];
+  return (
+    <div style={{background:"linear-gradient(135deg,#041830 0%,#061c35 100%)",border:`1px solid ${d.color}44`,borderRadius:18,padding:"20px 22px",boxShadow:`0 0 40px ${d.color}18`,position:"relative",overflow:"hidden"}}>
+      <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${d.color},transparent)`}} />
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+        <div>
+          <div style={{fontSize:10,color:d.color+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:3}}>Reference Card</div>
+          <div style={{fontSize:18,fontWeight:700,color:"#fff",lineHeight:1.2}}>{d.title}</div>
+          <div style={{fontSize:12,color:OC.textMid,marginTop:3}}>{d.tagline}</div>
+        </div>
+        {score!==undefined&&<div style={{background:d.color+"22",border:`1px solid ${d.color}44`,borderRadius:10,padding:"6px 12px",textAlign:"center",flexShrink:0}}><div style={{fontSize:20,fontWeight:800,color:d.color,lineHeight:1}}>{score}%</div><div style={{fontSize:9,color:d.color+"88",letterSpacing:2}}>YOUR SCORE</div></div>}
+      </div>
+      <div style={{marginBottom:16}}>
+        <div style={{height:5,background:"#0a2040",borderRadius:3,overflow:"hidden"}}>{score!==undefined&&<div style={{height:"100%",width:score+"%",background:`linear-gradient(90deg,${d.color}88,${d.color})`,borderRadius:3,transition:"width 1s ease"}} />}</div>
+        <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}><span style={{fontSize:9,color:OC.textDim}}>LOW</span><span style={{fontSize:9,color:OC.textDim}}>HIGH</span></div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+        {[["High",d.high],["Low",d.low]].map(([lbl,txt])=>(<div key={lbl} style={{background:"#030f20",borderRadius:10,padding:"10px 12px",border:`1px solid ${OC.border}`}}><div style={{fontSize:9,color:d.color+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:5}}>{lbl}</div><div style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{txt}</div></div>))}
+      </div>
+      <div style={{background:"#030f20",borderRadius:10,padding:"10px 14px",marginBottom:12,border:`1px solid ${OC.border}`}}>
+        <div style={{fontSize:9,color:"#4a80a8",letterSpacing:2,textTransform:"uppercase",marginBottom:5}}>In Your Team</div>
+        <div style={{fontSize:11,color:OC.text,lineHeight:1.5,marginBottom:5}}><span style={{color:d.color+"aa"}}>↑ </span>{d.teamHigh}</div>
+        <div style={{fontSize:11,color:OC.text,lineHeight:1.5}}><span style={{color:d.color+"aa"}}>↓ </span>{d.teamLow}</div>
+      </div>
+      <div style={{background:`${d.color}0d`,borderRadius:10,padding:"10px 14px",border:`1px solid ${d.color}22`}}>
+        <div style={{fontSize:9,color:d.color+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:5}}>Feedback Tip</div>
+        {d.tip.split("\n").map((line,i)=><div key={i} style={{fontSize:11,color:OC.text,lineHeight:1.5}}>{line}</div>)}
+      </div>
+      <button onClick={onClose} style={{marginTop:14,width:"100%",padding:"8px",borderRadius:8,background:"none",border:`1px solid ${OC.border}`,color:OC.textMid,fontSize:12,cursor:"pointer"}}>← Back to school</button>
+    </div>
+  );
+}
+
+function ScoreBars({ scores, compact=false }) {
+  return (
+    <div>
+      {Object.keys(DIMS).map(dim => (
+        <div key={dim} style={{marginBottom:compact?8:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",marginBottom:compact?2:5}}>
+            <div>
+              <span style={{fontSize:compact?11:13,fontWeight:600,color:OC.text}}>{DIMS[dim].label}</span>
+              {!compact&&<span style={{fontSize:10,color:OC.textMid,marginLeft:8}}>{DIMS[dim].short}</span>}
+            </div>
+            <span style={{fontSize:compact?11:13,fontWeight:700,color:DIMS[dim].color}}>{scores[dim]}%</span>
+          </div>
+          <div style={{height:compact?4:6,background:OC.cardMid,borderRadius:3,overflow:"hidden"}}>
+            <div style={{height:"100%",width:scores[dim]+"%",background:`linear-gradient(90deg,${DIMS[dim].color}88,${DIMS[dim].color})`,borderRadius:3,boxShadow:`0 0 10px ${DIMS[dim].color}60`,transition:"width 0.8s ease"}} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function App() {
+  const [screen, setScreen]             = useState("home");
+  const [sessionCode, setSessionCode]   = useState("");
+  const [joinCode, setJoinCode]         = useState("");
+  const [answers, setAnswers]           = useState({});
+  const [current, setCurrent]           = useState(0);
+  const [myScores, setMyScores]         = useState(null);
+  const [myPid, setMyPid]               = useState(null);
+  const [participants, setParticipants] = useState([]);
+  const [selectedFish, setSelectedFish] = useState(null);
+  const [error, setError]               = useState("");
+  const [feedbackIndex, setFeedbackIndex] = useState(0);
+  const [annotations, setAnnotations]   = useState({});
+  const [myAnnotation, setMyAnnotation] = useState(null);
+  const [feedbackDone, setFeedbackDone] = useState(false);
+  const unsubRef          = useRef(null);
+  const unsubParticipantRef = useRef(null);
+  const unsubFeedbackRef  = useRef(null);
+
+  async function createSession() {
+    const code = genCode();
+    try {
+      await fbSet(`${sp(code)}/meta`, { created: Date.now(), feedbackDone: false });
+      setSessionCode(code);
+      setScreen("hostLive");
+      // Listen on profiles subtree — fires immediately and on every change
+      unsubRef.current = fbListen(`${sp(code)}/profiles`, (val) => {
+        setParticipants(val ? Object.values(val) : []);
+      });
+    } catch (e) { setError("Firebase error: " + e.message); }
+  }
+
+  function stopSession() {
+    if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; }
+  }
+
+  async function joinSession() {
+    const code = joinCode.toUpperCase().trim();
+    try {
+      const meta = await fbGet(`${sp(code)}/meta`);
+      if (!meta) { setError("No swarm found. Check the code."); return; }
+      setSessionCode(code); setScreen("assessment"); setError("");
+    } catch (e) { setError("No swarm found."); }
+  }
+
+  async function submitResults(scores) {
+    const pid = genPid();
+    setMyPid(pid);
+    localStorage.setItem("swarm-pid", pid);
+    setMyScores(scores);
+    setScreen("result");
+    try {
+      // Each participant writes to their OWN path — no read-modify-write, no race conditions
+      await fbSet(`${sp(sessionCode)}/profiles/${pid}`, { scores, ts: Date.now(), pid, annotation: "", ready: false });
+      // Listen for annotation update on own profile
+      unsubParticipantRef.current = fbListen(`${sp(sessionCode)}/profiles/${pid}`, (profile) => {
+        if (profile?.annotation !== undefined) setMyAnnotation(profile.annotation);
+      });
+      // Listen for feedbackDone flag
+      unsubFeedbackRef.current = fbListen(`${sp(sessionCode)}/meta/feedbackDone`, (val) => {
+        if (val === true) setFeedbackDone(true);
+      });
+    } catch (e) {
+      setError("Could not save to database: " + e.message);
+    }
+  }
+
+  async function markReady() {
+    const pid = myPid || localStorage.getItem("swarm-pid");
+    try {
+      await fbUpdate(`${sp(sessionCode)}/profiles/${pid}`, { ready: true });
+    } catch (_) {}
+    setScreen("waiting");
+  }
+
+  function startFeedback() { setFeedbackIndex(0); setAnnotations({}); setScreen("feedbackReview"); }
+
+  async function finishFeedback() {
+    try {
+      await Promise.all(participants.map((p, i) =>
+        fbUpdate(`${sp(sessionCode)}/profiles/${p.pid}`, { annotation: annotations[i] || "" })
+      ));
+      await fbUpdate(`${sp(sessionCode)}/meta`, { feedbackDone: true });
+    } catch (_) {}
+    setScreen("feedbackDone");
+  }
+
+  function answer(score) { setAnswers(prev => ({ ...prev, [current]: score })); }
+  function next() { if (answers[current] === undefined) return; if (current === QUESTIONS.length - 1) submitResults(calcScores(answers)); else setCurrent(c => c + 1); }
+  function prev() { if (current > 0) setCurrent(c => c - 1); }
+  // Auto-navigate from waiting screen when host finishes feedback
+  useEffect(() => { if (screen === "waiting" && feedbackDone) setScreen("result"); }, [feedbackDone, screen]);
+  useEffect(() => () => {
+    stopSession();
+    if (unsubParticipantRef.current) { unsubParticipantRef.current(); unsubParticipantRef.current = null; }
+    if (unsubFeedbackRef.current) { unsubFeedbackRef.current(); unsubFeedbackRef.current = null; }
+  }, []);
+
+  const progress = Math.round((current / QUESTIONS.length) * 100);
+  const readyCount = participants.filter(p => p.ready).length;
+
+  // HOME
+  if (screen === "home") return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,flexDirection:"column",position:"relative"}}>
+      <BubblesBg /><CausticLight />
+      <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center"}}>
+        <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
+        <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
+        <div style={{fontSize:40,fontWeight:800,color:"#fff",lineHeight:1.1,marginBottom:4}}>Swarm</div>
+        <div style={{fontSize:40,fontWeight:800,lineHeight:1.1,marginBottom:6}}><span style={{background:OC.accent,color:"#010d1f",padding:"0 10px",borderRadius:6}}>Intelligence.</span></div>
+        <div style={{fontSize:13,color:OC.textMid,marginBottom:36,fontStyle:"italic"}}>The ocean reveals what no single wave can.</div>
+        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+          <button onClick={createSession} style={{padding:15,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>Host a swarm session</button>
+          <button onClick={()=>setScreen("join")} style={{padding:15,borderRadius:12,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textMid,fontSize:14,cursor:"pointer"}}>Join a swarm</button>
+        </div>
+        {error&&<div style={{color:"#ff6b6b",fontSize:12,marginTop:12}}>{error}</div>}
+      </div>
+    </div>
+  );
+
+  // JOIN
+  if (screen === "join") return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
+      <BubblesBg />
+      <div style={{position:"relative",zIndex:1,maxWidth:360,width:"100%",textAlign:"center"}}>
+        <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Enter swarm code</div>
+        <div style={{fontSize:13,color:OC.textMid,marginBottom:28}}>Get the code from your host</div>
+        <input value={joinCode} onChange={e=>setJoinCode(e.target.value.toUpperCase().slice(0,5))} placeholder="AB3X7"
+          style={{width:"100%",padding:16,fontSize:30,fontWeight:700,textAlign:"center",letterSpacing:8,borderRadius:12,border:`1px solid ${OC.borderGlow}`,background:OC.card,color:OC.accent,marginBottom:14,fontFamily:"monospace",outline:"none"}}
+          onKeyDown={e=>e.key==="Enter"&&joinSession()} />
+        {error&&<div style={{color:"#ff6b6b",fontSize:12,marginBottom:12}}>{error}</div>}
+        <button onClick={joinSession} disabled={joinCode.length<4} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:joinCode.length>=4?OC.accent:OC.border,color:joinCode.length>=4?"#010d1f":"#333",fontSize:14,fontWeight:700,cursor:joinCode.length>=4?"pointer":"default"}}>Dive in</button>
+        <button onClick={()=>{setScreen("home");setError("");}} style={{marginTop:12,background:"none",border:"none",color:OC.textDim,fontSize:12,cursor:"pointer"}}>← Back</button>
+      </div>
+    </div>
+  );
+
+  // HOST LIVE
+  if (screen === "hostLive") return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
+      <BubblesBg />
+      <div style={{position:"relative",zIndex:1,maxWidth:680,margin:"0 auto"}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
+          <div>
+            <button onClick={()=>{stopSession();setScreen("home");setSessionCode("");setParticipants([]);}} style={{background:"none",border:"none",color:OC.textMid,fontSize:12,cursor:"pointer",padding:"0 0 4px 0",display:"block"}}>← Back</button>
+            <div style={{fontSize:18,fontWeight:700,color:"#fff"}}>Session active</div>
+            <div style={{fontSize:12,color:OC.textMid}}>Waiting for signals to surface</div>
+          </div>
+          <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:10}}>
+            <div style={{background:"#041a0f",border:"1px solid #0d3a1a",borderRadius:8,padding:"6px 14px",fontSize:12,color:OC.accent2}}>
+              {participants.length} signal{participants.length!==1?"s":""} · {readyCount} ready ✓
+            </div>
+            {participants.length > 0 && (
+              <button onClick={startFeedback} style={{padding:"12px 20px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
+                Start feedback round →
+              </button>
+            )}
+          </div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:24}}>
+          <div style={{background:OC.card,borderRadius:16,border:`1px solid ${OC.border}`,padding:24,textAlign:"center"}}>
+            <div style={{width:100,height:100,margin:"0 auto 14px"}}><MiniSchool size={100} /></div>
+            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:6}}>Swarm code</div>
+            <div style={{fontSize:32,fontWeight:800,letterSpacing:6,color:OC.accent,fontFamily:"monospace"}}>{sessionCode}</div>
+            <div style={{fontSize:11,color:OC.textDim,marginTop:8}}>Share with participants</div>
+          </div>
+          <div style={{background:OC.card,borderRadius:16,border:`1px solid ${OC.border}`,padding:24}}>
+            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>How to join</div>
+            {["Open this app","Tap 'Join a swarm'","Enter the code","Complete 10 questions","Your signal joins the swarm"].map((step,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:9}}>
+                <div style={{width:20,height:20,borderRadius:"50%",background:OC.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#010d1f",flexShrink:0}}>{i+1}</div>
+                <div style={{fontSize:12,color:OC.textMid,paddingTop:2}}>{step}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {participants.length===0 ? (
+          <div style={{textAlign:"center",padding:"48px 0"}}><div style={{fontSize:13,color:OC.textDim}}>Waiting for signals from the deep...</div></div>
+        ) : (
+          <div>
+            <div style={{fontSize:13,fontWeight:600,color:"#fff",marginBottom:14}}>Anonymous signals — {participants.length} received</div>
+            {participants.map((p,i)=>(
+              <div key={i} style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:14,padding:"16px 20px",marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                  <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase"}}>Signal #{String(i+1).padStart(2,"0")}</div>
+                  {p.ready&&<div style={{fontSize:10,color:OC.accent2,background:"#041a0f",border:"1px solid #0d3a1a",borderRadius:6,padding:"2px 8px"}}>Ready ✓</div>}
+                </div>
+                <ScoreBars scores={p.scores} compact />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  // ASSESSMENT
+  if (screen === "assessment") {
+    const q = QUESTIONS[current];
+    return (
+      <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
+        <BubblesBg />
+        <div style={{position:"relative",zIndex:1,maxWidth:520,width:"100%"}}>
+          <div style={{marginBottom:36}}>
+            <div style={{height:2,background:OC.cardMid,borderRadius:1}}>
+              <div style={{height:"100%",width:progress+"%",background:`linear-gradient(90deg,${OC.accent},${OC.accent2})`,borderRadius:1,transition:"width 0.3s"}} />
+            </div>
+            <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
+              <span style={{fontSize:10,color:OC.textDim}}>{current+1} of {QUESTIONS.length}</span>
+              <span style={{fontSize:10,color:OC.textDim}}>{progress}% depth</span>
+            </div>
+          </div>
+          <div style={{fontSize:17,fontWeight:600,color:"#d8f0ff",lineHeight:1.65,marginBottom:26}}>{q.text}</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:28}}>
+            {q.opts.map((opt,i)=>(
+              <div key={i} onClick={()=>answer(opt.s)} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",borderRadius:12,cursor:"pointer",border:answers[current]===opt.s?`1px solid ${OC.accent}`:`1px solid ${OC.border}`,background:answers[current]===opt.s?`${OC.accent}12`:OC.card,transition:"all 0.15s"}}>
+                <div style={{width:26,height:26,borderRadius:"50%",flexShrink:0,background:answers[current]===opt.s?OC.accent:OC.cardMid,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:600,color:answers[current]===opt.s?"#010d1f":OC.textDim}}>{["A","B","C","D"][i]}</div>
+                <div style={{fontSize:14,color:answers[current]===opt.s?"#d8f0ff":OC.textMid,lineHeight:1.4}}>{opt.t}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <button onClick={prev} disabled={current===0} style={{padding:"10px 20px",borderRadius:8,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:current===0?"default":"pointer",opacity:current===0?0.3:1}}>Back</button>
+            <button onClick={next} disabled={answers[current]===undefined} style={{padding:"10px 26px",borderRadius:8,border:"none",background:answers[current]!==undefined?OC.accent:OC.cardMid,color:answers[current]!==undefined?"#010d1f":"#333",fontSize:13,fontWeight:700,cursor:answers[current]!==undefined?"pointer":"default"}}>
+              {current===QUESTIONS.length-1?"Surface →":"Next →"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // RESULT
+  if (screen === "result" && myScores) return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
+      <BubblesBg />
+      <div style={{position:"relative",zIndex:1,maxWidth:460,margin:"0 auto"}}>
+        <div style={{width:90,height:90,margin:"0 auto 18px"}}><MiniSchool size={90} /></div>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Signal transmitted</div>
+          <div style={{fontSize:13,color:OC.textMid}}>Your profile joined the swarm — anonymously</div>
+        </div>
+        <ScoreBars scores={myScores} />
+        {feedbackDone && myAnnotation !== null && (
+          <div style={{marginTop:20,padding:"16px 18px",background:`${OC.accent}0d`,borderRadius:12,border:`1px solid ${OC.accent}33`}}>
+            <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Host Notes</div>
+            {myAnnotation ? (
+              <div style={{fontSize:13,color:OC.text,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{myAnnotation}</div>
+            ) : (
+              <div style={{fontSize:13,color:OC.textMid,fontStyle:"italic"}}>No notes were added for this profile.</div>
+            )}
+          </div>
+        )}
+        {!feedbackDone && (
+          <>
+            <div style={{marginTop:24,padding:"16px 18px",background:OC.card,borderRadius:12,border:`1px solid ${OC.border}`,marginBottom:14}}>
+              <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>What happens next</div>
+              <div style={{fontSize:13,color:OC.textMid,lineHeight:1.6}}>Explore the five dimensions, then signal ready for the group feedback.</div>
+            </div>
+            <button onClick={()=>setScreen("intro")} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,marginBottom:10}}>Explore the dimensions →</button>
+          </>
+        )}
+        <button onClick={()=>{setScreen("home");setAnswers({});setCurrent(0);setMyScores(null);}} style={{width:"100%",padding:12,borderRadius:8,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:"pointer"}}>Back to home</button>
+      </div>
+    </div>
+  );
+
+  // INTRO — fish swarm reference cards
+  if (screen === "intro") return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 60%,#010d1f 100%)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      <BubblesBg /><CausticLight />
+      <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
+        <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Before the feedback round</div>
+        <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Meet the five dimensions</div>
+        <div style={{fontSize:12,color:OC.textMid,marginBottom:8}}>Tap a fish to learn what each dimension means</div>
+        <div style={{display:"flex",justifyContent:"center",gap:6,flexWrap:"wrap",marginBottom:4}}>
+          {Object.keys(DIMS).map(dim=>(
+            <div key={dim} onClick={()=>setSelectedFish(selectedFish===dim?null:dim)} style={{padding:"3px 10px",borderRadius:20,fontSize:10,cursor:"pointer",background:selectedFish===dim?DIMS[dim].color+"22":"transparent",border:`1px solid ${selectedFish===dim?DIMS[dim].color+"88":OC.border}`,color:selectedFish===dim?DIMS[dim].color:OC.textMid,transition:"all 0.2s"}}>{DIMS[dim].label}</div>
+          ))}
+        </div>
+      </div>
+      <div style={{position:"relative",zIndex:1,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:320,transition:"flex 0.4s ease"}}>
+        <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} scores={myScores} />
+      </div>
+      {selectedFish&&(
+        <div style={{position:"relative",zIndex:1,padding:"0 16px 16px",flex:"1 1 auto",overflowY:"auto"}}>
+          <style>{`@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}`}</style>
+          <RefCard dim={selectedFish} score={myScores?myScores[selectedFish]:undefined} onClose={()=>setSelectedFish(null)} />
+        </div>
+      )}
+      {!selectedFish&&<div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px 16px"}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any fish to open its reference card</div></div>}
+      <div style={{position:"relative",zIndex:1,padding:"12px 20px 28px"}}>
+        <button onClick={markReady} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer"}}>Ready for feedback ✓</button>
+      </div>
+    </div>
+  );
+
+  // WAITING
+  if (screen === "waiting") return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
+      <BubblesBg /><CausticLight />
+      <div style={{position:"relative",zIndex:1,maxWidth:360,width:"100%",textAlign:"center"}}>
+        <div style={{width:120,height:120,margin:"0 auto 24px"}}><MiniSchool size={120} /></div>
+        <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:8}}>You're ready</div>
+        <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7,marginBottom:32}}>Waiting for the host to start the feedback round. Your signal is in the swarm.</div>
+        <div style={{display:"flex",justifyContent:"center",gap:8,marginBottom:32}}>
+          {[0,1,2].map(i=>(
+            <div key={i} style={{width:8,height:8,borderRadius:"50%",background:OC.accent,animation:`pulse 1.4s ease-in-out ${i*0.3}s infinite`}} />
+          ))}
+        </div>
+        <style>{`@keyframes pulse{0%,100%{opacity:0.2;transform:scale(0.8)}50%{opacity:1;transform:scale(1.2)}}`}</style>
+        <button onClick={()=>setScreen("result")} style={{background:"none",border:"none",color:OC.textDim,fontSize:12,cursor:"pointer"}}>← View my results</button>
+      </div>
+    </div>
+  );
+
+  // FEEDBACK REVIEW (host)
+  if (screen === "feedbackReview") {
+    const profile = participants[feedbackIndex];
+    const isLast = feedbackIndex === participants.length - 1;
+    if (!profile) return null;
+    return (
+      <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
+        <BubblesBg />
+        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
+            <button onClick={()=>setScreen("hostLive")} style={{background:"none",border:"none",color:OC.textMid,fontSize:12,cursor:"pointer"}}>← Back to session</button>
+            <div style={{fontSize:12,color:OC.textMid}}>Signal <span style={{color:"#fff",fontWeight:700}}>{feedbackIndex+1}</span> / {participants.length}</div>
+          </div>
+          <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:28}}>
+            {participants.map((_,i)=>(
+              <div key={i} style={{width:i===feedbackIndex?24:8,height:8,borderRadius:4,background:i<feedbackIndex?OC.accent2:i===feedbackIndex?OC.accent:OC.border,transition:"all 0.3s"}} />
+            ))}
+          </div>
+          <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:16}}>
+            Anonymous Signal #{String(feedbackIndex+1).padStart(2,"0")}
+            {profile.ready&&<span style={{marginLeft:10,color:OC.accent2}}>· Ready ✓</span>}
+          </div>
+          <div style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
+            <ScoreBars scores={profile.scores} />
+          </div>
+          <div style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"18px 20px",marginBottom:24}}>
+            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:10}}>Notes (optional)</div>
+            <textarea
+              value={annotations[feedbackIndex]||""}
+              onChange={e=>setAnnotations(prev=>({...prev,[feedbackIndex]:e.target.value}))}
+              placeholder="Add observations, patterns, or feedback notes for this profile..."
+              rows={4}
+              style={{width:"100%",background:"#030f20",border:`1px solid ${OC.border}`,borderRadius:10,padding:"12px 14px",color:OC.text,fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:"inherit",boxSizing:"border-box"}}
+            />
+          </div>
+          <div style={{display:"flex",gap:10}}>
+            {feedbackIndex>0&&(
+              <button onClick={()=>setFeedbackIndex(i=>i-1)} style={{flex:1,padding:14,borderRadius:12,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textMid,fontSize:14,cursor:"pointer"}}>← Back</button>
+            )}
+            {!isLast ? (
+              <button onClick={()=>setFeedbackIndex(i=>i+1)} style={{flex:2,padding:14,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 20px ${OC.accent}44`}}>Next signal →</button>
+            ) : (
+              <button onClick={finishFeedback} style={{flex:2,padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer"}}>Finish review ✓</button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // FEEDBACK DONE (host)
+  if (screen === "feedbackDone") {
+    const withNotes = Object.values(annotations).filter(a=>a&&a.trim()).length;
+    return (
+      <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
+        <BubblesBg /><CausticLight />
+        <div style={{position:"relative",zIndex:1,maxWidth:460,width:"100%",textAlign:"center"}}>
+          <div style={{width:100,height:100,margin:"0 auto 20px"}}><MiniSchool size={100} /></div>
+          <div style={{fontSize:48,marginBottom:12}}>✓</div>
+          <div style={{fontSize:24,fontWeight:700,color:"#fff",marginBottom:8}}>All profiles reviewed</div>
+          <div style={{fontSize:13,color:OC.textMid,marginBottom:32}}>{participants.length} signal{participants.length!==1?"s":""} reviewed · {withNotes} with notes</div>
+          <div style={{textAlign:"left",marginBottom:24}}>
+            {participants.map((p,i)=>(
+              <div key={i} style={{background:OC.card,border:`1px solid ${annotations[i]?.trim()?OC.accent+"44":OC.border}`,borderRadius:14,padding:"14px 18px",marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:annotations[i]?.trim()?8:0}}>
+                  <div style={{fontSize:11,color:OC.textDim,letterSpacing:2,textTransform:"uppercase"}}>Signal #{String(i+1).padStart(2,"0")}</div>
+                  <div style={{display:"flex",gap:5}}>{Object.keys(DIMS).map(dim=><div key={dim} style={{width:6,height:6,borderRadius:"50%",background:DIMS[dim].color,opacity:p.scores[dim]/100}} />)}</div>
+                </div>
+                {annotations[i]?.trim()&&<div style={{fontSize:12,color:OC.textMid,lineHeight:1.5,fontStyle:"italic",borderTop:`1px solid ${OC.border}`,paddingTop:8}}>"{annotations[i]}"</div>}
+              </div>
+            ))}
+          </div>
+          <div style={{padding:"14px 18px",background:`${OC.accent2}0d`,border:`1px solid ${OC.accent2}33`,borderRadius:12,marginBottom:20}}>
+            <div style={{fontSize:13,color:OC.accent2,lineHeight:1.6}}>Notes sent to participants. They can now view them alongside their profile.</div>
+          </div>
+          <button onClick={()=>{setScreen("home");setParticipants([]);setSessionCode("");setAnnotations({});setFeedbackIndex(0);stopSession();}} style={{width:"100%",padding:14,borderRadius:12,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textMid,fontSize:13,cursor:"pointer"}}>Back to home</button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
