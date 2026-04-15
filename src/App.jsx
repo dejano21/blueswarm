@@ -79,21 +79,106 @@ function BubblesBg() {
     const canvas = canvasRef.current; if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const W = canvas.width = window.innerWidth, H = canvas.height = window.innerHeight;
-    const bubbles = Array.from({length:28}, () => ({ x:Math.random()*W, y:H+Math.random()*H, r:1.5+Math.random()*4, speed:0.3+Math.random()*0.7, drift:(Math.random()-0.5)*0.4, alpha:0.04+Math.random()*0.1 }));
-    let raf;
+
+    const bubbles = Array.from({length:34}, () => ({
+      x:Math.random()*W, y:H+Math.random()*H,
+      r:1.5+Math.random()*5.5, speed:0.22+Math.random()*0.7,
+      drift:(Math.random()-0.5)*0.4, wobble:Math.random()*Math.PI*2,
+      wobbleSpeed:0.008+Math.random()*0.02, alpha:0.07+Math.random()*0.14
+    }));
+
+    const plankton = Array.from({length:95}, () => ({
+      x:Math.random()*W, y:Math.random()*H,
+      r:0.4+Math.random()*1.1, speed:0.04+Math.random()*0.16,
+      drift:(Math.random()-0.5)*0.08,
+      phase:Math.random()*Math.PI*2, phaseSpeed:0.012+Math.random()*0.04,
+      type:Math.random()<0.6?0:Math.random()<0.6?1:2
+    }));
+
+    let t=0, raf;
+    const PCOLS = ['rgba(0,210,245','rgba(0,220,175','rgba(155,100,255'];
+
     function draw() {
+      t++;
       ctx.clearRect(0,0,W,H);
-      bubbles.forEach(b => { ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.strokeStyle=`rgba(0,200,245,${b.alpha})`; ctx.lineWidth=0.8; ctx.stroke(); b.y-=b.speed; b.x+=b.drift; if(b.y<-b.r*2){b.y=H+b.r;b.x=Math.random()*W;} });
-      raf = requestAnimationFrame(draw);
+
+      // Deep-ocean depth vignette at bottom
+      const dg=ctx.createLinearGradient(0,H*0.5,0,H);
+      dg.addColorStop(0,'rgba(0,0,0,0)'); dg.addColorStop(1,'rgba(0,2,15,0.5)');
+      ctx.fillStyle=dg; ctx.fillRect(0,0,W,H);
+
+      // Animated caustic light patches (top half only)
+      for(let i=0;i<6;i++){
+        const cx=W*0.15+Math.cos(t*0.00035+i*1.2)*W*0.38;
+        const cy=-30+Math.sin(t*0.00028+i*0.85)*55;
+        const r=180+i*55+Math.sin(t*0.0009+i)*35;
+        const intensity=0.011+Math.sin(t*0.0007+i*0.65)*0.006;
+        const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
+        cg.addColorStop(0,`rgba(0,188,230,${intensity})`);
+        cg.addColorStop(0.45,`rgba(0,120,185,${intensity*0.35})`);
+        cg.addColorStop(1,'rgba(0,0,0,0)');
+        ctx.fillStyle=cg; ctx.fillRect(0,0,W,Math.min(H*0.6,r+cy+50));
+      }
+
+      // Plankton (bioluminescent micro-particles)
+      plankton.forEach(p=>{
+        p.phase+=p.phaseSpeed; p.y-=p.speed; p.x+=p.drift;
+        if(p.y<-4){p.y=H+4;p.x=Math.random()*W;}
+        if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+        const pulse=0.35+Math.sin(p.phase)*0.65;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`${PCOLS[p.type]},${(0.1+Math.random()*0.04)*pulse})`; ctx.fill();
+      });
+
+      // Bubbles with highlight gleam
+      bubbles.forEach(b=>{
+        b.wobble+=b.wobbleSpeed;
+        b.x+=b.drift+Math.sin(b.wobble)*0.22; b.y-=b.speed;
+        if(b.y<-b.r*2){b.y=H+b.r;b.x=Math.random()*W;}
+        ctx.save();
+        ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+        const bg=ctx.createRadialGradient(b.x-b.r*0.28,b.y-b.r*0.28,0,b.x,b.y,b.r);
+        bg.addColorStop(0,`rgba(175,232,255,${b.alpha*0.32})`); bg.addColorStop(1,'rgba(0,140,195,0)');
+        ctx.fillStyle=bg; ctx.fill();
+        ctx.strokeStyle=`rgba(120,210,255,${b.alpha})`; ctx.lineWidth=0.75; ctx.stroke();
+        ctx.beginPath(); ctx.arc(b.x-b.r*0.3,b.y-b.r*0.32,b.r*0.19,0,Math.PI*2);
+        ctx.fillStyle=`rgba(255,255,255,${b.alpha*1.5})`; ctx.fill();
+        ctx.restore();
+      });
+
+      raf=requestAnimationFrame(draw);
     }
     draw();
-    return () => cancelAnimationFrame(raf);
-  }, []);
+    return ()=>cancelAnimationFrame(raf);
+  },[]);
   return <canvas ref={canvasRef} style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0}} />;
 }
 
 function CausticLight() {
-  return <div style={{position:"fixed",top:0,left:0,right:0,height:220,background:"radial-gradient(ellipse at 50% -40%, rgba(0,180,220,0.07) 0%, transparent 70%)",pointerEvents:"none",zIndex:0}} />;
+  const canvasRef = useRef(null);
+  useEffect(()=>{
+    const canvas=canvasRef.current; if(!canvas) return;
+    const ctx=canvas.getContext("2d");
+    const W=canvas.width=window.innerWidth; canvas.height=90;
+    let t=0, raf;
+    function draw(){
+      t+=0.016;
+      ctx.clearRect(0,0,W,90);
+      for(let i=0;i<5;i++){
+        ctx.beginPath();
+        ctx.moveTo(0, 8+i*15);
+        for(let x=0;x<=W;x+=5){
+          const y=8+i*15+Math.sin(x*0.017+t+i*0.95)*3.8+Math.sin(x*0.044+t*1.35+i*0.55)*1.6;
+          ctx.lineTo(x,y);
+        }
+        ctx.strokeStyle=`rgba(0,205,245,${0.055-i*0.009})`; ctx.lineWidth=1.1; ctx.stroke();
+      }
+      raf=requestAnimationFrame(draw);
+    }
+    draw();
+    return()=>cancelAnimationFrame(raf);
+  },[]);
+  return <canvas ref={canvasRef} style={{position:"fixed",top:0,left:0,width:"100%",height:90,pointerEvents:"none",zIndex:1}} />;
 }
 
 function MiniSchool({ size=200 }) {
@@ -484,10 +569,60 @@ export default function App() {
               <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>What happens next</div>
               <div style={{fontSize:13,color:OC.textMid,lineHeight:1.6}}>Explore the five dimensions, then signal ready for the group feedback.</div>
             </div>
-            <button onClick={()=>setScreen("intro")} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,marginBottom:10}}>Explore the dimensions →</button>
+            <button onClick={()=>setScreen("guide")} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,marginBottom:10}}>Explore the dimensions →</button>
           </>
         )}
         <button onClick={()=>{setScreen("home");setAnswers({});setCurrent(0);setMyScores(null);}} style={{width:"100%",padding:12,borderRadius:8,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:"pointer"}}>Back to home</button>
+      </div>
+    </div>
+  );
+
+  // GUIDE — Big Five model explainer
+  if (screen === "guide") return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
+      <BubblesBg /><CausticLight />
+      <div style={{position:"relative",zIndex:1,maxWidth:500,margin:"0 auto"}}>
+        <div style={{textAlign:"center",marginBottom:28}}>
+          <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:8}}>Before the feedback round</div>
+          <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>The Big Five Model</div>
+          <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7,maxWidth:380,margin:"0 auto"}}>
+            Personality research converges on five stable dimensions that shape how people think, work, and relate. None is better or worse — each has strengths depending on context.
+          </div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:28}}>
+          {Object.entries(DIMS).map(([key, d]) => (
+            <div key={key} style={{background:OC.card,border:`1px solid ${d.color}33`,borderRadius:14,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${d.color},transparent)`}} />
+              <div style={{display:"flex",alignItems:"flex-start",gap:14}}>
+                <div style={{width:36,height:36,borderRadius:10,background:`${d.color}22`,border:`1px solid ${d.color}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                  <span style={{fontSize:14,fontWeight:800,color:d.color}}>{key}</span>
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:2}}>{d.title}</div>
+                  <div style={{fontSize:11,color:OC.textMid,marginBottom:8,lineHeight:1.5}}>{d.tagline}</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+                    <div style={{background:"#030f20",borderRadius:8,padding:"7px 10px",border:`1px solid ${OC.border}`}}>
+                      <div style={{fontSize:8,color:d.color+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:3}}>High</div>
+                      <div style={{fontSize:10,color:OC.text,lineHeight:1.5}}>{d.high}</div>
+                    </div>
+                    <div style={{background:"#030f20",borderRadius:8,padding:"7px 10px",border:`1px solid ${OC.border}`}}>
+                      <div style={{fontSize:8,color:d.color+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:3}}>Low</div>
+                      <div style={{fontSize:10,color:OC.text,lineHeight:1.5}}>{d.low}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{background:`${OC.accent}0d`,border:`1px solid ${OC.accent}22`,borderRadius:12,padding:"14px 16px",marginBottom:24,textAlign:"center"}}>
+          <div style={{fontSize:12,color:OC.textMid,lineHeight:1.7}}>
+            In the next screen you'll find <span style={{color:OC.accent,fontWeight:600}}>reference cards for each dimension</span> — tap a fish to open one. Take a moment to read the ones most relevant to you before the feedback round.
+          </div>
+        </div>
+        <button onClick={()=>setScreen("intro")} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
+          Meet the five fish →
+        </button>
       </div>
     </div>
   );
