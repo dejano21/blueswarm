@@ -479,7 +479,7 @@ export default function App() {
           </div>
           <div style={{background:OC.card,borderRadius:16,border:`1px solid ${OC.border}`,padding:24}}>
             <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>How to join</div>
-            {["Open this app","Tap 'Join a swarm'","Enter the code","Complete 10 questions","Your signal joins the swarm"].map((step,i)=>(
+            {["Open this app","Tap 'Join a swarm'","Enter the code","Complete 20 questions","Your signal joins the swarm"].map((step,i)=>(
               <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:9}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:OC.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#010d1f",flexShrink:0}}>{i+1}</div>
                 <div style={{fontSize:12,color:OC.textMid,paddingTop:2}}>{step}</div>
@@ -494,11 +494,13 @@ export default function App() {
             <div style={{fontSize:13,fontWeight:600,color:"#fff",marginBottom:14}}>Anonymous signals — {participants.length} received</div>
             {participants.map((p,i)=>(
               <div key={i} style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:14,padding:"16px 20px",marginBottom:10}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase"}}>Signal #{String(i+1).padStart(2,"0")}</div>
-                  {p.ready&&<div style={{fontSize:10,color:OC.accent2,background:"#041a0f",border:"1px solid #0d3a1a",borderRadius:6,padding:"2px 8px"}}>Ready ✓</div>}
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    {p.ready&&<div style={{fontSize:10,color:OC.accent2,background:"#041a0f",border:"1px solid #0d3a1a",borderRadius:6,padding:"2px 8px"}}>Ready ✓</div>}
+                    <div style={{fontSize:11,color:OC.textMid}}>Signal received</div>
+                  </div>
                 </div>
-                <ScoreBars scores={p.scores} compact />
               </div>
             ))}
           </div>
@@ -533,7 +535,7 @@ export default function App() {
             ))}
           </div>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-            <button onClick={prev} disabled={current===0} style={{padding:"10px 20px",borderRadius:8,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:current===0?"default":"pointer",opacity:current===0?0.3:1}}>Back</button>
+            <button onClick={prev} disabled={current===0} style={{padding:"10px 26px",borderRadius:8,border:"none",background:current>0?OC.accent:OC.cardMid,color:current>0?"#010d1f":"#333",fontSize:13,fontWeight:700,cursor:current>0?"pointer":"default",opacity:current===0?0.3:1}}>Back</button>
             <button onClick={next} disabled={answers[current]===undefined} style={{padding:"10px 26px",borderRadius:8,border:"none",background:answers[current]!==undefined?OC.accent:OC.cardMid,color:answers[current]!==undefined?"#010d1f":"#333",fontSize:13,fontWeight:700,cursor:answers[current]!==undefined?"pointer":"default"}}>
               {current===QUESTIONS.length-1?"Surface →":"Next →"}
             </button>
@@ -666,7 +668,7 @@ export default function App() {
           ))}
         </div>
       </div>
-      <div style={{position:"relative",zIndex:1,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:480,transition:"flex 0.4s ease"}}>
+      <div style={{position:"relative",zIndex:1,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:"calc(100vh - 240px)",transition:"flex 0.4s ease"}}>
         <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} />
       </div>
       {selectedFish&&(
