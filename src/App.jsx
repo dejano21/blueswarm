@@ -273,7 +273,7 @@ function RefCard({ dim, score, onClose }) {
         <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}><span style={{fontSize:9,color:OC.textDim}}>LOW</span><span style={{fontSize:9,color:OC.textDim}}>HIGH</span></div>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-        {[["High",d.high],["Low",d.low]].map(([lbl,txt])=>(<div key={lbl} style={{background:"#030f20",borderRadius:10,padding:"10px 12px",border:`1px solid ${OC.border}`}}><div style={{fontSize:9,color:d.color+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:5}}>{lbl}</div><div style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{txt}</div></div>))}
+        {[["Low",d.low],["High",d.high]].map(([lbl,txt])=>(<div key={lbl} style={{background:"#030f20",borderRadius:10,padding:"10px 12px",border:`1px solid ${OC.border}`}}><div style={{fontSize:9,color:d.color+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:5}}>{lbl}</div><div style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{txt}</div></div>))}
       </div>
       <div style={{background:"#030f20",borderRadius:10,padding:"10px 14px",marginBottom:12,border:`1px solid ${OC.border}`}}>
         <div style={{fontSize:9,color:"#4a80a8",letterSpacing:2,textTransform:"uppercase",marginBottom:5}}>In Your Team</div>
@@ -624,12 +624,12 @@ export default function App() {
                     </div>
                     <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
                       <div style={{background:"#030f20",borderRadius:10,padding:"10px 12px",border:`1px solid ${OC.border}`}}>
-                        <div style={{fontSize:9,color:d.color,letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>↑ High</div>
-                        <div style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{d.high}</div>
-                      </div>
-                      <div style={{background:"#030f20",borderRadius:10,padding:"10px 12px",border:`1px solid ${OC.border}`}}>
                         <div style={{fontSize:9,color:d.color,letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>↓ Low</div>
                         <div style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{d.low}</div>
+                      </div>
+                      <div style={{background:"#030f20",borderRadius:10,padding:"10px 12px",border:`1px solid ${OC.border}`}}>
+                        <div style={{fontSize:9,color:d.color,letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>↑ High</div>
+                        <div style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{d.high}</div>
                       </div>
                     </div>
                     <div style={{background:"#030f20",borderRadius:10,padding:"10px 14px",border:`1px solid ${OC.border}`,marginBottom:12}}>
@@ -669,12 +669,12 @@ export default function App() {
         </div>
       </div>
       <div style={{position:"relative",zIndex:1,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:"calc(100vh - 240px)",transition:"flex 0.4s ease"}}>
-        <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} />
+        <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} scores={myScores} />
       </div>
       {selectedFish&&(
         <div style={{position:"relative",zIndex:1,padding:"0 16px 16px",flex:"1 1 auto",overflowY:"auto"}}>
           <style>{`@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}`}</style>
-          <RefCard dim={selectedFish} onClose={()=>setSelectedFish(null)} />
+          <RefCard dim={selectedFish} score={myScores?myScores[selectedFish]:undefined} onClose={()=>setSelectedFish(null)} />
         </div>
       )}
       {!selectedFish&&<div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px 8px"}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any fish to open its reference card</div></div>}
