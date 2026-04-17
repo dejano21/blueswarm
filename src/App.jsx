@@ -532,7 +532,7 @@ export default function App() {
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
         <div style={{fontSize:40,fontWeight:800,color:"#fff",lineHeight:1.1,marginBottom:4}}>Swarm</div>
         <div style={{fontSize:40,fontWeight:800,lineHeight:1.1,marginBottom:6}}><span style={{background:OC.accent,color:"#010d1f",padding:"0 10px",borderRadius:6}}>Intelligence.</span></div>
-        <div style={{fontSize:13,color:OC.textMid,marginBottom:36,fontStyle:"italic"}}>The ocean reveals what no single wave can.</div>
+        <div style={{fontSize:13,color:OC.textMid,marginBottom:36,fontStyle:"italic"}}>The swarm shows what individuals can't.</div>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <button onClick={createSession} className="btn-ocean" style={{padding:15,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Host a swarm session</button>
           <button onClick={()=>goTo("join")} className="btn-ocean" style={{padding:15,borderRadius:12,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textMid,fontSize:14,cursor:"pointer"}}>Join a swarm</button>
