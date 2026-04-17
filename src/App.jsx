@@ -360,8 +360,8 @@ export default function App() {
     setMyPid(pid);
     localStorage.setItem("swarm-pid", pid);
     setMyScores(scores);
-    // After assessment → go to guide (fish school explainer), NOT result
-    setScreen("guide");
+    // After assessment → go to signalSent confirmation first
+    setScreen("signalSent");
     try {
       // Each participant writes to their OWN path — no read-modify-write, no race conditions
       await fbSet(`${sp(sessionCode)}/profiles/${pid}`, { scores, ts: Date.now(), pid, annotation: "", ready: false });
@@ -569,6 +569,20 @@ export default function App() {
     </div>
   );
 
+  // SIGNAL SENT — brief confirmation after assessment, before dimension explainer
+  if (screen === "signalSent") return (
+    <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
+      <BubblesBg /><CausticLight />
+      <div style={{position:"relative",zIndex:1,maxWidth:400,width:"100%",textAlign:"center"}}>
+        <div style={{width:100,height:100,margin:"0 auto 20px"}}><MiniSchool size={100} /></div>
+        <div style={{fontSize:10,color:OC.accent2,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Assessment complete</div>
+        <div style={{fontSize:24,fontWeight:700,color:"#fff",marginBottom:8}}>Signal transmitted</div>
+        <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7,marginBottom:32}}>Your profile joined the swarm — anonymously. Before the feedback round, let's explore the five dimensions of personality.</div>
+        <button onClick={()=>setScreen("guide")} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>Explore the dimensions →</button>
+      </div>
+    </div>
+  );
+
   // GUIDE — Interactive fish school explainer with accordion cards
   if (screen === "guide") return (
     <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
@@ -644,7 +658,7 @@ export default function App() {
       <BubblesBg /><CausticLight />
       <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Before the feedback round</div>
-        <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Meet the five dimensions</div>
+        <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Meet your five dimensions</div>
         <div style={{fontSize:12,color:OC.textMid,marginBottom:8}}>Tap a fish to learn what each dimension means</div>
         <div style={{display:"flex",justifyContent:"center",gap:6,flexWrap:"wrap",marginBottom:4}}>
           {Object.keys(DIMS).map(dim=>(
@@ -652,7 +666,7 @@ export default function App() {
           ))}
         </div>
       </div>
-      <div style={{position:"relative",zIndex:1,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:320,transition:"flex 0.4s ease"}}>
+      <div style={{position:"relative",zIndex:1,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:480,transition:"flex 0.4s ease"}}>
         <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} />
       </div>
       {selectedFish&&(
@@ -661,7 +675,7 @@ export default function App() {
           <RefCard dim={selectedFish} onClose={()=>setSelectedFish(null)} />
         </div>
       )}
-      {!selectedFish&&<div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px 16px"}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any fish to open its reference card</div></div>}
+      {!selectedFish&&<div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px 8px"}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any fish to open its reference card</div></div>}
       <div style={{position:"relative",zIndex:1,padding:"12px 20px 28px"}}>
         <button onClick={markReady} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer"}}>Ready for feedback ✓</button>
       </div>
