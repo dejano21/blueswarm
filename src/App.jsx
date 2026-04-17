@@ -360,7 +360,8 @@ export default function App() {
     setMyPid(pid);
     localStorage.setItem("swarm-pid", pid);
     setMyScores(scores);
-    setScreen("result");
+    // After assessment → go to guide (fish school explainer), NOT result
+    setScreen("guide");
     try {
       // Each participant writes to their OWN path — no read-modify-write, no race conditions
       await fbSet(`${sp(sessionCode)}/profiles/${pid}`, { scores, ts: Date.now(), pid, annotation: "", ready: false });
@@ -542,18 +543,18 @@ export default function App() {
     );
   }
 
-  // RESULT
+  // RESULT — only shown after feedbackDone (participant sees their scores + host notes)
   if (screen === "result" && myScores) return (
     <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
-      <BubblesBg />
+      <BubblesBg /><CausticLight />
       <div style={{position:"relative",zIndex:1,maxWidth:460,margin:"0 auto"}}>
         <div style={{width:90,height:90,margin:"0 auto 18px"}}><MiniSchool size={90} /></div>
         <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Signal transmitted</div>
-          <div style={{fontSize:13,color:OC.textMid}}>Your profile joined the swarm — anonymously</div>
+          <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Your Signal Revealed</div>
+          <div style={{fontSize:13,color:OC.textMid}}>Here's how you scored across the five dimensions</div>
         </div>
         <ScoreBars scores={myScores} />
-        {feedbackDone && myAnnotation !== null && (
+        {myAnnotation !== null && (
           <div style={{marginTop:20,padding:"16px 18px",background:`${OC.accent}0d`,borderRadius:12,border:`1px solid ${OC.accent}33`}}>
             <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Host Notes</div>
             {myAnnotation ? (
@@ -563,65 +564,75 @@ export default function App() {
             )}
           </div>
         )}
-        {!feedbackDone && (
-          <>
-            <div style={{marginTop:24,padding:"16px 18px",background:OC.card,borderRadius:12,border:`1px solid ${OC.border}`,marginBottom:14}}>
-              <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>What happens next</div>
-              <div style={{fontSize:13,color:OC.textMid,lineHeight:1.6}}>Explore the five dimensions, then signal ready for the group feedback.</div>
-            </div>
-            <button onClick={()=>setScreen("guide")} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,marginBottom:10}}>Explore the dimensions →</button>
-          </>
-        )}
-        <button onClick={()=>{setScreen("home");setAnswers({});setCurrent(0);setMyScores(null);}} style={{width:"100%",padding:12,borderRadius:8,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:"pointer"}}>Back to home</button>
+        <button onClick={()=>{setScreen("home");setAnswers({});setCurrent(0);setMyScores(null);}} style={{width:"100%",marginTop:24,padding:12,borderRadius:8,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:"pointer"}}>Back to home</button>
       </div>
     </div>
   );
 
-  // GUIDE — Big Five model explainer
+  // GUIDE — Interactive fish school explainer with accordion cards
   if (screen === "guide") return (
     <div style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
       <BubblesBg /><CausticLight />
+      <style>{`@keyframes fishFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes accordionOpen{from{max-height:0;opacity:0}to{max-height:500px;opacity:1}}`}</style>
       <div style={{position:"relative",zIndex:1,maxWidth:500,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:28}}>
-          <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:8}}>Before the feedback round</div>
-          <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>The Big Five Model</div>
+          <div style={{width:120,height:120,margin:"0 auto 12px"}}><MiniSchool size={120} /></div>
+          <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:8}}>Your personality in five dimensions</div>
+          <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Meet the Fish School</div>
           <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7,maxWidth:380,margin:"0 auto"}}>
-            Personality research converges on five stable dimensions that shape how people think, work, and relate. None is better or worse — each has strengths depending on context.
+            Five fish, five dimensions. Each one captures a different side of how you think, work, and connect. Tap to explore.
           </div>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:28}}>
-          {Object.entries(DIMS).map(([key, d]) => (
-            <div key={key} style={{background:OC.card,border:`1px solid ${d.color}33`,borderRadius:14,padding:"16px 18px",position:"relative",overflow:"hidden"}}>
-              <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${d.color},transparent)`}} />
-              <div style={{display:"flex",alignItems:"flex-start",gap:14}}>
-                <div style={{width:36,height:36,borderRadius:10,background:`${d.color}22`,border:`1px solid ${d.color}44`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                  <span style={{fontSize:14,fontWeight:800,color:d.color}}>{key}</span>
-                </div>
-                <div style={{flex:1}}>
-                  <div style={{fontSize:14,fontWeight:700,color:"#fff",marginBottom:2}}>{d.title}</div>
-                  <div style={{fontSize:11,color:OC.textMid,marginBottom:8,lineHeight:1.5}}>{d.tagline}</div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                    <div style={{background:"#030f20",borderRadius:8,padding:"7px 10px",border:`1px solid ${OC.border}`}}>
-                      <div style={{fontSize:8,color:d.color+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:3}}>High</div>
-                      <div style={{fontSize:10,color:OC.text,lineHeight:1.5}}>{d.high}</div>
+        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:28}}>
+          {Object.entries(DIMS).map(([key, d]) => {
+            const isOpen = selectedFish === key;
+            return (
+              <div key={key} onClick={()=>setSelectedFish(isOpen?null:key)} style={{background:isOpen?`linear-gradient(135deg,${OC.card} 0%,${d.color}08 100%)`:OC.card,border:`1px solid ${isOpen?d.color+"66":d.color+"22"}`,borderRadius:16,overflow:"hidden",cursor:"pointer",transition:"all 0.3s ease",boxShadow:isOpen?`0 0 30px ${d.color}15`:"none"}}>
+                <div style={{position:"relative"}}>
+                  <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${d.color}${isOpen?"":"66"},transparent)`,transition:"all 0.3s"}} />
+                  <div style={{padding:"16px 18px",display:"flex",alignItems:"center",gap:14}}>
+                    <div style={{width:44,height:44,borderRadius:12,background:`${d.color}${isOpen?"28":"15"}`,border:`1px solid ${d.color}${isOpen?"66":"33"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.3s",animation:isOpen?`fishFloat 2s ease-in-out infinite`:"none"}}>
+                      <span style={{fontSize:18,fontWeight:800,color:d.color}}>{key}</span>
                     </div>
-                    <div style={{background:"#030f20",borderRadius:8,padding:"7px 10px",border:`1px solid ${OC.border}`}}>
-                      <div style={{fontSize:8,color:d.color+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:3}}>Low</div>
-                      <div style={{fontSize:10,color:OC.text,lineHeight:1.5}}>{d.low}</div>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontSize:15,fontWeight:700,color:isOpen?"#fff":"#d8f0ff",transition:"color 0.3s"}}>{d.title}</div>
+                      <div style={{fontSize:11,color:OC.textMid,lineHeight:1.4,marginTop:2}}>{d.short}</div>
                     </div>
+                    <div style={{fontSize:18,color:isOpen?d.color:OC.textDim,transition:"transform 0.3s ease, color 0.3s",transform:isOpen?"rotate(180deg)":"rotate(0deg)",flexShrink:0}}>▾</div>
                   </div>
                 </div>
+                {isOpen && (
+                  <div onClick={e=>e.stopPropagation()} style={{padding:"0 18px 18px",animation:"accordionOpen 0.35s ease forwards",overflow:"hidden",cursor:"default"}}>
+                    <div style={{fontSize:12,color:OC.text,lineHeight:1.7,marginBottom:14,padding:"10px 14px",background:`${d.color}0a`,borderRadius:10,border:`1px solid ${d.color}18`}}>
+                      {d.tagline}
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+                      <div style={{background:"#030f20",borderRadius:10,padding:"10px 12px",border:`1px solid ${OC.border}`}}>
+                        <div style={{fontSize:9,color:d.color,letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>↑ High</div>
+                        <div style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{d.high}</div>
+                      </div>
+                      <div style={{background:"#030f20",borderRadius:10,padding:"10px 12px",border:`1px solid ${OC.border}`}}>
+                        <div style={{fontSize:9,color:d.color,letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>↓ Low</div>
+                        <div style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{d.low}</div>
+                      </div>
+                    </div>
+                    <div style={{background:"#030f20",borderRadius:10,padding:"10px 14px",border:`1px solid ${OC.border}`,marginBottom:12}}>
+                      <div style={{fontSize:9,color:"#4a80a8",letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>In your team</div>
+                      <div style={{fontSize:11,color:OC.text,lineHeight:1.6,marginBottom:4}}><span style={{color:d.color}}>↑ </span>{d.teamHigh}</div>
+                      <div style={{fontSize:11,color:OC.text,lineHeight:1.6}}><span style={{color:d.color}}>↓ </span>{d.teamLow}</div>
+                    </div>
+                    <div style={{background:`${d.color}0d`,borderRadius:10,padding:"10px 14px",border:`1px solid ${d.color}22`}}>
+                      <div style={{fontSize:9,color:d.color,letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>💡 Feedback tip</div>
+                      {d.tip.split("\n").map((line,i)=><div key={i} style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{line}</div>)}
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
-        </div>
-        <div style={{background:`${OC.accent}0d`,border:`1px solid ${OC.accent}22`,borderRadius:12,padding:"14px 16px",marginBottom:24,textAlign:"center"}}>
-          <div style={{fontSize:12,color:OC.textMid,lineHeight:1.7}}>
-            In the next screen you'll find <span style={{color:OC.accent,fontWeight:600}}>reference cards for each dimension</span> — tap a fish to open one. Take a moment to read the ones most relevant to you before the feedback round.
-          </div>
+            );
+          })}
         </div>
         <button onClick={()=>setScreen("intro")} style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
-          Meet the five fish →
+          Enter the swarm →
         </button>
       </div>
     </div>
@@ -642,12 +653,12 @@ export default function App() {
         </div>
       </div>
       <div style={{position:"relative",zIndex:1,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:320,transition:"flex 0.4s ease"}}>
-        <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} scores={myScores} />
+        <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} />
       </div>
       {selectedFish&&(
         <div style={{position:"relative",zIndex:1,padding:"0 16px 16px",flex:"1 1 auto",overflowY:"auto"}}>
           <style>{`@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}`}</style>
-          <RefCard dim={selectedFish} score={myScores?myScores[selectedFish]:undefined} onClose={()=>setSelectedFish(null)} />
+          <RefCard dim={selectedFish} onClose={()=>setSelectedFish(null)} />
         </div>
       )}
       {!selectedFish&&<div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px 16px"}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any fish to open its reference card</div></div>}
