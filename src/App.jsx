@@ -57,9 +57,10 @@ function calcScores(answers) {
   const scores = {};
   Object.keys(DIMS).forEach(dim => {
     const qs = QUESTIONS.filter(q => q.dim === dim);
-    const total = qs.length * 4;
+    const n = qs.length;
     const sum = qs.reduce((acc, q) => acc + (answers[QUESTIONS.indexOf(q)] || 0), 0);
-    scores[dim] = Math.round((sum / total) * 100);
+    // min possible = n*1, max possible = n*4 → normalize to 0–100
+    scores[dim] = Math.round(((sum - n) / (n * 3)) * 100);
   });
   return scores;
 }
