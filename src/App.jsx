@@ -326,9 +326,9 @@ function MiniSchool({ size=200 }) {
 
 function FishSchool({ selectedDim, onFishClick, scores }) {
   return (
-    <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden', zIndex: 10}}>
+    <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden', zIndex: 100}}>
       {/* Add colorful koi fish for each dimension - swimming slowly and randomly */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none'}}>
+      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 100, pointerEvents: 'none'}}>
         <KoiFish color={DIMS.O.color} delay={0} duration={45000} />
         <KoiFish color={DIMS.C.color} delay={9000} duration={52000} reverse={true} />
         <KoiFish color={DIMS.E.color} delay={18000} duration={48000} />
@@ -337,7 +337,7 @@ function FishSchool({ selectedDim, onFishClick, scores }) {
       </div>
       
       {/* Interactive overlay for clicking dimensions */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20, zIndex: 20}}>
+      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20, zIndex: 200}}>
         {Object.keys(DIMS).map(dim => (
           <div
             key={dim}
@@ -509,239 +509,6 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
       };
     });
     
-    function drawReef(reef) {
-      const {x, y, color, dim, avgScore} = reef;
-      ctx.save();
-      
-      // Base size influenced by score
-      const baseSize = 40 + (avgScore/100) * 30;
-      const coralHeight = 50 + (avgScore/100) * 40;
-      
-      // Sandy/rocky base with texture
-      const baseGrad = ctx.createRadialGradient(x, y + 5, 0, x, y + 5, baseSize);
-      baseGrad.addColorStop(0, "#4a5568");
-      baseGrad.addColorStop(0.5, "#2d3748");
-      baseGrad.addColorStop(1, "#1a202c");
-      ctx.fillStyle = baseGrad;
-      ctx.beginPath();
-      ctx.ellipse(x, y + 5, baseSize * 0.9, 14, 0, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Add sand texture
-      for (let i = 0; i < 20; i++) {
-        const sx = x + (Math.random() - 0.5) * baseSize * 1.5;
-        const sy = y + 5 + (Math.random() - 0.5) * 10;
-        ctx.fillStyle = `rgba(139, 116, 85, ${0.2 + Math.random() * 0.3})`;
-        ctx.beginPath();
-        ctx.arc(sx, sy, 0.5 + Math.random(), 0, Math.PI * 2);
-        ctx.fill();
-      }
-      
-      // Bubble coral clusters (rounded, colorful)
-      const bubbleCount = 8 + Math.floor(avgScore / 15);
-      for (let i = 0; i < bubbleCount; i++) {
-        const angle = (i / bubbleCount) * Math.PI * 2;
-        const layer = Math.floor(i / 4);
-        const radius = baseSize * (0.6 - layer * 0.15);
-        const bx = x + Math.cos(angle) * radius;
-        const by = y - layer * 12;
-        const bubbleSize = 8 + Math.random() * 6 + (avgScore / 100) * 4;
-        
-        // 3D bubble effect with highlight
-        const bubbleGrad = ctx.createRadialGradient(
-          bx - bubbleSize * 0.3, by - bubbleSize * 0.3, 0,
-          bx, by, bubbleSize
-        );
-        bubbleGrad.addColorStop(0, color + "ff");
-        bubbleGrad.addColorStop(0.4, color + "ee");
-        bubbleGrad.addColorStop(0.7, color + "aa");
-        bubbleGrad.addColorStop(1, color + "66");
-        
-        ctx.fillStyle = bubbleGrad;
-        ctx.beginPath();
-        ctx.arc(bx, by, bubbleSize, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Highlight spot for 3D effect
-        ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
-        ctx.beginPath();
-        ctx.arc(bx - bubbleSize * 0.35, by - bubbleSize * 0.35, bubbleSize * 0.25, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Small dots on surface
-        for (let d = 0; d < 3; d++) {
-          const dx = bx + (Math.random() - 0.5) * bubbleSize * 0.6;
-          const dy = by + (Math.random() - 0.5) * bubbleSize * 0.6;
-          ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-          ctx.beginPath();
-          ctx.arc(dx, dy, 0.8, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-      
-      // Branching coral (staghorn style) in center
-      for (let i = 0; i < 3; i++) {
-        const offsetX = (i - 1) * 12;
-        const branchHeight = coralHeight * (0.8 + Math.random() * 0.2);
-        const branchWidth = 6 + Math.random() * 3;
-        
-        // Branch gradient with 3D shading
-        const branchGrad = ctx.createLinearGradient(
-          x + offsetX - branchWidth, y,
-          x + offsetX + branchWidth, y - branchHeight
-        );
-        branchGrad.addColorStop(0, color + "88");
-        branchGrad.addColorStop(0.3, color + "cc");
-        branchGrad.addColorStop(0.6, color + "ff");
-        branchGrad.addColorStop(1, color + "aa");
-        
-        ctx.fillStyle = branchGrad;
-        ctx.beginPath();
-        ctx.moveTo(x + offsetX - branchWidth/2, y);
-        
-        // Organic wavy edges
-        for (let h = 0; h <= branchHeight; h += 4) {
-          const wave = Math.sin(h * 0.4 + offsetX) * 1.5;
-          const taper = 1 - (h / branchHeight) * 0.7;
-          ctx.lineTo(x + offsetX - (branchWidth/2) * taper + wave, y - h);
-        }
-        
-        for (let h = branchHeight; h >= 0; h -= 4) {
-          const wave = Math.sin(h * 0.4 + offsetX) * 1.5;
-          const taper = 1 - (h / branchHeight) * 0.7;
-          ctx.lineTo(x + offsetX + (branchWidth/2) * taper + wave, y - h);
-        }
-        
-        ctx.closePath();
-        ctx.fill();
-        
-        // Highlight edge for 3D effect
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(x + offsetX + branchWidth/2, y);
-        for (let h = 0; h <= branchHeight; h += 4) {
-          const wave = Math.sin(h * 0.4 + offsetX) * 1.5;
-          const taper = 1 - (h / branchHeight) * 0.7;
-          ctx.lineTo(x + offsetX + (branchWidth/2) * taper + wave, y - h);
-        }
-        ctx.stroke();
-      }
-      
-      // Plate coral (flat, layered)
-      for (let side = -1; side <= 1; side += 2) {
-        const plateX = x + side * 22;
-        const plateY = y - 15;
-        const plateWidth = 18;
-        const plateHeight = 8;
-        
-        // Plate with 3D shading
-        const plateGrad = ctx.createLinearGradient(plateX, plateY - plateHeight, plateX, plateY);
-        plateGrad.addColorStop(0, color + "ff");
-        plateGrad.addColorStop(0.5, color + "cc");
-        plateGrad.addColorStop(1, color + "66");
-        
-        ctx.fillStyle = plateGrad;
-        ctx.beginPath();
-        ctx.ellipse(plateX, plateY, plateWidth, plateHeight, side * 0.3, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Plate edge highlight
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.ellipse(plateX, plateY - 2, plateWidth * 0.9, plateHeight * 0.7, side * 0.3, Math.PI, Math.PI * 2);
-        ctx.stroke();
-        
-        // Texture lines on plate
-        ctx.strokeStyle = color + "44";
-        ctx.lineWidth = 0.5;
-        for (let l = 0; l < 5; l++) {
-          ctx.beginPath();
-          const lx = plateX + (l - 2) * 3 * side;
-          ctx.moveTo(lx, plateY - plateHeight);
-          ctx.lineTo(lx, plateY + plateHeight);
-          ctx.stroke();
-        }
-      }
-      
-      // Soft coral (wavy, flowing)
-      for (let i = 0; i < 2; i++) {
-        const waveX = x + (i - 0.5) * 25;
-        const waveHeight = coralHeight * 0.5;
-        const waveWidth = 8;
-        
-        const waveGrad = ctx.createLinearGradient(waveX, y, waveX, y - waveHeight);
-        waveGrad.addColorStop(0, color + "99");
-        waveGrad.addColorStop(0.5, color + "cc");
-        waveGrad.addColorStop(1, color + "66");
-        
-        ctx.fillStyle = waveGrad;
-        ctx.beginPath();
-        ctx.moveTo(waveX, y);
-        
-        // Flowing, organic shape
-        for (let h = 0; h <= waveHeight; h += 3) {
-          const sway = Math.sin(h * 0.2 + Date.now() * 0.001 + i) * 3;
-          const width = waveWidth * (1 - h / waveHeight * 0.5);
-          ctx.lineTo(waveX + sway - width/2, y - h);
-        }
-        
-        for (let h = waveHeight; h >= 0; h -= 3) {
-          const sway = Math.sin(h * 0.2 + Date.now() * 0.001 + i) * 3;
-          const width = waveWidth * (1 - h / waveHeight * 0.5);
-          ctx.lineTo(waveX + sway + width/2, y - h);
-        }
-        
-        ctx.closePath();
-        ctx.fill();
-      }
-      
-      // Ambient glow
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 30;
-      ctx.strokeStyle = color + "33";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(x, y - coralHeight/2, baseSize * 1.3, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-      
-      // Floating particles
-      for (let i = 0; i < 8; i++) {
-        const particleAngle = (Date.now() * 0.0004 + i * 0.8) % (Math.PI * 2);
-        const particleDist = 30 + Math.sin(Date.now() * 0.0015 + i) * 10;
-        const px = x + Math.cos(particleAngle) * particleDist;
-        const py = y - coralHeight/2 + Math.sin(particleAngle) * particleDist * 0.7;
-        
-        ctx.fillStyle = color + "88";
-        ctx.beginPath();
-        ctx.arc(px, py, 1.5 + Math.sin(Date.now() * 0.002 + i) * 0.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      
-      // Label with better background
-      ctx.fillStyle = "rgba(1, 13, 31, 0.9)";
-      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.roundRect(x - 40, y + 10, 80, 42, 10);
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      
-      ctx.font = "bold 12px -apple-system,sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.fillStyle = color;
-      ctx.fillText(DIMS[dim].label, x, y + 16);
-      
-      // Average score
-      ctx.font = "bold 18px -apple-system,sans-serif";
-      ctx.fillStyle = "#fff";
-      ctx.fillText(avgScore + "%", x, y + 30);
-      
-      ctx.restore();
-    }
     
     function updateFish() {
       const SEP_R=45,VIEW_R=140,W_SEP=0.045,W_ALG=0.006,W_COH=0.0006,W_TARGET=0.0015,MAX_SPD=1.8,MIN_SPD=0.4;
@@ -807,9 +574,6 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
     function loop(){
       ctx.clearRect(0,0,W,H);
       updateFish();
-      
-      // Draw reefs first
-      reefs.forEach(reef => drawReef(reef));
       
       // Connection lines between fish of same dimension
       fishes.forEach((f,i)=>fishes.forEach((f2,j)=>{
@@ -1014,7 +778,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:10,color:OC.textDim,background:"rgba(1,13,31,0.6)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.border}`,backdropFilter:"blur(10px)",zIndex:10}}>v2.1.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:10,color:OC.textDim,background:"rgba(1,13,31,0.6)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.border}`,backdropFilter:"blur(10px)",zIndex:10}}>v2.2.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -1459,7 +1223,7 @@ export default function App() {
           ))}
         </div>
       </div>
-      <div style={{position:"relative",zIndex:1,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:"calc(100vh - 320px)",transition:"flex 0.4s ease"}}>
+      <div style={{position:"relative",zIndex:100,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:"calc(100vh - 320px)",transition:"flex 0.4s ease"}}>
         <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} scores={myScores} />
       </div>
       {selectedFish&&(
