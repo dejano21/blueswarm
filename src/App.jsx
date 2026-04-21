@@ -97,7 +97,138 @@ const GLOBAL_CSS = `
 .content-overlay{background:rgba(1,13,31,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(12,51,88,0.3)}
 `;
 
-// Underwater background component with Three.js fishes
+// Koi fish component with customizable colors
+function KoiFish({ color = "#ff6b00", accentColor = "white", delay = 0, duration = 20000, reverse = false }) {
+  const koiStyle = {
+    position: 'absolute',
+    top: '-35%',
+    left: 0,
+    width: '100%',
+    height: '100%',
+    filter: `drop-shadow(${reverse ? '-' : ''}56px 4.67px 5px rgba(0, 0, 0, 0.3))`,
+    transform: reverse ? 'scale(-1, 1)' : 'none',
+    transformOrigin: 'top center'
+  };
+
+  const coilBaseStyle = {
+    position: 'absolute',
+    width: '14px',
+    height: '14px',
+    backgroundColor: color,
+    borderRadius: '50%',
+    top: '50%',
+    left: '50%',
+    marginLeft: '-7px',
+    marginTop: '-7px',
+    filter: 'contrast(200%)',
+    offsetPath: 'path("M11.7692 229.5C14.552 200.052 7.51901 171.858 -42.8757 170.644C-105.869 169.128 -131.294 76.612 -101.695 51.5872C-72.0955 26.5625 -24.6607 -50.7867 70.5883 51.5872C165.837 153.961 27.7073 131.211 33.0199 183.157C38.3326 235.102 90.3211 195.669 139.274 223.727C188.226 251.785 207.959 299.56 139.274 316.243C70.5883 332.926 41.3685 398.9 81.9726 419.754C122.577 440.608 222 478.524 222 419.754C222 372.738 222 242.432 222 183.157C219.091 129.948 175.78 30.8091 25.8099 59.9288C-161.652 96.3284 -30.3529 119.837 25.8099 141.07C81.9726 162.303 171.529 204.769 126.751 260.506C81.9726 316.243 101.326 362.501 139.274 373.496C177.222 384.492 170.012 464.495 70.5883 462.979C-28.835 461.462 -42.8757 393.015 -42.8757 373.496C-42.8757 238.288 11.7692 293 11.7692 240.506C11.7692 208.05 11.7692 237.336 11.7692 229.5Z")',
+    animation: `koiSwim ${duration}ms linear ${delay}ms infinite`,
+    boxShadow: `-7px -1.4px 0 ${accentColor} inset`
+  };
+
+  const scales = [1, 1.2, 1.35, 1.55, 1.75, 1.9, 2, 2, 2, 1.9, 1.75, 1.55, 1.35, 1.2, 1];
+  const delays = scales.map((_, i) => i * 40);
+
+  return (
+    <>
+      <style>{`
+        @keyframes koiSwim {
+          0% { offset-distance: 0%; }
+          100% { offset-distance: 100%; }
+        }
+        @keyframes koiTailFlip {
+          0% { transform: rotate(45deg); }
+          100% { transform: rotate(-45deg); }
+        }
+        @keyframes koiFinFlip {
+          0% { transform: scale(1, 1) translateY(0) rotate(80deg); }
+          100% { transform: scale(1, 1) translateY(0) rotate(20deg); }
+        }
+        @keyframes koiFinFlipBottom {
+          0% { transform: scale(1, -1) translateY(-14px) rotate(80deg); }
+          100% { transform: scale(1, -1) translateY(-14px) rotate(20deg); }
+        }
+      `}</style>
+      <div style={koiStyle}>
+        {scales.map((scale, i) => {
+          const isHead = i === 14;
+          const isTail = i === 0;
+          const hasFins = i === 3;
+          
+          return (
+            <div
+              key={i}
+              style={{
+                ...coilBaseStyle,
+                transform: `scale(${scale}, ${scale})`,
+                animationDelay: `${delays[i]}ms`,
+                backgroundColor: (i === 13 || i === 14) ? color : color
+              }}
+            >
+              {isHead && (
+                <div style={{
+                  content: '":"',
+                  position: 'absolute',
+                  color: 'black',
+                  fontWeight: 800,
+                  textAlign: 'center',
+                  lineHeight: '60%',
+                  fontSize: '16.8px',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>:</div>
+              )}
+              {isTail && (
+                <div style={{
+                  position: 'absolute',
+                  width: '100%',
+                  height: '50%',
+                  top: '25%',
+                  left: '-100%',
+                  borderRadius: '14px',
+                  backgroundColor: accentColor,
+                  transformOrigin: 'center right',
+                  animation: 'koiTailFlip 200ms ease-in-out alternate infinite'
+                }} />
+              )}
+              {hasFins && (
+                <>
+                  <div style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '20%',
+                    top: '-10%',
+                    left: '-100%',
+                    borderRadius: '14px',
+                    backgroundColor: accentColor,
+                    transformOrigin: 'center right',
+                    animation: 'koiFinFlip 500ms ease-in-out alternate infinite'
+                  }} />
+                  <div style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '20%',
+                    top: '-10%',
+                    left: '-100%',
+                    borderRadius: '14px',
+                    backgroundColor: accentColor,
+                    transformOrigin: 'center right',
+                    animation: 'koiFinFlipBottom 500ms ease-in-out alternate infinite'
+                  }} />
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+// Underwater background component with Three.js fishes and Koi
 function UnderwaterBg() {
   const containerRef = useRef(null);
   
@@ -144,19 +275,29 @@ function UnderwaterBg() {
   }, []);
   
   return (
-    <div 
-      id="underwater-bg-container" 
-      ref={containerRef}
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 0,
-        pointerEvents: 'none'
-      }}
-    />
+    <>
+      <div 
+        id="underwater-bg-container" 
+        ref={containerRef}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 0,
+          pointerEvents: 'none'
+        }}
+      />
+      {/* Add colorful koi fish */}
+      <div style={{position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden'}}>
+        <KoiFish color={DIMS.O.color} accentColor="white" delay={0} duration={25000} />
+        <KoiFish color={DIMS.C.color} accentColor="white" delay={5000} duration={28000} reverse={true} />
+        <KoiFish color={DIMS.E.color} accentColor="white" delay={10000} duration={23000} />
+        <KoiFish color={DIMS.A.color} accentColor="white" delay={15000} duration={26000} reverse={true} />
+        <KoiFish color={DIMS.N.color} accentColor="white" delay={20000} duration={24000} />
+      </div>
+    </>
   );
 }
 
