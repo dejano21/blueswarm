@@ -53,12 +53,19 @@ const QUESTIONS = [
   { dim:"N", text:"How often do small worries about work keep you up at night?", opts:[{t:"Almost never",s:1},{t:"Occasionally, when something big is on",s:2},{t:"Fairly often; I think about work a lot",s:3},{t:"Most nights, if I'm honest",s:4}]},
 ];
 
-function calcScores(answers) {
+function calcScores(answers, activeQuestions) {
   const scores = {};
   Object.keys(DIMS).forEach(dim => {
-    const qs = QUESTIONS.filter(q => q.dim === dim);
+    const qs = activeQuestions.filter(q => q.dim === dim);
     const n = qs.length;
-    const sum = qs.reduce((acc, q) => acc + (answers[QUESTIONS.indexOf(q)] || 0), 0);
+    if (n === 0) {
+      scores[dim] = 50; // default if no questions for this dimension
+      return;
+    }
+    const sum = qs.reduce((acc, q) => {
+      const qIndex = activeQuestions.indexOf(q);
+      return acc + (answers[qIndex] || 0);
+    }, 0);
     // min possible = n*1, max possible = n*4 → normalize to 0–100
     scores[dim] = Math.round(((sum - n) / (n * 3)) * 100);
   });
@@ -425,7 +432,7 @@ function ScoreBars({ scores, compact=false }) {
   );
 }
 
-// Swarm visualization showing all participants as fish
+// Swarm visualization showing all participants as fish near coral reefs
 function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
   const canvasRef = useRef(null);
   const selectedRef = useRef(selectedFish);
@@ -438,7 +445,27 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
     const W=canvas.offsetWidth,H=canvas.offsetHeight;
     canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
-    const cx=W/2,cy=H/2;
+    
+    // Calculate average scores for each dimension
+    const avgScores = {};
+    Object.keys(DIMS).forEach(dim => {
+      const sum = participants.reduce((acc, p) => acc + p.scores[dim], 0);
+      avgScores[dim] = Math.round(sum / participants.length);
+    });
+    
+    // Position coral reefs (one for each dimension) in a circle
+    const dims = Object.keys(DIMS);
+    const reefs = dims.map((dim, idx) => {
+      const angle = (idx / dims.length) * Math.PI * 2 - Math.PI/2;
+      const radius = Math.min(W, H) * 0.28;
+      return {
+        dim,
+        x: W/2 + Math.cos(angle) * radius,
+        y: H/2 + Math.sin(angle) * radius,
+        color: DIMS[dim].color,
+        avgScore: avgScores[dim]
+      };
+    });
     
     // Create fish for each participant based on their strongest dimension
     const fishes = participants.map((p,idx)=>{
@@ -451,74 +478,179 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
           strongestDim = dim;
         }
       });
-      const angle = (idx/participants.length)*Math.PI*2;
-      const radius = Math.min(W,H)*0.25;
+      
+      // Find the reef for this dimension
+      const targetReef = reefs.find(r => r.dim === strongestDim);
+      
+      // Position fish near their reef with some randomness
+      const offsetAngle = Math.random() * Math.PI * 2;
+      const offsetDist = 30 + Math.random() * 50;
+      
       return {
         idx,
         dim: strongestDim,
         score: maxScore,
-        x: cx + Math.cos(angle)*radius,
-        y: cy + Math.sin(angle)*radius,
-        vx: Math.cos(angle+Math.PI/2)*1.0,
-        vy: Math.sin(angle+Math.PI/2)*1.0,
+        x: targetReef.x + Math.cos(offsetAngle) * offsetDist,
+        y: targetReef.y + Math.sin(offsetAngle) * offsetDist,
+        targetX: targetReef.x,
+        targetY: targetReef.y,
+        vx: (Math.random()-0.5)*0.5,
+        vy: (Math.random()-0.5)*0.5,
         wobble: Math.random()*Math.PI*2,
-        size: 20 + (maxScore/100)*8,
+        size: 18 + (maxScore/100)*10,
         speedPhase: Math.random()*Math.PI*2,
         glowPhase: Math.random()*Math.PI*2
       };
     });
     
+    function drawReef(reef) {
+      const {x, y, color, dim, avgScore} = reef;
+      ctx.save();
+      
+      // Coral structure
+      const coralHeight = 40 + (avgScore/100) * 30;
+      const coralWidth = 35;
+      
+      // Draw coral branches
+      for (let i = 0; i < 5; i++) {
+        const branchX = x + (i - 2) * 8;
+        const branchHeight = coralHeight * (0.6 + Math.random() * 0.4);
+        const branchWidth = 6 + Math.random() * 4;
+        
+        // Gradient for coral
+        const grad = ctx.createLinearGradient(branchX, y, branchX, y - branchHeight);
+        grad.addColorStop(0, color + "88");
+        grad.addColorStop(0.5, color + "cc");
+        grad.addColorStop(1, color + "44");
+        
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(branchX - branchWidth/2, y);
+        ctx.quadraticCurveTo(branchX - branchWidth/3, y - branchHeight/2, branchX, y - branchHeight);
+        ctx.quadraticCurveTo(branchX + branchWidth/3, y - branchHeight/2, branchX + branchWidth/2, y);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Add texture dots
+        ctx.fillStyle = color + "33";
+        for (let j = 0; j < 3; j++) {
+          ctx.beginPath();
+          ctx.arc(branchX + (Math.random()-0.5)*branchWidth*0.5, y - branchHeight * (0.3 + j*0.25), 1.5, 0, Math.PI*2);
+          ctx.fill();
+        }
+      }
+      
+      // Glow effect
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 15;
+      ctx.strokeStyle = color + "66";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y - coralHeight/2, coralWidth, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      
+      // Label
+      ctx.font = "bold 11px -apple-system,sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillStyle = color;
+      ctx.fillText(DIMS[dim].label, x, y + 8);
+      
+      // Average score
+      ctx.font = "bold 14px -apple-system,sans-serif";
+      ctx.fillStyle = "#fff";
+      ctx.fillText(avgScore + "%", x, y + 22);
+      
+      ctx.restore();
+    }
+    
     function updateFish() {
-      const SEP_R=55,VIEW_R=180,W_SEP=0.055,W_ALG=0.008,W_COH=0.0008,W_CTR=0.00010,MAX_SPD=2.0,MIN_SPD=0.5;
+      const SEP_R=45,VIEW_R=140,W_SEP=0.045,W_ALG=0.006,W_COH=0.0006,W_TARGET=0.0015,MAX_SPD=1.8,MIN_SPD=0.4;
       fishes.forEach(f=>{
         if(selectedRef.current===f.idx)return;
         let sx=0,sy=0,ax=0,ay=0,px=0,py=0,cnt=0;
-        fishes.forEach(o=>{if(o===f)return;const dx=f.x-o.x,dy=f.y-o.y,d=Math.sqrt(dx*dx+dy*dy)||0.001;if(d<SEP_R){sx+=dx/d;sy+=dy/d;}if(d<VIEW_R){ax+=o.vx;ay+=o.vy;px+=o.x;py+=o.y;cnt++;}});
+        
+        // Flock with nearby fish of same dimension
+        fishes.forEach(o=>{
+          if(o===f || o.dim !== f.dim)return;
+          const dx=f.x-o.x,dy=f.y-o.y,d=Math.sqrt(dx*dx+dy*dy)||0.001;
+          if(d<SEP_R){sx+=dx/d;sy+=dy/d;}
+          if(d<VIEW_R){ax+=o.vx;ay+=o.vy;px+=o.x;py+=o.y;cnt++;}
+        });
+        
         if(cnt>0){ax/=cnt;ay/=cnt;px=px/cnt-f.x;py=py/cnt-f.y;}
-        f.speedPhase+=0.007;
-        const spdMult = 0.8 + Math.sin(f.speedPhase)*0.25;
-        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+(cx-f.x)*W_CTR; f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+(cy-f.y)*W_CTR;
+        
+        f.speedPhase+=0.006;
+        const spdMult = 0.75 + Math.sin(f.speedPhase)*0.2;
+        
+        // Attraction to target reef
+        const toTargetX = f.targetX - f.x;
+        const toTargetY = f.targetY - f.y;
+        
+        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+toTargetX*W_TARGET;
+        f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+toTargetY*W_TARGET;
+        
         const spd=Math.sqrt(f.vx*f.vx+f.vy*f.vy)||0.001,c=Math.min(MAX_SPD*spdMult,Math.max(MIN_SPD,spd));
-        f.vx=f.vx/spd*c;f.vy=f.vy/spd*c;f.x+=f.vx;f.y+=f.vy;f.wobble+=0.06;
-        const m=40;if(f.x<m)f.vx+=0.15;if(f.x>W-m)f.vx-=0.15;if(f.y<m)f.vy+=0.15;if(f.y>H-m)f.vy-=0.15;
+        f.vx=f.vx/spd*c;f.vy=f.vy/spd*c;f.x+=f.vx;f.y+=f.vy;f.wobble+=0.055;
+        
+        const m=35;if(f.x<m)f.vx+=0.12;if(f.x>W-m)f.vx-=0.12;if(f.y<m)f.vy+=0.12;if(f.y>H-m)f.vy-=0.12;
       });
     }
     
     function drawFish(f) {
-      const{x,y,vx,vy,size,dim,idx,score}=f,angle=Math.atan2(vy,vx),col=DIMS[dim].color,sel=selectedRef.current===idx,wb=Math.sin(f.wobble)*0.06;
-      f.glowPhase+=0.022;
-      const glowPulse = sel ? 22 + Math.sin(f.glowPhase)*6 : 0;
+      const{x,y,vx,vy,size,dim,idx}=f,angle=Math.atan2(vy,vx),col=DIMS[dim].color,sel=selectedRef.current===idx,wb=Math.sin(f.wobble)*0.055;
+      f.glowPhase+=0.02;
+      const glowPulse = sel ? 20 + Math.sin(f.glowPhase)*5 : 0;
       ctx.save();ctx.translate(x,y);ctx.rotate(angle+wb);
       if(sel){ctx.shadowColor=col;ctx.shadowBlur=glowPulse;}
       // Tail
-      const tailWag = Math.sin(f.wobble*1.4)*0.11;
-      const tx=-size*0.8;
-      ctx.beginPath();ctx.moveTo(tx,0);ctx.lineTo(tx-size*0.5,-size*(0.38+tailWag));ctx.lineTo(tx-size*0.1,0);ctx.lineTo(tx-size*0.5,size*(0.38-tailWag));ctx.closePath();ctx.fillStyle=col+"88";ctx.fill();
+      const tailWag = Math.sin(f.wobble*1.3)*0.1;
+      const tx=-size*0.75;
+      ctx.beginPath();ctx.moveTo(tx,0);ctx.lineTo(tx-size*0.45,-size*(0.35+tailWag));ctx.lineTo(tx-size*0.08,0);ctx.lineTo(tx-size*0.45,size*(0.35-tailWag));ctx.closePath();ctx.fillStyle=col+"88";ctx.fill();
       // Pectoral fin
-      ctx.beginPath();ctx.moveTo(size*0.08,0);ctx.quadraticCurveTo(0,size*0.4,-size*0.25,size*0.25);ctx.quadraticCurveTo(-size*0.04,size*0.08,size*0.08,0);ctx.fillStyle=col+"55";ctx.fill();
+      ctx.beginPath();ctx.moveTo(size*0.06,0);ctx.quadraticCurveTo(0,size*0.35,-size*0.22,size*0.22);ctx.quadraticCurveTo(-size*0.03,size*0.06,size*0.06,0);ctx.fillStyle=col+"55";ctx.fill();
       // Body
-      ctx.beginPath();ctx.ellipse(0,0,size*0.68,size*0.28,0,0,Math.PI*2);ctx.fillStyle=col+(sel?"ff":"cc");ctx.fill();
+      ctx.beginPath();ctx.ellipse(0,0,size*0.65,size*0.26,0,0,Math.PI*2);ctx.fillStyle=col+(sel?"ff":"cc");ctx.fill();
       // Dorsal fin
-      ctx.beginPath();ctx.moveTo(-size*0.12,-size*0.28);ctx.quadraticCurveTo(size*0.1,-size*0.52,size*0.38,-size*0.28);ctx.strokeStyle=col+"aa";ctx.lineWidth=1.3;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-size*0.1,-size*0.26);ctx.quadraticCurveTo(size*0.08,-size*0.48,size*0.35,-size*0.26);ctx.strokeStyle=col+"aa";ctx.lineWidth=1.2;ctx.stroke();
       // Eye
-      ctx.beginPath();ctx.arc(size*0.4,-size*0.05,size*0.08,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.9)";ctx.fill();
-      ctx.beginPath();ctx.arc(size*0.42,-size*0.05,size*0.04,0,Math.PI*2);ctx.fillStyle="#001530";ctx.fill();
-      ctx.beginPath();ctx.arc(size*0.43,-size*0.07,size*0.016,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.85)";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.38,-size*0.04,size*0.075,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.9)";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.4,-size*0.04,size*0.037,0,Math.PI*2);ctx.fillStyle="#001530";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.41,-size*0.06,size*0.015,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.85)";ctx.fill();
       ctx.restore();
       // Label
-      ctx.save();ctx.font=`${sel?"bold ":""}${size*0.35}px -apple-system,sans-serif`;ctx.textAlign="center";ctx.textBaseline="top";ctx.fillStyle=sel?col:col+"99";ctx.fillText(`#${idx+1}`,x,y+size*0.85);ctx.restore();
+      ctx.save();ctx.font=`${sel?"bold ":""}${size*0.32}px -apple-system,sans-serif`;ctx.textAlign="center";ctx.textBaseline="top";ctx.fillStyle=sel?col:col+"99";ctx.fillText(`#${idx+1}`,x,y+size*0.8);ctx.restore();
       // Selection ring
-      if(sel){ctx.save();ctx.beginPath();ctx.arc(x,y,size*1.5,0,Math.PI*2);ctx.strokeStyle=col+"40";ctx.lineWidth=2;ctx.setLineDash([3,5]);ctx.stroke();ctx.restore();}
+      if(sel){ctx.save();ctx.beginPath();ctx.arc(x,y,size*1.4,0,Math.PI*2);ctx.strokeStyle=col+"40";ctx.lineWidth=2;ctx.setLineDash([3,5]);ctx.stroke();ctx.restore();}
     }
     
     let raf;
     function loop(){
       ctx.clearRect(0,0,W,H);
       updateFish();
-      // Connection lines
-      fishes.forEach((f,i)=>fishes.forEach((f2,j)=>{if(j<=i)return;const d=Math.hypot(f.x-f2.x,f.y-f2.y);if(d<110){const a=Math.floor((1-d/110)*16).toString(16).padStart(2,"0");ctx.beginPath();ctx.strokeStyle=`#00c8f5${a}`;ctx.lineWidth=0.5;ctx.moveTo(f.x,f.y);ctx.lineTo(f2.x,f2.y);ctx.stroke();}}));
+      
+      // Draw reefs first
+      reefs.forEach(reef => drawReef(reef));
+      
+      // Connection lines between fish of same dimension
+      fishes.forEach((f,i)=>fishes.forEach((f2,j)=>{
+        if(j<=i || f.dim !== f2.dim)return;
+        const d=Math.hypot(f.x-f2.x,f.y-f2.y);
+        if(d<100){
+          const a=Math.floor((1-d/100)*14).toString(16).padStart(2,"0");
+          ctx.beginPath();
+          ctx.strokeStyle=`${DIMS[f.dim].color}${a}`;
+          ctx.lineWidth=0.4;
+          ctx.moveTo(f.x,f.y);
+          ctx.lineTo(f2.x,f2.y);
+          ctx.stroke();
+        }
+      }));
+      
       // Ripples
-      ripples.current = ripples.current.filter(r=>{r.age++;r.radius+=2.2;ctx.beginPath();ctx.arc(r.x,r.y,r.radius,0,Math.PI*2);ctx.strokeStyle=`rgba(0,200,245,${0.28*(1-r.age/28)})`;ctx.lineWidth=1.3;ctx.stroke();return r.age<28;});
+      ripples.current = ripples.current.filter(r=>{r.age++;r.radius+=2;ctx.beginPath();ctx.arc(r.x,r.y,r.radius,0,Math.PI*2);ctx.strokeStyle=`rgba(0,200,245,${0.25*(1-r.age/25)})`;ctx.lineWidth=1.2;ctx.stroke();return r.age<25;});
+      
       fishes.forEach(f=>drawFish(f));
       raf=requestAnimationFrame(loop);
     }
@@ -528,7 +660,7 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
       const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
       ripples.current.push({x:mx,y:my,radius:3,age:0});
       let hit=null,minD=Infinity;
-      fishes.forEach(f=>{const d=Math.hypot(mx-f.x,my-f.y);if(d<f.size*1.6&&d<minD){minD=d;hit=f.idx;}});
+      fishes.forEach(f=>{const d=Math.hypot(mx-f.x,my-f.y);if(d<f.size*1.5&&d<minD){minD=d;hit=f.idx;}});
       onFishClick(hit);
     }
     canvas.addEventListener("click",handleClick);
@@ -556,16 +688,19 @@ export default function App() {
   const [screenKey, setScreenKey]       = useState(0); // for transition re-trigger
   const [questionCount, setQuestionCount] = useState(20); // 10, 20, or 40
   const [activeQuestions, setActiveQuestions] = useState(QUESTIONS.slice(0, 20));
+  const [participantNotes, setParticipantNotes] = useState({}); // notes from participant to other profiles
+  const [feedbackStarted, setFeedbackStarted] = useState(false);
   const unsubRef          = useRef(null);
   const unsubParticipantRef = useRef(null);
   const unsubFeedbackRef  = useRef(null);
+  const unsubMetaRef = useRef(null);
 
   const goTo = useCallback((s) => { setScreenKey(k=>k+1); setScreen(s); }, []);
 
   async function createSession() {
     const code = genCode();
     try {
-      await fbSet(`${sp(code)}/meta`, { created: Date.now(), feedbackDone: false, questionCount });
+      await fbSet(`${sp(code)}/meta`, { created: Date.now(), feedbackDone: false, feedbackStarted: false, questionCount });
       setSessionCode(code);
       goTo("hostLive");
       unsubRef.current = fbListen(`${sp(code)}/profiles`, (val) => {
@@ -597,12 +732,15 @@ export default function App() {
     setMyScores(scores);
     goTo("signalSent");
     try {
-      await fbSet(`${sp(sessionCode)}/profiles/${pid}`, { scores, ts: Date.now(), pid, annotation: "", ready: false });
+      await fbSet(`${sp(sessionCode)}/profiles/${pid}`, { scores, ts: Date.now(), pid, annotation: "", ready: false, myNote: "" });
       unsubParticipantRef.current = fbListen(`${sp(sessionCode)}/profiles/${pid}`, (profile) => {
         if (profile?.annotation !== undefined) setMyAnnotation(profile.annotation);
       });
       unsubFeedbackRef.current = fbListen(`${sp(sessionCode)}/meta/feedbackDone`, (val) => {
         if (val === true) setFeedbackDone(true);
+      });
+      unsubMetaRef.current = fbListen(`${sp(sessionCode)}/meta/feedbackStarted`, (val) => {
+        if (val === true) setFeedbackStarted(true);
       });
     } catch (e) {
       setError("Could not save to database: " + e.message);
@@ -615,7 +753,12 @@ export default function App() {
     goTo("waiting");
   }
 
-  function startFeedback() { setFeedbackIndex(0); setAnnotations({}); goTo("feedbackReview"); }
+  function startFeedback() { 
+    fbUpdate(`${sp(sessionCode)}/meta`, { feedbackStarted: true });
+    setFeedbackIndex(0); 
+    setAnnotations({}); 
+    goTo("feedbackReview"); 
+  }
 
   async function finishFeedback() {
     try {
@@ -628,14 +771,18 @@ export default function App() {
   }
 
   function answer(score) { setAnswers(prev => ({ ...prev, [current]: score })); }
-  function next() { if (answers[current] === undefined) return; if (current === activeQuestions.length - 1) submitResults(calcScores(answers)); else setCurrent(c => c + 1); }
+  function next() { if (answers[current] === undefined) return; if (current === activeQuestions.length - 1) submitResults(calcScores(answers, activeQuestions)); else setCurrent(c => c + 1); }
   function prev() { if (current > 0) setCurrent(c => c - 1); }
 
-  useEffect(() => { if (screen === "waiting" && feedbackDone) goTo("result"); }, [feedbackDone, screen, goTo]);
+  useEffect(() => { 
+    if (screen === "waiting" && feedbackDone) goTo("result");
+    if (screen === "waiting" && feedbackStarted) goTo("participantFeedback");
+  }, [feedbackDone, feedbackStarted, screen, goTo]);
   useEffect(() => () => {
     stopSession();
     if (unsubParticipantRef.current) { unsubParticipantRef.current(); unsubParticipantRef.current = null; }
     if (unsubFeedbackRef.current) { unsubFeedbackRef.current(); unsubFeedbackRef.current = null; }
+    if (unsubMetaRef.current) { unsubMetaRef.current(); unsubMetaRef.current = null; }
   }, []);
 
   const progress = Math.round((current / activeQuestions.length) * 100);
@@ -651,9 +798,9 @@ export default function App() {
         <div style={{fontSize:13,color:OC.textMid,marginBottom:32}}>Choose how deep you want to dive</div>
         <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:28}}>
           {[
-            {count:10,label:"Quick Round",desc:"Fast personality snapshot",time:"~5 min"},
-            {count:20,label:"Recommended",desc:"Balanced depth & speed",time:"~10 min"},
-            {count:40,label:"Deep Dive",desc:"Comprehensive assessment",time:"~20 min"}
+            {count:10,label:"Quick Round",desc:"Fast personality snapshot",time:"~10 min"},
+            {count:20,label:"Recommended",desc:"Balanced depth & speed",time:"~20 min"},
+            {count:40,label:"Deep Dive",desc:"Comprehensive assessment",time:"~40 min"}
           ].map(opt=>(
             <div key={opt.count} onClick={()=>setQuestionCount(opt.count)} className="card-float" style={{display:"flex",alignItems:"center",gap:16,padding:"18px 20px",borderRadius:14,cursor:"pointer",border:questionCount===opt.count?`2px solid ${OC.accent}`:`1px solid ${OC.border}`,background:questionCount===opt.count?`${OC.accent}12`:OC.card,transition:"all 0.2s ease",boxShadow:questionCount===opt.count?`0 0 20px ${OC.accent}22`:"none"}}>
               <div style={{width:32,height:32,borderRadius:"50%",flexShrink:0,background:questionCount===opt.count?OC.accent:OC.cardMid,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:questionCount===opt.count?"#010d1f":OC.textDim,transition:"all 0.2s"}}>{opt.count}</div>
@@ -812,6 +959,50 @@ export default function App() {
     );
   }
 
+  // PARTICIPANT FEEDBACK - Participants add notes to profiles
+  if (screen === "participantFeedback") {
+    const otherParticipants = participants.filter(p => p.pid !== myPid);
+    return (
+      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative",overflowY:"auto"}}>
+        <style>{GLOBAL_CSS}</style>
+        <BubblesBg /><OceanCreature />
+        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto"}}>
+          <div style={{textAlign:"center",marginBottom:24}}>
+            <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Feedback Round</div>
+            <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Add Your Observations</div>
+            <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7}}>Review each anonymous profile and add your notes. Your feedback helps the swarm learn together.</div>
+          </div>
+          {otherParticipants.map((p,i)=>(
+            <div key={p.pid} className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"18px 20px",marginBottom:16}}>
+              <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Anonymous Signal #{String(i+1).padStart(2,"0")}</div>
+              <ScoreBars scores={p.scores} compact={true} />
+              <div style={{marginTop:14}}>
+                <div style={{fontSize:10,color:OC.textDim,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Your Note (optional)</div>
+                <textarea
+                  value={participantNotes[p.pid]||""}
+                  onChange={e=>setParticipantNotes(prev=>({...prev,[p.pid]:e.target.value}))}
+                  placeholder="Share observations, patterns, or insights..."
+                  rows={3}
+                  style={{width:"100%",background:"#030f20",border:`1px solid ${OC.border}`,borderRadius:10,padding:"10px 12px",color:OC.text,fontSize:12,lineHeight:1.5,resize:"vertical",outline:"none",fontFamily:"inherit",boxSizing:"border-box",transition:"border-color 0.3s"}}
+                  onFocus={e=>e.target.style.borderColor=OC.accent} onBlur={e=>e.target.style.borderColor=OC.border}
+                />
+              </div>
+            </div>
+          ))}
+          <button onClick={async ()=>{
+            const pid = myPid || localStorage.getItem("swarm-pid");
+            try {
+              // Save participant's notes to their own profile
+              const notesArray = otherParticipants.map(p => ({pid: p.pid, note: participantNotes[p.pid] || ""}));
+              await fbUpdate(`${sp(sessionCode)}/profiles/${pid}`, { participantNotes: notesArray });
+            } catch (_) {}
+            goTo("waiting");
+          }} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",marginTop:8}}>Submit feedback ✓</button>
+        </div>
+      </div>
+    );
+  }
+
   // RESULT — shown after feedbackDone
   if (screen === "result" && myScores) return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
@@ -863,9 +1054,9 @@ export default function App() {
         <div style={{textAlign:"center",marginBottom:28}}>
           <div style={{width:120,height:120,margin:"0 auto 12px"}}><MiniSchool size={120} /></div>
           <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:8}}>Your personality in five dimensions</div>
-          <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Meet the Fish School</div>
+          <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Explore Your Dimensions</div>
           <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7,maxWidth:380,margin:"0 auto"}}>
-            Five fish, five dimensions. Each one captures a different side of how you think, work, and connect. Tap to explore.
+            Five dimensions that shape how you think, work, and connect. Each reveals a different aspect of your personality. Tap to explore.
           </div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:28}}>
@@ -930,8 +1121,8 @@ export default function App() {
       <BubblesBg /><CausticLight />
       <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Before the swarm feedback</div>
-        <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Meet your five dimensions</div>
-        <div style={{fontSize:12,color:OC.textMid,marginBottom:8}}>Tap a fish to learn what each dimension means</div>
+        <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Explore your five dimensions</div>
+        <div style={{fontSize:12,color:OC.textMid,marginBottom:8}}>Tap a dimension to learn what it means for you</div>
         <div style={{display:"flex",justifyContent:"center",gap:6,flexWrap:"wrap",marginBottom:4}}>
           {Object.keys(DIMS).map(dim=>(
             <div key={dim} onClick={()=>setSelectedFish(selectedFish===dim?null:dim)} className="btn-ocean" style={{padding:"3px 10px",borderRadius:20,fontSize:10,cursor:"pointer",background:selectedFish===dim?DIMS[dim].color+"22":"transparent",border:`1px solid ${selectedFish===dim?DIMS[dim].color+"88":OC.border}`,color:selectedFish===dim?DIMS[dim].color:OC.textMid,transition:"all 0.2s"}}>{DIMS[dim].label}</div>
@@ -946,7 +1137,7 @@ export default function App() {
           <RefCard dim={selectedFish} score={myScores?myScores[selectedFish]:undefined} onClose={()=>setSelectedFish(null)} />
         </div>
       )}
-      {!selectedFish&&<div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px 8px"}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any fish to open its reference card</div></div>}
+      {!selectedFish&&<div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px 8px"}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any dimension to open its reference card</div></div>}
       <div style={{position:"relative",zIndex:1,padding:"12px 20px 28px"}}>
         <button onClick={markReady} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer"}}>Ready for swarm feedback ✓</button>
       </div>
@@ -1066,7 +1257,7 @@ export default function App() {
         <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
           <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Visualization</div>
           <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>The Complete Swarm</div>
-          <div style={{fontSize:12,color:OC.textMid,marginBottom:16}}>Each fish represents a participant's strongest dimension</div>
+          <div style={{fontSize:12,color:OC.textMid,marginBottom:16}}>Each fish swims near the coral reef of their strongest dimension. Reef heights show group averages.</div>
         </div>
         <div style={{position:"relative",zIndex:1,flex:"1 1 auto",minHeight:"calc(100vh - 280px)",padding:"0 20px"}}>
           <ParticipantSwarm participants={participants} onFishClick={(idx)=>setSelectedFish(idx)} selectedFish={selectedFish} />
