@@ -97,8 +97,11 @@ const GLOBAL_CSS = `
 .content-overlay{background:rgba(1,13,31,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(12,51,88,0.3)}
 `;
 
-// Koi fish component with customizable colors
-function KoiFish({ color = "#ff6b00", accentColor = "white", delay = 0, duration = 20000, reverse = false }) {
+// Koi fish component with customizable colors - full color version
+function KoiFish({ color = "#ff6b00", delay = 0, duration = 20000, reverse = false }) {
+  // Create lighter shade for accents
+  const lighterColor = color + 'cc'; // Add transparency for lighter effect
+  
   const koiStyle = {
     position: 'absolute',
     top: '-35%',
@@ -123,7 +126,7 @@ function KoiFish({ color = "#ff6b00", accentColor = "white", delay = 0, duration
     filter: 'contrast(200%)',
     offsetPath: 'path("M11.7692 229.5C14.552 200.052 7.51901 171.858 -42.8757 170.644C-105.869 169.128 -131.294 76.612 -101.695 51.5872C-72.0955 26.5625 -24.6607 -50.7867 70.5883 51.5872C165.837 153.961 27.7073 131.211 33.0199 183.157C38.3326 235.102 90.3211 195.669 139.274 223.727C188.226 251.785 207.959 299.56 139.274 316.243C70.5883 332.926 41.3685 398.9 81.9726 419.754C122.577 440.608 222 478.524 222 419.754C222 372.738 222 242.432 222 183.157C219.091 129.948 175.78 30.8091 25.8099 59.9288C-161.652 96.3284 -30.3529 119.837 25.8099 141.07C81.9726 162.303 171.529 204.769 126.751 260.506C81.9726 316.243 101.326 362.501 139.274 373.496C177.222 384.492 170.012 464.495 70.5883 462.979C-28.835 461.462 -42.8757 393.015 -42.8757 373.496C-42.8757 238.288 11.7692 293 11.7692 240.506C11.7692 208.05 11.7692 237.336 11.7692 229.5Z")',
     animation: `koiSwim ${duration}ms linear ${delay}ms infinite`,
-    boxShadow: `-7px -1.4px 0 ${accentColor} inset`
+    boxShadow: `-7px -1.4px 0 ${lighterColor} inset`
   };
 
   const scales = [1, 1.2, 1.35, 1.55, 1.75, 1.9, 2, 2, 2, 1.9, 1.75, 1.55, 1.35, 1.2, 1];
@@ -162,14 +165,14 @@ function KoiFish({ color = "#ff6b00", accentColor = "white", delay = 0, duration
                 ...coilBaseStyle,
                 transform: `scale(${scale}, ${scale})`,
                 animationDelay: `${delays[i]}ms`,
-                backgroundColor: (i === 13 || i === 14) ? color : color
+                backgroundColor: color
               }}
             >
               {isHead && (
                 <div style={{
                   content: '":"',
                   position: 'absolute',
-                  color: 'black',
+                  color: 'rgba(0,0,0,0.6)',
                   fontWeight: 800,
                   textAlign: 'center',
                   lineHeight: '60%',
@@ -189,7 +192,7 @@ function KoiFish({ color = "#ff6b00", accentColor = "white", delay = 0, duration
                   top: '25%',
                   left: '-100%',
                   borderRadius: '14px',
-                  backgroundColor: accentColor,
+                  backgroundColor: lighterColor,
                   transformOrigin: 'center right',
                   animation: 'koiTailFlip 200ms ease-in-out alternate infinite'
                 }} />
@@ -203,7 +206,7 @@ function KoiFish({ color = "#ff6b00", accentColor = "white", delay = 0, duration
                     top: '-10%',
                     left: '-100%',
                     borderRadius: '14px',
-                    backgroundColor: accentColor,
+                    backgroundColor: lighterColor,
                     transformOrigin: 'center right',
                     animation: 'koiFinFlip 500ms ease-in-out alternate infinite'
                   }} />
@@ -214,7 +217,7 @@ function KoiFish({ color = "#ff6b00", accentColor = "white", delay = 0, duration
                     top: '-10%',
                     left: '-100%',
                     borderRadius: '14px',
-                    backgroundColor: accentColor,
+                    backgroundColor: lighterColor,
                     transformOrigin: 'center right',
                     animation: 'koiFinFlipBottom 500ms ease-in-out alternate infinite'
                   }} />
@@ -228,7 +231,7 @@ function KoiFish({ color = "#ff6b00", accentColor = "white", delay = 0, duration
   );
 }
 
-// Underwater background component with Three.js fishes and Koi
+// Underwater background component with Three.js fishes (no koi here)
 function UnderwaterBg() {
   const containerRef = useRef(null);
   
@@ -275,29 +278,19 @@ function UnderwaterBg() {
   }, []);
   
   return (
-    <>
-      <div 
-        id="underwater-bg-container" 
-        ref={containerRef}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          zIndex: 0,
-          pointerEvents: 'none'
-        }}
-      />
-      {/* Add colorful koi fish */}
-      <div style={{position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none', overflow: 'hidden'}}>
-        <KoiFish color={DIMS.O.color} accentColor="white" delay={0} duration={25000} />
-        <KoiFish color={DIMS.C.color} accentColor="white" delay={5000} duration={28000} reverse={true} />
-        <KoiFish color={DIMS.E.color} accentColor="white" delay={10000} duration={23000} />
-        <KoiFish color={DIMS.A.color} accentColor="white" delay={15000} duration={26000} reverse={true} />
-        <KoiFish color={DIMS.N.color} accentColor="white" delay={20000} duration={24000} />
-      </div>
-    </>
+    <div 
+      id="underwater-bg-container" 
+      ref={containerRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }}
+    />
   );
 }
 
@@ -332,86 +325,43 @@ function MiniSchool({ size=200 }) {
 }
 
 function FishSchool({ selectedDim, onFishClick, scores }) {
-  const canvasRef = useRef(null);
-  const selectedRef = useRef(selectedDim);
-  const ripples = useRef([]);
-  selectedRef.current = selectedDim;
-  useEffect(() => {
-    const canvas = canvasRef.current; if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const W=canvas.offsetWidth,H=canvas.offsetHeight;
-    canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
-    const cx=W/2,cy=H/2;
-    const fishes=["O","C","E","A","N"].map((dim,i)=>{const angle=(i/5)*Math.PI*2;return{dim,x:cx+Math.cos(angle)*60,y:cy+Math.sin(angle)*60,vx:Math.cos(angle+Math.PI/2)*1.2,vy:Math.sin(angle+Math.PI/2)*1.2,wobble:Math.random()*Math.PI*2,size:24,speedVar:0.8+Math.random()*0.8,speedPhase:Math.random()*Math.PI*2,glowPhase:Math.random()*Math.PI*2};});
-    
-    function updateFish() {
-      const SEP_R=65,VIEW_R=220,W_SEP=0.065,W_ALG=0.009,W_COH=0.0009,W_CTR=0.00012,MAX_SPD=2.4,MIN_SPD=0.6;
-      fishes.forEach(f=>{
-        if(selectedRef.current===f.dim)return;
-        let sx=0,sy=0,ax=0,ay=0,px=0,py=0,cnt=0;
-        fishes.forEach(o=>{if(o===f)return;const dx=f.x-o.x,dy=f.y-o.y,d=Math.sqrt(dx*dx+dy*dy)||0.001;if(d<SEP_R){sx+=dx/d;sy+=dy/d;}if(d<VIEW_R){ax+=o.vx;ay+=o.vy;px+=o.x;py+=o.y;cnt++;}});
-        if(cnt>0){ax/=cnt;ay/=cnt;px=px/cnt-f.x;py=py/cnt-f.y;}
-        // Speed variation over time
-        f.speedPhase+=0.008;
-        const spdMult = 0.85 + Math.sin(f.speedPhase)*0.3;
-        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+(cx-f.x)*W_CTR; f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+(cy-f.y)*W_CTR;
-        const spd=Math.sqrt(f.vx*f.vx+f.vy*f.vy)||0.001,c=Math.min(MAX_SPD*spdMult,Math.max(MIN_SPD,spd));
-        f.vx=f.vx/spd*c;f.vy=f.vy/spd*c;f.x+=f.vx;f.y+=f.vy;f.wobble+=0.07;
-        const m=50;if(f.x<m)f.vx+=0.18;if(f.x>W-m)f.vx-=0.18;if(f.y<m)f.vy+=0.18;if(f.y>H-m)f.vy-=0.18;
-      });
-    }
-    function drawFish(f) {
-      const{x,y,vx,vy,size,dim}=f,angle=Math.atan2(vy,vx),col=DIMS[dim].color,sel=selectedRef.current===dim,wb=Math.sin(f.wobble)*0.07;
-      f.glowPhase+=0.025;
-      const glowPulse = sel ? 28 + Math.sin(f.glowPhase)*8 : 0;
-      ctx.save();ctx.translate(x,y);ctx.rotate(angle+wb);
-      if(sel){ctx.shadowColor=col;ctx.shadowBlur=glowPulse;}
-      // Tail with swimming motion
-      const tailWag = Math.sin(f.wobble*1.5)*0.12;
-      const tx=-size*0.85;
-      ctx.beginPath();ctx.moveTo(tx,0);ctx.lineTo(tx-size*0.55,-size*(0.42+tailWag));ctx.lineTo(tx-size*0.12,0);ctx.lineTo(tx-size*0.55,size*(0.42-tailWag));ctx.closePath();ctx.fillStyle=col+"88";ctx.fill();
-      // Pectoral fin
-      ctx.beginPath();ctx.moveTo(size*0.1,0);ctx.quadraticCurveTo(0,size*0.45,-size*0.3,size*0.28);ctx.quadraticCurveTo(-size*0.05,size*0.1,size*0.1,0);ctx.fillStyle=col+"55";ctx.fill();
-      // Body
-      ctx.beginPath();ctx.ellipse(0,0,size*0.72,size*0.3,0,0,Math.PI*2);ctx.fillStyle=col+(sel?"ff":"cc");ctx.fill();
-      // Dorsal fin
-      ctx.beginPath();ctx.moveTo(-size*0.15,-size*0.3);ctx.quadraticCurveTo(size*0.12,-size*0.58,size*0.42,-size*0.3);ctx.strokeStyle=col+"aa";ctx.lineWidth=1.5;ctx.stroke();
-      // Eye
-      ctx.beginPath();ctx.arc(size*0.44,-size*0.06,size*0.085,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.9)";ctx.fill();
-      ctx.beginPath();ctx.arc(size*0.46,-size*0.06,size*0.042,0,Math.PI*2);ctx.fillStyle="#001530";ctx.fill();
-      ctx.beginPath();ctx.arc(size*0.47,-size*0.085,size*0.018,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.85)";ctx.fill();
-      // Score label
-      if(scores?.[dim]!==undefined){ctx.rotate(-angle-wb);ctx.fillStyle=col;ctx.font=`bold ${size*0.38}px sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(scores[dim]+"%",0,size*0.72);}
-      ctx.restore();
-      // Dimension label
-      ctx.save();ctx.font=`${sel?"bold ":""}${size*0.42}px -apple-system,sans-serif`;ctx.textAlign="center";ctx.textBaseline="top";ctx.fillStyle=sel?col:col+"99";ctx.fillText(DIMS[dim].label,x,y+size*1.0);ctx.restore();
-      // Selection ring
-      if(sel){ctx.save();ctx.beginPath();ctx.arc(x,y,size*1.6,0,Math.PI*2);ctx.strokeStyle=col+"40";ctx.lineWidth=2;ctx.setLineDash([4,6]);ctx.stroke();ctx.restore();}
-    }
-    let raf;
-    function loop(){
-      ctx.clearRect(0,0,W,H);
-      updateFish();
-      // Connection lines
-      fishes.forEach((f,i)=>fishes.forEach((f2,j)=>{if(j<=i)return;const d=Math.hypot(f.x-f2.x,f.y-f2.y);if(d<130){const a=Math.floor((1-d/130)*18).toString(16).padStart(2,"0");ctx.beginPath();ctx.strokeStyle=`#00c8f5${a}`;ctx.lineWidth=0.6;ctx.moveTo(f.x,f.y);ctx.lineTo(f2.x,f2.y);ctx.stroke();}}));
-      // Tap ripples
-      ripples.current = ripples.current.filter(r=>{r.age++;r.radius+=2.5;ctx.beginPath();ctx.arc(r.x,r.y,r.radius,0,Math.PI*2);ctx.strokeStyle=`rgba(0,200,245,${0.3*(1-r.age/30)})`;ctx.lineWidth=1.5;ctx.stroke();return r.age<30;});
-      fishes.forEach(f=>drawFish(f));
-      raf=requestAnimationFrame(loop);
-    }
-    loop();
-    function handleClick(e){
-      const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
-      ripples.current.push({x:mx,y:my,radius:4,age:0});
-      let hit=null,minD=Infinity;
-      fishes.forEach(f=>{const d=Math.hypot(mx-f.x,my-f.y);if(d<f.size*1.8&&d<minD){minD=d;hit=f.dim;}});
-      onFishClick(hit);
-    }
-    canvas.addEventListener("click",handleClick);
-    return ()=>{cancelAnimationFrame(raf);canvas.removeEventListener("click",handleClick);};
-  },[]);
-  return <canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block",cursor:"pointer"}} />;
+  return (
+    <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden'}}>
+      {/* Add colorful koi fish for each dimension */}
+      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none'}}>
+        <KoiFish color={DIMS.O.color} delay={0} duration={25000} />
+        <KoiFish color={DIMS.C.color} delay={5000} duration={28000} reverse={true} />
+        <KoiFish color={DIMS.E.color} delay={10000} duration={23000} />
+        <KoiFish color={DIMS.A.color} delay={15000} duration={26000} reverse={true} />
+        <KoiFish color={DIMS.N.color} delay={20000} duration={24000} />
+      </div>
+      
+      {/* Interactive overlay for clicking dimensions */}
+      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20}}>
+        {Object.keys(DIMS).map(dim => (
+          <div
+            key={dim}
+            onClick={() => onFishClick(dim)}
+            style={{
+              cursor: 'pointer',
+              padding: '12px 20px',
+              borderRadius: 12,
+              background: selectedDim === dim ? DIMS[dim].color + '33' : 'rgba(1,13,31,0.7)',
+              border: `2px solid ${selectedDim === dim ? DIMS[dim].color : DIMS[dim].color + '44'}`,
+              backdropFilter: 'blur(10px)',
+              transition: 'all 0.3s ease',
+              boxShadow: selectedDim === dim ? `0 0 20px ${DIMS[dim].color}66` : 'none'
+            }}
+          >
+            <div style={{fontSize: 14, fontWeight: 700, color: DIMS[dim].color, marginBottom: 4}}>{DIMS[dim].label}</div>
+            {scores?.[dim] !== undefined && (
+              <div style={{fontSize: 18, fontWeight: 800, color: '#fff'}}>{scores[dim]}%</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // Mini fish SVG for reference cards — behavior based on score
@@ -493,6 +443,7 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
   const canvasRef = useRef(null);
   const selectedRef = useRef(selectedFish);
   const ripples = useRef([]);
+  const bgImageRef = useRef(null);
   selectedRef.current = selectedFish;
   
   useEffect(() => {
@@ -502,6 +453,12 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
     canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
     
+    // Load background image
+    const bgImage = new Image();
+    bgImage.src = '/coral-reef-bg.jpg'; // User will add this image
+    bgImage.onload = () => { bgImageRef.current = bgImage; };
+    bgImage.onerror = () => { console.log('Background image not found, using gradient'); };
+    
     // Calculate average scores for each dimension
     const avgScores = {};
     Object.keys(DIMS).forEach(dim => {
@@ -509,15 +466,15 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
       avgScores[dim] = Math.round(sum / participants.length);
     });
     
-    // Position coral reefs (one for each dimension) in a circle
-    const dims = Object.keys(DIMS);
-    const reefs = dims.map((dim, idx) => {
-      const angle = (idx / dims.length) * Math.PI * 2 - Math.PI/2;
-      const radius = Math.min(W, H) * 0.28;
+    // Position coral reefs horizontally from left to right
+    // Order: Openness (blue), Conscientiousness (red), Extraversion (yellow), Agreeableness (purple), Neuroticism (green)
+    const dimsOrder = ['O', 'C', 'E', 'A', 'N'];
+    const reefs = dimsOrder.map((dim, idx) => {
+      const spacing = W / (dimsOrder.length + 1);
       return {
         dim,
-        x: W/2 + Math.cos(angle) * radius,
-        y: H/2 + Math.sin(angle) * radius,
+        x: spacing * (idx + 1),
+        y: H * 0.75, // Position in lower part of canvas
         color: DIMS[dim].color,
         avgScore: avgScores[dim]
       };
@@ -547,9 +504,9 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
         dim: strongestDim,
         score: maxScore,
         x: targetReef.x + Math.cos(offsetAngle) * offsetDist,
-        y: targetReef.y + Math.sin(offsetAngle) * offsetDist,
+        y: targetReef.y + Math.sin(offsetAngle) * offsetDist - 80, // Position above reef
         targetX: targetReef.x,
-        targetY: targetReef.y,
+        targetY: targetReef.y - 80,
         vx: (Math.random()-0.5)*0.5,
         vy: (Math.random()-0.5)*0.5,
         wobble: Math.random()*Math.PI*2,
@@ -856,6 +813,21 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
     let raf;
     function loop(){
       ctx.clearRect(0,0,W,H);
+      
+      // Draw background image if loaded, otherwise use gradient
+      if (bgImageRef.current) {
+        ctx.globalAlpha = 0.6;
+        ctx.drawImage(bgImageRef.current, 0, 0, W, H);
+        ctx.globalAlpha = 1;
+      } else {
+        // Fallback gradient background
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+        bgGrad.addColorStop(0, '#031F48');
+        bgGrad.addColorStop(1, '#010d1f');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, W, H);
+      }
+      
       updateFish();
       
       // Draw reefs first
@@ -1218,7 +1190,7 @@ export default function App() {
       <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative",overflowY:"auto"}}>
         <style>{GLOBAL_CSS}</style>
         <UnderwaterBg />
-        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",paddingBottom:80}}>
+        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",paddingBottom:100}}>
           <div style={{textAlign:"center",marginBottom:24}}>
             <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Feedback Round</div>
             <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Add Your Observations</div>
@@ -1266,23 +1238,25 @@ export default function App() {
               </div>
             );
           })}
+          <div style={{height:80}} />
           
-          <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"16px 24px",background:"linear-gradient(0deg, #010d1f 80%, transparent)",zIndex:100,pointerEvents:"none"}}>
-            <div style={{maxWidth:520,margin:"0 auto",pointerEvents:"auto"}}>
-              <button onClick={async ()=>{
-                const pid = myPid || localStorage.getItem("swarm-pid");
-                try {
-                  // Save participant's notes to their own profile
-                  const notesArray = otherParticipants.map(p => ({pid: p.pid, note: participantNotes[p.pid] || ""}));
-                  await fbUpdate(`${sp(sessionCode)}/profiles/${pid}`, { participantNotes: notesArray, feedbackComplete: true });
-                } catch (e) {
-                  console.error("Error saving notes:", e);
-                }
-                goTo("waiting");
-              }} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
-                Submit feedback ✓
-              </button>
-            </div>
+        </div>
+        
+        <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"16px 24px",background:"linear-gradient(0deg, #010d1f 90%, #010d1f00 0%)",zIndex:1000}}>
+          <div style={{maxWidth:520,margin:"0 auto"}}>
+            <button onClick={async ()=>{
+              const pid = myPid || localStorage.getItem("swarm-pid");
+              try {
+                // Save participant's notes to their own profile
+                const notesArray = otherParticipants.map(p => ({pid: p.pid, note: participantNotes[p.pid] || ""}));
+                await fbUpdate(`${sp(sessionCode)}/profiles/${pid}`, { participantNotes: notesArray, feedbackComplete: true });
+              } catch (e) {
+                console.error("Error saving notes:", e);
+              }
+              goTo("waiting");
+            }} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
+              Submit feedback ✓
+            </button>
           </div>
         </div>
       </div>
