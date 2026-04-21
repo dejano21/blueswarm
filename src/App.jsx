@@ -1157,6 +1157,18 @@ export default function App() {
       groupAvg[dim] = Math.round(sum / participants.length);
     });
     
+    // Collect all notes from other participants about me
+    const pid = myPid || localStorage.getItem("swarm-pid");
+    const participantNotesAboutMe = [];
+    participants.forEach(p => {
+      if (p.pid !== pid && p.participantNotes) {
+        const noteAboutMe = p.participantNotes.find(n => n.pid === pid);
+        if (noteAboutMe && noteAboutMe.note && noteAboutMe.note.trim()) {
+          participantNotesAboutMe.push(noteAboutMe.note);
+        }
+      }
+    });
+    
     return (
       <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative",overflowY:"auto"}}>
         <style>{GLOBAL_CSS}</style>
@@ -1183,6 +1195,18 @@ export default function App() {
               ) : (
                 <div style={{fontSize:13,color:OC.textMid,fontStyle:"italic"}}>No notes were added for this signal.</div>
               )}
+            </div>
+          )}
+          
+          {/* Participant Notes */}
+          {participantNotesAboutMe.length > 0 && (
+            <div className="card-float" style={{marginBottom:20,padding:"16px 18px",background:`${OC.accent2}0d`,borderRadius:12,border:`1px solid ${OC.accent2}33`}}>
+              <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Swarm Feedback ({participantNotesAboutMe.length})</div>
+              {participantNotesAboutMe.map((note, i) => (
+                <div key={i} style={{fontSize:12,color:OC.text,lineHeight:1.6,marginBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,paddingBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,borderBottom:i < participantNotesAboutMe.length - 1 ? `1px solid ${OC.border}` : "none"}}>
+                  "{ note}"
+                </div>
+              ))}
             </div>
           )}
           
@@ -1319,17 +1343,17 @@ export default function App() {
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 60%,#010d1f 100%)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
-      <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
+      <div className="content-overlay" style={{position:"relative",zIndex:1,padding:"20px 24px 16px",textAlign:"center",margin:"24px 20px 0",borderRadius:16}}>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Before the swarm feedback</div>
         <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Explore your five dimensions</div>
-        <div style={{fontSize:12,color:OC.textMid,marginBottom:8}}>Tap a dimension to learn what it means for you</div>
-        <div style={{display:"flex",justifyContent:"center",gap:6,flexWrap:"wrap",marginBottom:4}}>
+        <div style={{fontSize:12,color:OC.textMid,marginBottom:12}}>Tap a dimension to learn what it means for you</div>
+        <div style={{display:"flex",justifyContent:"center",gap:6,flexWrap:"wrap"}}>
           {Object.keys(DIMS).map(dim=>(
             <div key={dim} onClick={()=>setSelectedFish(selectedFish===dim?null:dim)} className="btn-ocean" style={{padding:"3px 10px",borderRadius:20,fontSize:10,cursor:"pointer",background:selectedFish===dim?DIMS[dim].color+"22":"transparent",border:`1px solid ${selectedFish===dim?DIMS[dim].color+"88":OC.border}`,color:selectedFish===dim?DIMS[dim].color:OC.textMid,transition:"all 0.2s"}}>{DIMS[dim].label}</div>
           ))}
         </div>
       </div>
-      <div style={{position:"relative",zIndex:1,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:"calc(100vh - 240px)",transition:"flex 0.4s ease"}}>
+      <div style={{position:"relative",zIndex:1,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:"calc(100vh - 320px)",transition:"flex 0.4s ease"}}>
         <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} scores={myScores} />
       </div>
       {selectedFish&&(
@@ -1337,7 +1361,7 @@ export default function App() {
           <RefCard dim={selectedFish} score={myScores?myScores[selectedFish]:undefined} onClose={()=>setSelectedFish(null)} />
         </div>
       )}
-      {!selectedFish&&<div style={{position:"relative",zIndex:1,textAlign:"center",padding:"0 24px 8px"}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any dimension to open its reference card</div></div>}
+      {!selectedFish&&<div className="content-overlay" style={{position:"relative",zIndex:1,textAlign:"center",padding:"8px 24px",margin:"0 20px 8px",borderRadius:12}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any dimension to open its reference card</div></div>}
       <div style={{position:"relative",zIndex:1,padding:"12px 20px 28px"}}>
         <button onClick={markReady} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer"}}>Ready for swarm feedback ✓</button>
       </div>
