@@ -327,17 +327,17 @@ function MiniSchool({ size=200 }) {
 function FishSchool({ selectedDim, onFishClick, scores }) {
   return (
     <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden'}}>
-      {/* Add colorful koi fish for each dimension */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none'}}>
-        <KoiFish color={DIMS.O.color} delay={0} duration={25000} />
-        <KoiFish color={DIMS.C.color} delay={5000} duration={28000} reverse={true} />
-        <KoiFish color={DIMS.E.color} delay={10000} duration={23000} />
-        <KoiFish color={DIMS.A.color} delay={15000} duration={26000} reverse={true} />
-        <KoiFish color={DIMS.N.color} delay={20000} duration={24000} />
+      {/* Add colorful koi fish for each dimension - swimming slowly and randomly */}
+      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1}}>
+        <KoiFish color={DIMS.O.color} delay={0} duration={45000} />
+        <KoiFish color={DIMS.C.color} delay={9000} duration={52000} reverse={true} />
+        <KoiFish color={DIMS.E.color} delay={18000} duration={48000} />
+        <KoiFish color={DIMS.A.color} delay={27000} duration={50000} reverse={true} />
+        <KoiFish color={DIMS.N.color} delay={36000} duration={46000} />
       </div>
       
       {/* Interactive overlay for clicking dimensions */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20}}>
+      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20, zIndex: 2}}>
         {Object.keys(DIMS).map(dim => (
           <div
             key={dim}
@@ -890,6 +890,7 @@ export default function App() {
   const [activeQuestions, setActiveQuestions] = useState(QUESTIONS.slice(0, 20));
   const [participantNotes, setParticipantNotes] = useState({}); // notes from participant to other profiles
   const [feedbackStarted, setFeedbackStarted] = useState(false);
+  const [currentFeedbackIndex, setCurrentFeedbackIndex] = useState(0); // Track which profile participant is reviewing
   const unsubRef          = useRef(null);
   const unsubParticipantRef = useRef(null);
   const unsubFeedbackRef  = useRef(null);
@@ -1167,7 +1168,7 @@ export default function App() {
     );
   }
 
-  // PARTICIPANT FEEDBACK - Participants add notes to profiles
+  // PARTICIPANT FEEDBACK - Participants add notes to profiles ONE AT A TIME
   if (screen === "participantFeedback") {
     // Show all participants except self
     const otherParticipants = participants.filter(p => p.pid !== myPid);
@@ -1186,83 +1187,90 @@ export default function App() {
       );
     }
     
+    const currentProfile = otherParticipants[currentFeedbackIndex];
+    const isLast = currentFeedbackIndex === otherParticipants.length - 1;
+    
+    // Find strongest dimension for current profile
+    const dims = Object.keys(DIMS);
+    let strongestDim = dims[0];
+    let maxScore = currentProfile.scores[dims[0]];
+    dims.forEach(dim => {
+      if (currentProfile.scores[dim] > maxScore) {
+        maxScore = currentProfile.scores[dim];
+        strongestDim = dim;
+      }
+    });
+    
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative",overflowY:"auto"}}>
+      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
         <style>{GLOBAL_CSS}</style>
         <UnderwaterBg />
-        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",paddingBottom:100}}>
+        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
+            <button onClick={()=>goTo("waiting")} className="btn-ocean" style={{background:"none",border:"none",color:OC.textMid,fontSize:12,cursor:"pointer"}}>← Back</button>
+            <div style={{fontSize:12,color:OC.textMid}}>Profile <span style={{color:"#fff",fontWeight:700}}>{currentFeedbackIndex+1}</span> / {otherParticipants.length}</div>
+          </div>
+          
+          <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:28}}>
+            {otherParticipants.map((_,i)=>(
+              <div key={i} style={{width:i===currentFeedbackIndex?24:8,height:8,borderRadius:4,background:i<currentFeedbackIndex?OC.accent2:i===currentFeedbackIndex?OC.accent:OC.border,transition:"all 0.3s"}} />
+            ))}
+          </div>
+          
           <div style={{textAlign:"center",marginBottom:24}}>
-            <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Feedback Round</div>
+            <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Anonymous Signal #{String(currentFeedbackIndex+1).padStart(2,"0")}</div>
             <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Add Your Observations</div>
-            <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7}}>Review each anonymous profile and add your notes. Your feedback helps the swarm learn together.</div>
+            <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7}}>Review this profile and share your insights.</div>
           </div>
           
-          <div style={{marginBottom:16,padding:"12px 16px",background:OC.card,border:`1px solid ${OC.accent}33`,borderRadius:12}}>
-            <div style={{fontSize:11,color:OC.accent,fontWeight:600}}>💡 Tip: Focus on patterns you notice, strengths you see, or insights that might help each person.</div>
-          </div>
-          
-          {otherParticipants.map((p,i)=>{
-            // Find strongest dimension for this participant
-            const dims = Object.keys(DIMS);
-            let strongestDim = dims[0];
-            let maxScore = p.scores[dims[0]];
-            dims.forEach(dim => {
-              if (p.scores[dim] > maxScore) {
-                maxScore = p.scores[dim];
-                strongestDim = dim;
-              }
-            });
-            
-            return (
-              <div key={p.pid} className="card-float" style={{background:OC.card,border:`1px solid ${participantNotes[p.pid]?.trim()?DIMS[strongestDim].color+"44":OC.border}`,borderRadius:16,padding:"18px 20px",marginBottom:16}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-                  <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase"}}>Anonymous Signal #{String(i+1).padStart(2,"0")}</div>
-                  <div style={{display:"flex",alignItems:"center",gap:6}}>
-                    <div style={{width:20,height:20,borderRadius:"50%",background:DIMS[strongestDim].color+"33",border:`2px solid ${DIMS[strongestDim].color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:DIMS[strongestDim].color}}>{strongestDim}</div>
-                    <span style={{fontSize:10,color:DIMS[strongestDim].color,fontWeight:600}}>{maxScore}%</span>
-                  </div>
-                </div>
-                <ScoreBars scores={p.scores} compact={true} />
-                <div style={{marginTop:14}}>
-                  <div style={{fontSize:10,color:OC.textDim,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Your Note (optional)</div>
-                  <textarea
-                    value={participantNotes[p.pid]||""}
-                    onChange={e=>setParticipantNotes(prev=>({...prev,[p.pid]:e.target.value}))}
-                    placeholder="Share observations, patterns, or insights..."
-                    rows={3}
-                    style={{width:"100%",background:"#030f20",border:`1px solid ${OC.border}`,borderRadius:10,padding:"10px 12px",color:OC.text,fontSize:12,lineHeight:1.5,resize:"vertical",outline:"none",fontFamily:"inherit",boxSizing:"border-box",transition:"border-color 0.3s"}}
-                    onFocus={e=>e.target.style.borderColor=DIMS[strongestDim].color} 
-                    onBlur={e=>e.target.style.borderColor=OC.border}
-                  />
-                </div>
+          <div className="card-float" style={{background:OC.card,border:`1px solid ${DIMS[strongestDim].color+"44"}`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase"}}>Profile Overview</div>
+              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                <div style={{width:24,height:24,borderRadius:"50%",background:DIMS[strongestDim].color+"33",border:`2px solid ${DIMS[strongestDim].color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:DIMS[strongestDim].color}}>{strongestDim}</div>
+                <span style={{fontSize:12,color:DIMS[strongestDim].color,fontWeight:600}}>{maxScore}%</span>
               </div>
-            );
-          })}
-          <div style={{height:80}} />
+            </div>
+            <ScoreBars scores={currentProfile.scores} />
+          </div>
           
-        </div>
-        
-        <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"16px 24px",background:"linear-gradient(0deg, #010d1f 90%, #010d1f00 0%)",zIndex:1000}}>
-          <div style={{maxWidth:520,margin:"0 auto"}}>
-            <button onClick={async ()=>{
-              const pid = myPid || localStorage.getItem("swarm-pid");
-              try {
-                // Save participant's notes to their own profile
-                const notesArray = otherParticipants.map(p => ({pid: p.pid, note: participantNotes[p.pid] || ""}));
-                await fbUpdate(`${sp(sessionCode)}/profiles/${pid}`, { participantNotes: notesArray, feedbackComplete: true });
-              } catch (e) {
-                console.error("Error saving notes:", e);
-              }
-              goTo("waiting");
-            }} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
-              Submit feedback ✓
-            </button>
+          <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"18px 20px",marginBottom:24}}>
+            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:10}}>Your Note (optional)</div>
+            <textarea
+              value={participantNotes[currentProfile.pid]||""}
+              onChange={e=>setParticipantNotes(prev=>({...prev,[currentProfile.pid]:e.target.value}))}
+              placeholder="Share observations, patterns, or insights..."
+              rows={5}
+              style={{width:"100%",background:"#030f20",border:`1px solid ${OC.border}`,borderRadius:10,padding:"12px 14px",color:OC.text,fontSize:13,lineHeight:1.6,resize:"vertical",outline:"none",fontFamily:"inherit",boxSizing:"border-box",transition:"border-color 0.3s"}}
+              onFocus={e=>e.target.style.borderColor=DIMS[strongestDim].color} 
+              onBlur={e=>e.target.style.borderColor=OC.border}
+            />
+          </div>
+          
+          <div style={{display:"flex",gap:10}}>
+            {currentFeedbackIndex > 0 && (
+              <button onClick={()=>setCurrentFeedbackIndex(i=>i-1)} className="btn-ocean" style={{flex:1,padding:14,borderRadius:12,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textMid,fontSize:14,cursor:"pointer"}}>← Back</button>
+            )}
+            {!isLast ? (
+              <button onClick={()=>setCurrentFeedbackIndex(i=>i+1)} className="btn-ocean" style={{flex:2,padding:14,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 20px ${OC.accent}44`}}>Next profile →</button>
+            ) : (
+              <button onClick={async ()=>{
+                const pid = myPid || localStorage.getItem("swarm-pid");
+                try {
+                  const notesArray = otherParticipants.map(p => ({pid: p.pid, note: participantNotes[p.pid] || ""}));
+                  await fbUpdate(`${sp(sessionCode)}/profiles/${pid}`, { participantNotes: notesArray, feedbackComplete: true });
+                  goTo("waiting");
+                } catch (e) {
+                  console.error("Error saving notes:", e);
+                  alert("Error saving feedback. Please try again.");
+                }
+              }} className="btn-ocean" style={{flex:2,padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer"}}>Submit all feedback ✓</button>
+            )}
           </div>
         </div>
       </div>
     );
   }
-
   // RESULT — shown after feedbackDone
   if (screen === "result" && myScores) {
     // Calculate group averages
@@ -1488,7 +1496,7 @@ export default function App() {
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
-      <div style={{position:"relative",zIndex:1,maxWidth:360,width:"100%",textAlign:"center"}}>
+      <div className="content-overlay" style={{position:"relative",zIndex:1,maxWidth:360,width:"100%",textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{width:120,height:120,margin:"0 auto 24px"}}><MiniSchool size={120} /></div>
         <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:8}}>You're ready</div>
         <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7,marginBottom:32}}>Waiting for the host to start the swarm feedback. Your signal is in the deep.</div>
@@ -1590,9 +1598,10 @@ export default function App() {
   // SWARM VIEW - Visualization of all participants as fish
   if (screen === "swarmView") {
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 60%,#010d1f 100%)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <style>{GLOBAL_CSS}</style>
-        <UnderwaterBg />
+        {/* Coral reef background image */}
+        <div style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",zIndex:0,backgroundImage:"url('/coral-reef-bg.jpg')",backgroundSize:"cover",backgroundPosition:"center",opacity:0.8}} />
         <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
           <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Visualization</div>
           <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>The Complete Swarm</div>
