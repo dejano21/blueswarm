@@ -326,9 +326,9 @@ function MiniSchool({ size=200 }) {
 
 function FishSchool({ selectedDim, onFishClick, scores }) {
   return (
-    <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden'}}>
+    <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden', zIndex: 10}}>
       {/* Add colorful koi fish for each dimension - swimming slowly and randomly */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1}}>
+      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none'}}>
         <KoiFish color={DIMS.O.color} delay={0} duration={45000} />
         <KoiFish color={DIMS.C.color} delay={9000} duration={52000} reverse={true} />
         <KoiFish color={DIMS.E.color} delay={18000} duration={48000} />
@@ -337,7 +337,7 @@ function FishSchool({ selectedDim, onFishClick, scores }) {
       </div>
       
       {/* Interactive overlay for clicking dimensions */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20, zIndex: 2}}>
+      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20, zIndex: 20}}>
         {Object.keys(DIMS).map(dim => (
           <div
             key={dim}
@@ -443,7 +443,6 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
   const canvasRef = useRef(null);
   const selectedRef = useRef(selectedFish);
   const ripples = useRef([]);
-  const bgImageRef = useRef(null);
   selectedRef.current = selectedFish;
   
   useEffect(() => {
@@ -452,12 +451,6 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
     const W=canvas.offsetWidth,H=canvas.offsetHeight;
     canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
-    
-    // Load background image
-    const bgImage = new Image();
-    bgImage.src = '/coral-reef-bg.jpg'; // User will add this image
-    bgImage.onload = () => { bgImageRef.current = bgImage; };
-    bgImage.onerror = () => { console.log('Background image not found, using gradient'); };
     
     // Calculate average scores for each dimension
     const avgScores = {};
@@ -813,21 +806,6 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
     let raf;
     function loop(){
       ctx.clearRect(0,0,W,H);
-      
-      // Draw background image if loaded, otherwise use gradient
-      if (bgImageRef.current) {
-        ctx.globalAlpha = 0.6;
-        ctx.drawImage(bgImageRef.current, 0, 0, W, H);
-        ctx.globalAlpha = 1;
-      } else {
-        // Fallback gradient background
-        const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
-        bgGrad.addColorStop(0, '#031F48');
-        bgGrad.addColorStop(1, '#010d1f');
-        ctx.fillStyle = bgGrad;
-        ctx.fillRect(0, 0, W, H);
-      }
-      
       updateFish();
       
       // Draw reefs first
@@ -867,7 +845,7 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
     return ()=>{cancelAnimationFrame(raf);canvas.removeEventListener("click",handleClick);};
   },[participants]);
   
-  return <canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block",cursor:"pointer"}} />;
+  return <canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block",cursor:"pointer",background:"transparent"}} />;
 }
 
 export default function App() {
@@ -985,7 +963,10 @@ export default function App() {
 
   useEffect(() => { 
     if (screen === "waiting" && feedbackDone) goTo("result");
-    if (screen === "waiting" && feedbackStarted) goTo("participantFeedback");
+    if (screen === "waiting" && feedbackStarted) {
+      setCurrentFeedbackIndex(0); // Reset to first profile
+      goTo("participantFeedback");
+    }
   }, [feedbackDone, feedbackStarted, screen, goTo]);
   useEffect(() => () => {
     stopSession();
