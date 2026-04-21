@@ -87,52 +87,75 @@ const GLOBAL_CSS = `
 @keyframes ripple{0%{transform:scale(0);opacity:0.6}100%{transform:scale(4);opacity:0}}
 @keyframes creatureSwim{0%{transform:translateX(-120px) translateY(0)}25%{transform:translateX(25vw) translateY(-8px)}50%{transform:translateX(50vw) translateY(4px)}75%{transform:translateX(75vw) translateY(-6px)}100%{transform:translateX(calc(100vw + 120px)) translateY(0)}}
 @keyframes creatureFade{0%{opacity:0}5%{opacity:0.06}95%{opacity:0.06}100%{opacity:0}}
-@keyframes surface{0%{opacity:0;background-position:center bottom;background-size:100% 70vh}20%{opacity:0.4}100%{opacity:0;background-position:center bottom -30vh;background-size:100% 30vh}}
-@keyframes caustics{0%{background-position:bottom 0px left}100%{background-position:bottom 0px left -100vw}}
-@keyframes sun{0%{opacity:0.1;transform:skew(5deg) scale3d(3,1.5,1)}50%{opacity:0.08;transform:skew(0deg) scale3d(1.5,1,1)}100%{opacity:0.1;transform:skew(-5deg) scale3d(3,1,1)}}
 .screen-enter{animation:screenFadeIn 0.45s ease-out both}
 .btn-ocean{transition:all 0.2s ease;position:relative;overflow:hidden}
 .btn-ocean:active{transform:scale(0.97)}
 .btn-ocean:hover{filter:brightness(1.08)}
 .card-float{transition:all 0.3s ease;position:relative}
 .card-float:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,200,245,0.08)}
-#underwater-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:0;overflow:hidden}
-#surface{mix-blend-mode:overlay;position:absolute;top:0;left:0;width:100%;height:100%}
-#surface::before,#surface::after{content:"";display:block;position:absolute;bottom:0;left:0;width:100%;height:100%;background-image:url("https://images.unsplash.com/photo-1518837695005-2083093ee35b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MTEyMTIwOTZ8&ixlib=rb-4.0.3&q=80&w=400");background-repeat:repeat-x;animation:surface 8s linear infinite;opacity:0;mask-image:linear-gradient(to top,white,transparent 30vh)}
-#surface::before{animation-delay:0s;transform:scale3d(1,-1,1)}
-#surface::after{animation-delay:-4s;transform:scale3d(-1,-1,1)}
-#caustics{position:absolute;bottom:0;top:0;width:100%;height:100%;filter:url(#noise1)}
-#caustics::before,#caustics::after{content:"";display:block;position:absolute;bottom:0;left:0;width:100%;height:100%;background-image:url("https://images.unsplash.com/photo-1568145675395-66a2eda0c6d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MTEyMTAwNjh8&ixlib=rb-4.0.3&q=80&w=400");background-repeat:repeat;background-size:100vw 30vh;animation:caustics 10s linear infinite;opacity:0.3;mask-image:linear-gradient(to top,white,transparent,transparent,transparent)}
-#caustics::after{animation-delay:-2s;animation-duration:11s;transform:scale3d(-1,1,1)}
-#sun{mix-blend-mode:overlay;position:absolute;top:0;left:0;width:100%;height:100%}
-#sun div{content:"";display:block;position:absolute;bottom:0;left:0;width:100%;height:100%;transform-origin:50vw 0;animation:sun 7s ease infinite alternate;mask-image:linear-gradient(to bottom,transparent 15%,white 50%,white 55%,transparent 80%)}
-#sun #sun_layer1{background:linear-gradient(to right,transparent 39%,white 40%,transparent 41%,transparent 48.5%,white 50%,transparent 51.5%,transparent 53%,white 54%,transparent 55%,transparent 70%,white 71%,transparent 72%)}
-#sun #sun_layer2{animation-delay:-2s;animation-duration:7.8s;animation-direction:alternate-reverse;background:linear-gradient(to right,transparent 32%,white 33%,transparent 34%,transparent 38%,white 39%,transparent 40%,transparent 53%,white 54%,transparent 55%,transparent 63.5%,white 65%,transparent 66.5%)}
-#sun #sun_layer3{animation-delay:-5s;animation-duration:8.5s;background:linear-gradient(to right,transparent 38.5%,white 40%,transparent 41.5%,transparent 47%,white 48%,transparent 49%,transparent 52%,white 53%,transparent 54%,transparent 60%,white 61%,transparent 62%)}
-#bg-gradient{display:block;position:absolute;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(to bottom,white,gray 25%,gray 60%,khaki);opacity:0.5;mix-blend-mode:overlay}
+#underwater-bg-container canvas{display:block;position:fixed;z-index:-1;top:0;}
 `;
 
-// Underwater background component
+// Underwater background component with Three.js fishes
 function UnderwaterBg() {
+  const containerRef = useRef(null);
+  
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    // Dynamically load Three.js toys
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.textContent = `
+      import { fishesBackground } from 'https://unpkg.com/threejs-toys@0.0.8/build/threejs-toys.module.cdn.min.js';
+      
+      const bg = fishesBackground({
+        el: document.getElementById('underwater-bg-container'),
+        eventsEl: document.body,
+        gpgpuSize: 96,
+        background: 0x031F48,
+        fogDensity: 0.025,
+        texture: 'https://assets.codepen.io/33787/fishes.png',
+        textureCount: 8,
+        material: 'phong',
+        materialParams: {
+          transparent: true,
+          alphaTest: 0.5
+        },
+        fishScale: [1, 1, 1],
+        fishWidthSegments: 8,
+        fishSpeed: 1.5,
+        noiseCoordScale: 0.01,
+        noiseTimeCoef: 0.0005,
+        noiseIntensity: 0.0005,
+        attractionRadius1: 50,
+        attractionRadius2: 150,
+        maxVelocity: 0.1
+      });
+    `;
+    document.body.appendChild(script);
+    
+    return () => {
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
+  
   return (
-    <>
-      <svg style={{display:"none"}}>
-        <filter id="noise1">
-          <feTurbulence type="turbulence" baseFrequency=".05" numOctaves="1" seed="3" stitchTiles='stitch' />
-          <feDisplacementMap in="SourceGraphic" scale="10" />
-        </filter>
-      </svg>
-      <div id="underwater-bg">
-        <div id='surface'></div>
-        <div id='caustics'></div>
-        <div id='bg-gradient'></div>
-        <div id='sun'>
-          <div id='sun_layer1'></div>
-          <div id='sun_layer2'></div>
-          <div id='sun_layer3'></div>
-        </div>
-      </div>
-    </>
+    <div 
+      id="underwater-bg-container" 
+      ref={containerRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: -1,
+        pointerEvents: 'none'
+      }}
+    />
   );
 }
 
@@ -1051,8 +1074,8 @@ export default function App() {
             );
           })}
           
-          <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"16px 24px",background:"linear-gradient(0deg, #010d1f 80%, transparent)",zIndex:10}}>
-            <div style={{maxWidth:520,margin:"0 auto"}}>
+          <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"16px 24px",background:"linear-gradient(0deg, #010d1f 80%, transparent)",zIndex:100,pointerEvents:"none"}}>
+            <div style={{maxWidth:520,margin:"0 auto",pointerEvents:"auto"}}>
               <button onClick={async ()=>{
                 const pid = myPid || localStorage.getItem("swarm-pid");
                 try {
@@ -1074,31 +1097,86 @@ export default function App() {
   }
 
   // RESULT — shown after feedbackDone
-  if (screen === "result" && myScores) return (
-    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
-      <style>{GLOBAL_CSS}</style>
-      <UnderwaterBg />
-      <div style={{position:"relative",zIndex:1,maxWidth:460,margin:"0 auto"}}>
-        <div style={{width:90,height:90,margin:"0 auto 18px"}}><MiniSchool size={90} /></div>
-        <div style={{textAlign:"center",marginBottom:24}}>
-          <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Your Pattern Revealed</div>
-          <div style={{fontSize:13,color:OC.textMid}}>Here's your current across the five dimensions</div>
-        </div>
-        <ScoreBars scores={myScores} />
-        {myAnnotation !== null && (
-          <div className="card-float" style={{marginTop:20,padding:"16px 18px",background:`${OC.accent}0d`,borderRadius:12,border:`1px solid ${OC.accent}33`}}>
-            <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Host Notes</div>
-            {myAnnotation ? (
-              <div style={{fontSize:13,color:OC.text,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{myAnnotation}</div>
-            ) : (
-              <div style={{fontSize:13,color:OC.textMid,fontStyle:"italic"}}>No notes were added for this signal.</div>
-            )}
+  if (screen === "result" && myScores) {
+    // Calculate group averages
+    const groupAvg = {};
+    Object.keys(DIMS).forEach(dim => {
+      const sum = participants.reduce((acc, p) => acc + p.scores[dim], 0);
+      groupAvg[dim] = Math.round(sum / participants.length);
+    });
+    
+    return (
+      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative",overflowY:"auto"}}>
+        <style>{GLOBAL_CSS}</style>
+        <UnderwaterBg />
+        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",paddingBottom:40}}>
+          <div style={{width:90,height:90,margin:"0 auto 18px"}}><MiniSchool size={90} /></div>
+          
+          {/* Your Results */}
+          <div style={{textAlign:"center",marginBottom:24}}>
+            <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Your Pattern Revealed</div>
+            <div style={{fontSize:13,color:OC.textMid}}>Here's your current across the five dimensions</div>
           </div>
-        )}
-        <button onClick={()=>{goTo("home");setAnswers({});setCurrent(0);setMyScores(null);}} className="btn-ocean" style={{width:"100%",marginTop:24,padding:12,borderRadius:8,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:"pointer"}}>Back to surface</button>
+          
+          <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
+            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Your Scores</div>
+            <ScoreBars scores={myScores} />
+          </div>
+          
+          {myAnnotation !== null && (
+            <div className="card-float" style={{marginBottom:20,padding:"16px 18px",background:`${OC.accent}0d`,borderRadius:12,border:`1px solid ${OC.accent}33`}}>
+              <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Host Notes</div>
+              {myAnnotation ? (
+                <div style={{fontSize:13,color:OC.text,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{myAnnotation}</div>
+              ) : (
+                <div style={{fontSize:13,color:OC.textMid,fontStyle:"italic"}}>No notes were added for this signal.</div>
+              )}
+            </div>
+          )}
+          
+          {/* Group Results */}
+          <div style={{textAlign:"center",marginTop:40,marginBottom:24}}>
+            <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Group Results</div>
+            <div style={{fontSize:13,color:OC.textMid}}>Average scores across all {participants.length} participants</div>
+          </div>
+          
+          <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.accent2}44`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
+            <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Swarm Average</div>
+            <ScoreBars scores={groupAvg} />
+          </div>
+          
+          {/* Comparison */}
+          <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"18px 20px",marginBottom:20}}>
+            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>You vs. Group</div>
+            {Object.keys(DIMS).map(dim => {
+              const diff = myScores[dim] - groupAvg[dim];
+              const absDiff = Math.abs(diff);
+              return (
+                <div key={dim} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,padding:"8px 12px",background:absDiff>15?DIMS[dim].color+"0d":"transparent",borderRadius:8}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10}}>
+                    <div style={{width:8,height:8,borderRadius:"50%",background:DIMS[dim].color}} />
+                    <span style={{fontSize:12,fontWeight:600,color:OC.text}}>{DIMS[dim].label}</span>
+                  </div>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
+                    <span style={{fontSize:11,color:OC.textMid}}>You: {myScores[dim]}%</span>
+                    <span style={{fontSize:11,color:OC.textDim}}>·</span>
+                    <span style={{fontSize:11,color:OC.textMid}}>Group: {groupAvg[dim]}%</span>
+                    {absDiff > 5 && (
+                      <span style={{fontSize:11,fontWeight:600,color:diff>0?OC.accent2:OC.accent}}>
+                        {diff>0?"+":""}{diff}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          <button onClick={()=>{goTo("home");setAnswers({});setCurrent(0);setMyScores(null);}} className="btn-ocean" style={{width:"100%",marginTop:24,padding:12,borderRadius:8,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:"pointer"}}>Back to surface</button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   // SIGNAL SENT
   if (screen === "signalSent") return (
