@@ -507,60 +507,181 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
       const {x, y, color, dim, avgScore} = reef;
       ctx.save();
       
-      // Coral structure
-      const coralHeight = 40 + (avgScore/100) * 30;
-      const coralWidth = 35;
+      // Base size influenced by score
+      const baseSize = 35 + (avgScore/100) * 25;
+      const coralHeight = 45 + (avgScore/100) * 35;
       
-      // Draw coral branches
-      for (let i = 0; i < 5; i++) {
-        const branchX = x + (i - 2) * 8;
-        const branchHeight = coralHeight * (0.6 + Math.random() * 0.4);
-        const branchWidth = 6 + Math.random() * 4;
+      // Draw base/rock foundation
+      ctx.fillStyle = "#0a1a2e";
+      ctx.beginPath();
+      ctx.ellipse(x, y + 5, baseSize * 0.8, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Main coral structure - multiple branch types
+      const branchTypes = [
+        // Staghorn coral (tall spikes)
+        {count: 3, style: 'spike'},
+        // Fan coral (wide spread)
+        {count: 2, style: 'fan'},
+        // Brain coral (rounded)
+        {count: 2, style: 'brain'}
+      ];
+      
+      // Draw staghorn coral branches (center, tallest)
+      for (let i = 0; i < 3; i++) {
+        const offsetX = (i - 1) * 10;
+        const branchHeight = coralHeight * (0.85 + Math.random() * 0.15);
+        const branchWidth = 5 + Math.random() * 3;
         
-        // Gradient for coral
-        const grad = ctx.createLinearGradient(branchX, y, branchX, y - branchHeight);
-        grad.addColorStop(0, color + "88");
-        grad.addColorStop(0.5, color + "cc");
-        grad.addColorStop(1, color + "44");
+        // Gradient for depth
+        const grad = ctx.createLinearGradient(x + offsetX, y, x + offsetX, y - branchHeight);
+        grad.addColorStop(0, color + "66");
+        grad.addColorStop(0.3, color + "aa");
+        grad.addColorStop(0.7, color + "ee");
+        grad.addColorStop(1, color + "88");
         
         ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.moveTo(branchX - branchWidth/2, y);
-        ctx.quadraticCurveTo(branchX - branchWidth/3, y - branchHeight/2, branchX, y - branchHeight);
-        ctx.quadraticCurveTo(branchX + branchWidth/3, y - branchHeight/2, branchX + branchWidth/2, y);
+        ctx.moveTo(x + offsetX - branchWidth/2, y);
+        
+        // Wavy edges for organic look
+        for (let h = 0; h <= branchHeight; h += 5) {
+          const wave = Math.sin(h * 0.3) * 2;
+          const taper = 1 - (h / branchHeight) * 0.6;
+          ctx.lineTo(x + offsetX - (branchWidth/2) * taper + wave, y - h);
+        }
+        
+        for (let h = branchHeight; h >= 0; h -= 5) {
+          const wave = Math.sin(h * 0.3) * 2;
+          const taper = 1 - (h / branchHeight) * 0.6;
+          ctx.lineTo(x + offsetX + (branchWidth/2) * taper + wave, y - h);
+        }
+        
         ctx.closePath();
         ctx.fill();
         
-        // Add texture dots
-        ctx.fillStyle = color + "33";
-        for (let j = 0; j < 3; j++) {
+        // Add polyp details (small circles along branch)
+        ctx.fillStyle = color + "44";
+        for (let p = 0; p < 5; p++) {
+          const py = y - (branchHeight * (0.2 + p * 0.15));
+          const px = x + offsetX + (Math.random() - 0.5) * branchWidth * 0.6;
           ctx.beginPath();
-          ctx.arc(branchX + (Math.random()-0.5)*branchWidth*0.5, y - branchHeight * (0.3 + j*0.25), 1.5, 0, Math.PI*2);
+          ctx.arc(px, py, 1.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
       
-      // Glow effect
+      // Fan coral (sides)
+      for (let side = -1; side <= 1; side += 2) {
+        const fanX = x + side * 18;
+        const fanHeight = coralHeight * 0.65;
+        const fanWidth = 15;
+        
+        const fanGrad = ctx.createRadialGradient(fanX, y - fanHeight/2, 0, fanX, y - fanHeight/2, fanWidth);
+        fanGrad.addColorStop(0, color + "aa");
+        fanGrad.addColorStop(0.7, color + "66");
+        fanGrad.addColorStop(1, color + "22");
+        
+        ctx.fillStyle = fanGrad;
+        ctx.beginPath();
+        ctx.moveTo(fanX, y);
+        
+        // Create fan shape
+        for (let angle = -Math.PI/3; angle <= Math.PI/3; angle += Math.PI/12) {
+          const r = fanWidth * (1 - Math.abs(angle) / (Math.PI/3) * 0.3);
+          ctx.lineTo(
+            fanX + Math.sin(angle) * r * side,
+            y - fanHeight + Math.cos(angle) * r * 0.5
+          );
+        }
+        
+        ctx.closePath();
+        ctx.fill();
+        
+        // Fan texture lines
+        ctx.strokeStyle = color + "33";
+        ctx.lineWidth = 0.8;
+        for (let angle = -Math.PI/3; angle <= Math.PI/3; angle += Math.PI/18) {
+          ctx.beginPath();
+          ctx.moveTo(fanX, y);
+          const r = fanWidth * (1 - Math.abs(angle) / (Math.PI/3) * 0.3);
+          ctx.lineTo(
+            fanX + Math.sin(angle) * r * side,
+            y - fanHeight + Math.cos(angle) * r * 0.5
+          );
+          ctx.stroke();
+        }
+      }
+      
+      // Brain coral (rounded clusters at base)
+      for (let i = 0; i < 4; i++) {
+        const angle = (i / 4) * Math.PI * 2;
+        const dist = baseSize * 0.5;
+        const bx = x + Math.cos(angle) * dist;
+        const by = y + Math.sin(angle) * dist * 0.3;
+        const size = 6 + Math.random() * 4;
+        
+        // Brain coral texture
+        const brainGrad = ctx.createRadialGradient(bx, by, 0, bx, by, size);
+        brainGrad.addColorStop(0, color + "cc");
+        brainGrad.addColorStop(0.6, color + "88");
+        brainGrad.addColorStop(1, color + "44");
+        
+        ctx.fillStyle = brainGrad;
+        ctx.beginPath();
+        ctx.arc(bx, by, size, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Brain pattern
+        ctx.strokeStyle = color + "33";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(bx - size * 0.3, by, size * 0.6, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(bx + size * 0.3, by, size * 0.6, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      
+      // Ambient glow around entire reef
       ctx.shadowColor = color;
-      ctx.shadowBlur = 15;
-      ctx.strokeStyle = color + "66";
-      ctx.lineWidth = 2;
+      ctx.shadowBlur = 25;
+      ctx.strokeStyle = color + "44";
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(x, y - coralHeight/2, coralWidth, 0, Math.PI * 2);
+      ctx.arc(x, y - coralHeight/2, baseSize * 1.2, 0, Math.PI * 2);
       ctx.stroke();
       ctx.shadowBlur = 0;
       
-      // Label
+      // Floating particles around reef
+      for (let i = 0; i < 6; i++) {
+        const particleAngle = (Date.now() * 0.0003 + i) % (Math.PI * 2);
+        const particleDist = 25 + Math.sin(Date.now() * 0.001 + i) * 8;
+        const px = x + Math.cos(particleAngle) * particleDist;
+        const py = y - coralHeight/2 + Math.sin(particleAngle) * particleDist * 0.6;
+        
+        ctx.fillStyle = color + "66";
+        ctx.beginPath();
+        ctx.arc(px, py, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      
+      // Label with background
+      ctx.fillStyle = "rgba(1, 13, 31, 0.8)";
+      ctx.beginPath();
+      ctx.roundRect(x - 35, y + 8, 70, 38, 8);
+      ctx.fill();
+      
       ctx.font = "bold 11px -apple-system,sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "top";
       ctx.fillStyle = color;
-      ctx.fillText(DIMS[dim].label, x, y + 8);
+      ctx.fillText(DIMS[dim].label, x, y + 12);
       
-      // Average score
-      ctx.font = "bold 14px -apple-system,sans-serif";
+      // Average score with icon
+      ctx.font = "bold 16px -apple-system,sans-serif";
       ctx.fillStyle = "#fff";
-      ctx.fillText(avgScore + "%", x, y + 22);
+      ctx.fillText(avgScore + "%", x, y + 26);
       
       ctx.restore();
     }
@@ -721,7 +842,15 @@ export default function App() {
       const qCount = meta.questionCount || 20;
       setQuestionCount(qCount);
       setActiveQuestions(QUESTIONS.slice(0, qCount));
-      setSessionCode(code); goTo("assessment"); setError("");
+      setSessionCode(code); 
+      
+      // Listen to all profiles so participant can see them during feedback
+      unsubRef.current = fbListen(`${sp(code)}/profiles`, (val) => {
+        setParticipants(val ? Object.values(val) : []);
+      });
+      
+      goTo("assessment"); 
+      setError("");
     } catch (e) { setError("No swarm found."); }
   }
 
@@ -961,43 +1090,93 @@ export default function App() {
 
   // PARTICIPANT FEEDBACK - Participants add notes to profiles
   if (screen === "participantFeedback") {
+    // Show all participants except self
     const otherParticipants = participants.filter(p => p.pid !== myPid);
+    
+    if (otherParticipants.length === 0) {
+      return (
+        <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
+          <style>{GLOBAL_CSS}</style>
+          <BubblesBg /><OceanCreature />
+          <div style={{position:"relative",zIndex:1,maxWidth:400,width:"100%",textAlign:"center"}}>
+            <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:8}}>Waiting for other signals...</div>
+            <div style={{fontSize:13,color:OC.textMid,marginBottom:24}}>The feedback round will begin once other participants join.</div>
+            <button onClick={()=>goTo("waiting")} className="btn-ocean" style={{padding:12,borderRadius:12,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textMid,fontSize:13,cursor:"pointer"}}>← Back</button>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative",overflowY:"auto"}}>
         <style>{GLOBAL_CSS}</style>
         <BubblesBg /><OceanCreature />
-        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto"}}>
+        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",paddingBottom:80}}>
           <div style={{textAlign:"center",marginBottom:24}}>
             <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Feedback Round</div>
             <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Add Your Observations</div>
             <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7}}>Review each anonymous profile and add your notes. Your feedback helps the swarm learn together.</div>
           </div>
-          {otherParticipants.map((p,i)=>(
-            <div key={p.pid} className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"18px 20px",marginBottom:16}}>
-              <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Anonymous Signal #{String(i+1).padStart(2,"0")}</div>
-              <ScoreBars scores={p.scores} compact={true} />
-              <div style={{marginTop:14}}>
-                <div style={{fontSize:10,color:OC.textDim,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Your Note (optional)</div>
-                <textarea
-                  value={participantNotes[p.pid]||""}
-                  onChange={e=>setParticipantNotes(prev=>({...prev,[p.pid]:e.target.value}))}
-                  placeholder="Share observations, patterns, or insights..."
-                  rows={3}
-                  style={{width:"100%",background:"#030f20",border:`1px solid ${OC.border}`,borderRadius:10,padding:"10px 12px",color:OC.text,fontSize:12,lineHeight:1.5,resize:"vertical",outline:"none",fontFamily:"inherit",boxSizing:"border-box",transition:"border-color 0.3s"}}
-                  onFocus={e=>e.target.style.borderColor=OC.accent} onBlur={e=>e.target.style.borderColor=OC.border}
-                />
+          
+          <div style={{marginBottom:16,padding:"12px 16px",background:OC.card,border:`1px solid ${OC.accent}33`,borderRadius:12}}>
+            <div style={{fontSize:11,color:OC.accent,fontWeight:600}}>💡 Tip: Focus on patterns you notice, strengths you see, or insights that might help each person.</div>
+          </div>
+          
+          {otherParticipants.map((p,i)=>{
+            // Find strongest dimension for this participant
+            const dims = Object.keys(DIMS);
+            let strongestDim = dims[0];
+            let maxScore = p.scores[dims[0]];
+            dims.forEach(dim => {
+              if (p.scores[dim] > maxScore) {
+                maxScore = p.scores[dim];
+                strongestDim = dim;
+              }
+            });
+            
+            return (
+              <div key={p.pid} className="card-float" style={{background:OC.card,border:`1px solid ${participantNotes[p.pid]?.trim()?DIMS[strongestDim].color+"44":OC.border}`,borderRadius:16,padding:"18px 20px",marginBottom:16}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+                  <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase"}}>Anonymous Signal #{String(i+1).padStart(2,"0")}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:6}}>
+                    <div style={{width:20,height:20,borderRadius:"50%",background:DIMS[strongestDim].color+"33",border:`2px solid ${DIMS[strongestDim].color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:DIMS[strongestDim].color}}>{strongestDim}</div>
+                    <span style={{fontSize:10,color:DIMS[strongestDim].color,fontWeight:600}}>{maxScore}%</span>
+                  </div>
+                </div>
+                <ScoreBars scores={p.scores} compact={true} />
+                <div style={{marginTop:14}}>
+                  <div style={{fontSize:10,color:OC.textDim,letterSpacing:2,textTransform:"uppercase",marginBottom:8}}>Your Note (optional)</div>
+                  <textarea
+                    value={participantNotes[p.pid]||""}
+                    onChange={e=>setParticipantNotes(prev=>({...prev,[p.pid]:e.target.value}))}
+                    placeholder="Share observations, patterns, or insights..."
+                    rows={3}
+                    style={{width:"100%",background:"#030f20",border:`1px solid ${OC.border}`,borderRadius:10,padding:"10px 12px",color:OC.text,fontSize:12,lineHeight:1.5,resize:"vertical",outline:"none",fontFamily:"inherit",boxSizing:"border-box",transition:"border-color 0.3s"}}
+                    onFocus={e=>e.target.style.borderColor=DIMS[strongestDim].color} 
+                    onBlur={e=>e.target.style.borderColor=OC.border}
+                  />
+                </div>
               </div>
+            );
+          })}
+          
+          <div style={{position:"fixed",bottom:0,left:0,right:0,padding:"16px 24px",background:"linear-gradient(0deg, #010d1f 80%, transparent)",zIndex:10}}>
+            <div style={{maxWidth:520,margin:"0 auto"}}>
+              <button onClick={async ()=>{
+                const pid = myPid || localStorage.getItem("swarm-pid");
+                try {
+                  // Save participant's notes to their own profile
+                  const notesArray = otherParticipants.map(p => ({pid: p.pid, note: participantNotes[p.pid] || ""}));
+                  await fbUpdate(`${sp(sessionCode)}/profiles/${pid}`, { participantNotes: notesArray, feedbackComplete: true });
+                } catch (e) {
+                  console.error("Error saving notes:", e);
+                }
+                goTo("waiting");
+              }} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
+                Submit feedback ✓
+              </button>
             </div>
-          ))}
-          <button onClick={async ()=>{
-            const pid = myPid || localStorage.getItem("swarm-pid");
-            try {
-              // Save participant's notes to their own profile
-              const notesArray = otherParticipants.map(p => ({pid: p.pid, note: participantNotes[p.pid] || ""}));
-              await fbUpdate(`${sp(sessionCode)}/profiles/${pid}`, { participantNotes: notesArray });
-            } catch (_) {}
-            goTo("waiting");
-          }} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",marginTop:8}}>Submit feedback ✓</button>
+          </div>
         </div>
       </div>
     );
