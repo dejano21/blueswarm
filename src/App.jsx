@@ -287,7 +287,7 @@ function UnderwaterBg() {
         left: 0,
         width: '100vw',
         height: '100vh',
-        zIndex: 0,
+        zIndex: -1,
         pointerEvents: 'none'
       }}
     />
@@ -326,9 +326,9 @@ function MiniSchool({ size=200 }) {
 
 function FishSchool({ selectedDim, onFishClick, scores }) {
   return (
-    <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden', zIndex: 100}}>
+    <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden'}}>
       {/* Add colorful koi fish for each dimension - swimming slowly and randomly */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 100, pointerEvents: 'none'}}>
+      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none'}}>
         <KoiFish color={DIMS.O.color} delay={0} duration={45000} />
         <KoiFish color={DIMS.C.color} delay={9000} duration={52000} reverse={true} />
         <KoiFish color={DIMS.E.color} delay={18000} duration={48000} />
@@ -337,7 +337,7 @@ function FishSchool({ selectedDim, onFishClick, scores }) {
       </div>
       
       {/* Interactive overlay for clicking dimensions */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20, zIndex: 200}}>
+      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20, zIndex: 20}}>
         {Object.keys(DIMS).map(dim => (
           <div
             key={dim}
@@ -346,7 +346,7 @@ function FishSchool({ selectedDim, onFishClick, scores }) {
               cursor: 'pointer',
               padding: '12px 20px',
               borderRadius: 12,
-              background: selectedDim === dim ? DIMS[dim].color + '33' : 'rgba(1,13,31,0.7)',
+              background: selectedDim === dim ? DIMS[dim].color + '33' : 'rgba(1,13,31,0.85)',
               border: `2px solid ${selectedDim === dim ? DIMS[dim].color : DIMS[dim].color + '44'}`,
               backdropFilter: 'blur(10px)',
               transition: 'all 0.3s ease',
@@ -747,7 +747,7 @@ export default function App() {
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,flexDirection:"column",position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
-      <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:420,textAlign:"center"}}>
+      <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:420,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Setup your swarm session</div>
         <div style={{fontSize:13,color:OC.textMid,marginBottom:32}}>Choose how deep you want to dive</div>
         <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:28}}>
@@ -778,7 +778,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:10,color:OC.textDim,background:"rgba(1,13,31,0.6)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.border}`,backdropFilter:"blur(10px)",zIndex:10}}>v2.2.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:10,color:OC.textDim,background:"rgba(1,13,31,0.6)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.border}`,backdropFilter:"blur(10px)",zIndex:10}}>v2.4.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -954,7 +954,7 @@ export default function App() {
         <UnderwaterBg />
         <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
-            <button onClick={()=>goTo("waiting")} className="btn-ocean" style={{background:"none",border:"none",color:OC.textMid,fontSize:12,cursor:"pointer"}}>← Back</button>
+            <button onClick={()=>goTo("waiting")} className="btn-ocean content-overlay" style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${OC.border}`,color:OC.textMid,fontSize:12,cursor:"pointer"}}>← Back</button>
             <div style={{fontSize:12,color:OC.textMid}}>Profile <span style={{color:"#fff",fontWeight:700}}>{currentFeedbackIndex+1}</span> / {otherParticipants.length}</div>
           </div>
           
@@ -1003,13 +1003,17 @@ export default function App() {
             ) : (
               <button onClick={async ()=>{
                 const pid = myPid || localStorage.getItem("swarm-pid");
+                console.log("Submitting feedback for pid:", pid);
                 try {
                   const notesArray = otherParticipants.map(p => ({pid: p.pid, note: participantNotes[p.pid] || ""}));
+                  console.log("Notes to save:", notesArray);
                   await fbUpdate(`${sp(sessionCode)}/profiles/${pid}`, { participantNotes: notesArray, feedbackComplete: true });
-                  goTo("waiting");
+                  console.log("Feedback saved successfully");
+                  // Go to result screen to see swarm visualization
+                  goTo("result");
                 } catch (e) {
-                  console.error("Error saving notes:", e);
-                  alert("Error saving feedback. Please try again.");
+                  console.error("Error saving feedback:", e);
+                  alert("Error saving feedback: " + e.message);
                 }
               }} className="btn-ocean" style={{flex:2,padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer"}}>Submit all feedback ✓</button>
             )}
@@ -1208,12 +1212,12 @@ export default function App() {
     </div>
   );
 
-  // INTRO — fish swarm
+  // INTRO — fish swarm (NO Three.js background here, only koi fish)
   if (screen === "intro") return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 60%,#010d1f 100%)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <style>{GLOBAL_CSS}</style>
-      <UnderwaterBg />
-      <div className="content-overlay" style={{position:"relative",zIndex:1,padding:"20px 24px 16px",textAlign:"center",margin:"24px 20px 0",borderRadius:16}}>
+      {/* NO UnderwaterBg here - only koi fish */}
+      <div className="content-overlay" style={{position:"relative",zIndex:100,padding:"20px 24px 16px",textAlign:"center",margin:"24px 20px 0",borderRadius:16}}>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Before the swarm feedback</div>
         <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Explore your five dimensions</div>
         <div style={{fontSize:12,color:OC.textMid,marginBottom:12}}>Tap a dimension to learn what it means for you</div>
@@ -1223,16 +1227,16 @@ export default function App() {
           ))}
         </div>
       </div>
-      <div style={{position:"relative",zIndex:100,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:"calc(100vh - 320px)",transition:"flex 0.4s ease"}}>
+      <div style={{position:"relative",zIndex:10,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:"calc(100vh - 320px)",transition:"flex 0.4s ease"}}>
         <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} scores={myScores} />
       </div>
       {selectedFish&&(
-        <div style={{position:"relative",zIndex:1,padding:"0 16px 16px",flex:"1 1 auto",overflowY:"auto"}}>
+        <div style={{position:"relative",zIndex:100,padding:"0 16px 16px",flex:"1 1 auto",overflowY:"auto"}}>
           <RefCard dim={selectedFish} score={myScores?myScores[selectedFish]:undefined} onClose={()=>setSelectedFish(null)} />
         </div>
       )}
-      {!selectedFish&&<div className="content-overlay" style={{position:"relative",zIndex:1,textAlign:"center",padding:"8px 24px",margin:"0 20px 8px",borderRadius:12}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any dimension to open its reference card</div></div>}
-      <div style={{position:"relative",zIndex:1,padding:"12px 20px 28px"}}>
+      {!selectedFish&&<div className="content-overlay" style={{position:"relative",zIndex:100,textAlign:"center",padding:"8px 24px",margin:"0 20px 8px",borderRadius:12}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any dimension to open its reference card</div></div>}
+      <div style={{position:"relative",zIndex:100,padding:"12px 20px 28px"}}>
         <button onClick={markReady} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer"}}>Ready for swarm feedback ✓</button>
       </div>
     </div>
@@ -1268,7 +1272,7 @@ export default function App() {
         <UnderwaterBg />
         <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
-            <button onClick={()=>goTo("hostLive")} className="btn-ocean" style={{background:"none",border:"none",color:OC.textMid,fontSize:12,cursor:"pointer"}}>← Back to session</button>
+            <button onClick={()=>goTo("hostLive")} className="btn-ocean content-overlay" style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${OC.border}`,color:OC.textMid,fontSize:12,cursor:"pointer"}}>← Back to session</button>
             <div style={{fontSize:12,color:OC.textMid}}>Signal <span style={{color:"#fff",fontWeight:700}}>{feedbackIndex+1}</span> / {participants.length}</div>
           </div>
           <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:28}}>
@@ -1374,7 +1378,7 @@ export default function App() {
           </div>
         )}
         <div style={{position:"relative",zIndex:1,padding:"12px 20px 28px"}}>
-          <button onClick={()=>goTo("feedbackDone")} className="btn-ocean" style={{width:"100%",padding:12,borderRadius:12,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:"pointer"}}>← Back</button>
+          <button onClick={()=>goTo("feedbackDone")} className="btn-ocean content-overlay" style={{width:"100%",padding:12,borderRadius:12,border:`1px solid ${OC.border}`,color:OC.textDim,fontSize:13,cursor:"pointer"}}>← Back</button>
         </div>
       </div>
     );
