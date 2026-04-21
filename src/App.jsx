@@ -87,162 +87,53 @@ const GLOBAL_CSS = `
 @keyframes ripple{0%{transform:scale(0);opacity:0.6}100%{transform:scale(4);opacity:0}}
 @keyframes creatureSwim{0%{transform:translateX(-120px) translateY(0)}25%{transform:translateX(25vw) translateY(-8px)}50%{transform:translateX(50vw) translateY(4px)}75%{transform:translateX(75vw) translateY(-6px)}100%{transform:translateX(calc(100vw + 120px)) translateY(0)}}
 @keyframes creatureFade{0%{opacity:0}5%{opacity:0.06}95%{opacity:0.06}100%{opacity:0}}
+@keyframes surface{0%{opacity:0;background-position:center bottom;background-size:100% 70vh}20%{opacity:0.4}100%{opacity:0;background-position:center bottom -30vh;background-size:100% 30vh}}
+@keyframes caustics{0%{background-position:bottom 0px left}100%{background-position:bottom 0px left -100vw}}
+@keyframes sun{0%{opacity:0.1;transform:skew(5deg) scale3d(3,1.5,1)}50%{opacity:0.08;transform:skew(0deg) scale3d(1.5,1,1)}100%{opacity:0.1;transform:skew(-5deg) scale3d(3,1,1)}}
 .screen-enter{animation:screenFadeIn 0.45s ease-out both}
 .btn-ocean{transition:all 0.2s ease;position:relative;overflow:hidden}
 .btn-ocean:active{transform:scale(0.97)}
 .btn-ocean:hover{filter:brightness(1.08)}
 .card-float{transition:all 0.3s ease;position:relative}
 .card-float:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,200,245,0.08)}
+#underwater-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:0;overflow:hidden}
+#surface{mix-blend-mode:overlay;position:absolute;top:0;left:0;width:100%;height:100%}
+#surface::before,#surface::after{content:"";display:block;position:absolute;bottom:0;left:0;width:100%;height:100%;background-image:url("https://images.unsplash.com/photo-1518837695005-2083093ee35b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MTEyMTIwOTZ8&ixlib=rb-4.0.3&q=80&w=400");background-repeat:repeat-x;animation:surface 8s linear infinite;opacity:0;mask-image:linear-gradient(to top,white,transparent 30vh)}
+#surface::before{animation-delay:0s;transform:scale3d(1,-1,1)}
+#surface::after{animation-delay:-4s;transform:scale3d(-1,-1,1)}
+#caustics{position:absolute;bottom:0;top:0;width:100%;height:100%;filter:url(#noise1)}
+#caustics::before,#caustics::after{content:"";display:block;position:absolute;bottom:0;left:0;width:100%;height:100%;background-image:url("https://images.unsplash.com/photo-1568145675395-66a2eda0c6d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzMjM4NDZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MTEyMTAwNjh8&ixlib=rb-4.0.3&q=80&w=400");background-repeat:repeat;background-size:100vw 30vh;animation:caustics 10s linear infinite;opacity:0.3;mask-image:linear-gradient(to top,white,transparent,transparent,transparent)}
+#caustics::after{animation-delay:-2s;animation-duration:11s;transform:scale3d(-1,1,1)}
+#sun{mix-blend-mode:overlay;position:absolute;top:0;left:0;width:100%;height:100%}
+#sun div{content:"";display:block;position:absolute;bottom:0;left:0;width:100%;height:100%;transform-origin:50vw 0;animation:sun 7s ease infinite alternate;mask-image:linear-gradient(to bottom,transparent 15%,white 50%,white 55%,transparent 80%)}
+#sun #sun_layer1{background:linear-gradient(to right,transparent 39%,white 40%,transparent 41%,transparent 48.5%,white 50%,transparent 51.5%,transparent 53%,white 54%,transparent 55%,transparent 70%,white 71%,transparent 72%)}
+#sun #sun_layer2{animation-delay:-2s;animation-duration:7.8s;animation-direction:alternate-reverse;background:linear-gradient(to right,transparent 32%,white 33%,transparent 34%,transparent 38%,white 39%,transparent 40%,transparent 53%,white 54%,transparent 55%,transparent 63.5%,white 65%,transparent 66.5%)}
+#sun #sun_layer3{animation-delay:-5s;animation-duration:8.5s;background:linear-gradient(to right,transparent 38.5%,white 40%,transparent 41.5%,transparent 47%,white 48%,transparent 49%,transparent 52%,white 53%,transparent 54%,transparent 60%,white 61%,transparent 62%)}
+#bg-gradient{display:block;position:absolute;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(to bottom,white,gray 25%,gray 60%,khaki);opacity:0.5;mix-blend-mode:overlay}
 `;
 
-// Rare ocean creature that swims across the background
-function OceanCreature() {
-  const [creature, setCreature] = useState(null);
-  useEffect(() => {
-    function spawn() {
-      const types = [
-        // Orca silhouette path
-        { path: "M0,20 Q10,8 25,10 Q35,5 50,8 Q60,2 70,10 L75,6 L72,12 Q78,14 80,20 Q78,26 72,28 L75,34 L70,30 Q60,38 50,32 Q35,35 25,30 Q10,32 0,20Z", w:80, h:40 },
-        // Squid silhouette
-        { path: "M20,0 Q25,5 28,15 Q30,25 28,35 Q25,40 20,42 Q15,40 12,35 Q10,25 12,15 Q15,5 20,0Z M12,35 Q5,45 2,50 M15,38 Q10,48 8,52 M20,42 Q20,52 20,55 M25,38 Q30,48 32,52 M28,35 Q35,45 38,50", w:40, h:55 },
-        // Manta ray
-        { path: "M40,20 Q30,5 10,12 Q0,16 5,22 Q10,28 30,25 L40,30 L50,25 Q70,28 75,22 Q80,16 70,12 Q50,5 40,20Z M38,28 L36,40 M42,28 L44,40", w:80, h:42 },
-      ];
-      const t = types[Math.floor(Math.random()*types.length)];
-      const y = 15 + Math.random()*60; // % from top
-      const dur = 45 + Math.random()*30; // seconds
-      setCreature({ ...t, y, dur, key: Date.now() });
-      // Hide after animation
-      setTimeout(() => setCreature(null), dur * 1000);
-    }
-    // First spawn after 20-60s, then every 40-90s
-    const first = setTimeout(spawn, (20 + Math.random()*40) * 1000);
-    const interval = setInterval(spawn, (40 + Math.random()*50) * 1000);
-    return () => { clearTimeout(first); clearInterval(interval); };
-  }, []);
-  if (!creature) return null;
+// Underwater background component
+function UnderwaterBg() {
   return (
-    <svg key={creature.key} viewBox={`0 0 ${creature.w} ${creature.h}`} style={{
-      position:"fixed", top:`${creature.y}%`, left:0, width:creature.w*1.5, height:creature.h*1.5,
-      pointerEvents:"none", zIndex:0, opacity:0,
-      animation:`creatureSwim ${creature.dur}s linear both, creatureFade ${creature.dur}s ease both`,
-    }}>
-      <path d={creature.path} fill="none" stroke="rgba(0,200,245,0.12)" strokeWidth="1" />
-    </svg>
+    <>
+      <svg style={{display:"none"}}>
+        <filter id="noise1">
+          <feTurbulence type="turbulence" baseFrequency=".05" numOctaves="1" seed="3" stitchTiles='stitch' />
+          <feDisplacementMap in="SourceGraphic" scale="10" />
+        </filter>
+      </svg>
+      <div id="underwater-bg">
+        <div id='surface'></div>
+        <div id='caustics'></div>
+        <div id='bg-gradient'></div>
+        <div id='sun'>
+          <div id='sun_layer1'></div>
+          <div id='sun_layer2'></div>
+          <div id='sun_layer3'></div>
+        </div>
+      </div>
+    </>
   );
-}
-
-function BubblesBg() {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current; if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    const W = canvas.width = window.innerWidth, H = canvas.height = window.innerHeight;
-
-    const bubbles = Array.from({length:42}, () => ({
-      x:Math.random()*W, y:H+Math.random()*H,
-      r:1.2+Math.random()*6, speed:0.18+Math.random()*0.65,
-      drift:(Math.random()-0.5)*0.35, wobble:Math.random()*Math.PI*2,
-      wobbleSpeed:0.006+Math.random()*0.018, alpha:0.06+Math.random()*0.13,
-      parallax:0.3+Math.random()*0.7 // depth layer
-    }));
-
-    const plankton = Array.from({length:120}, () => ({
-      x:Math.random()*W, y:Math.random()*H,
-      r:0.3+Math.random()*1.2, speed:0.03+Math.random()*0.14,
-      drift:(Math.random()-0.5)*0.07,
-      phase:Math.random()*Math.PI*2, phaseSpeed:0.01+Math.random()*0.035,
-      type:Math.random()<0.5?0:Math.random()<0.6?1:2,
-      parallax:0.2+Math.random()*0.8
-    }));
-
-    let t=0, raf;
-    const PCOLS = ['rgba(0,210,245','rgba(0,220,175','rgba(155,100,255'];
-
-    function draw() {
-      t++;
-      ctx.clearRect(0,0,W,H);
-
-      // Deep-ocean depth vignette
-      const dg=ctx.createLinearGradient(0,H*0.4,0,H);
-      dg.addColorStop(0,'rgba(0,0,0,0)'); dg.addColorStop(1,'rgba(0,2,15,0.55)');
-      ctx.fillStyle=dg; ctx.fillRect(0,0,W,H);
-
-      // Animated caustic light patches with parallax
-      for(let i=0;i<7;i++){
-        const depth = 0.5+i*0.08;
-        const cx=W*0.12+Math.cos(t*0.0003*depth+i*1.1)*W*0.42;
-        const cy=-35+Math.sin(t*0.00025*depth+i*0.8)*60;
-        const r=160+i*50+Math.sin(t*0.0008+i)*40;
-        const intensity=0.012+Math.sin(t*0.0006+i*0.6)*0.007;
-        const cg=ctx.createRadialGradient(cx,cy,0,cx,cy,r);
-        cg.addColorStop(0,`rgba(0,188,230,${intensity})`);
-        cg.addColorStop(0.4,`rgba(0,120,185,${intensity*0.3})`);
-        cg.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle=cg; ctx.fillRect(0,0,W,Math.min(H*0.55,r+cy+50));
-      }
-
-      // Plankton with parallax depth
-      plankton.forEach(p=>{
-        p.phase+=p.phaseSpeed; p.y-=p.speed*p.parallax; p.x+=p.drift*p.parallax;
-        if(p.y<-4){p.y=H+4;p.x=Math.random()*W;}
-        if(p.x<0)p.x=W; if(p.x>W)p.x=0;
-        const pulse=0.3+Math.sin(p.phase)*0.7;
-        const sz = p.r * (0.5 + p.parallax*0.5);
-        ctx.beginPath(); ctx.arc(p.x,p.y,sz,0,Math.PI*2);
-        ctx.fillStyle=`${PCOLS[p.type]},${(0.08+Math.random()*0.04)*pulse*p.parallax})`; ctx.fill();
-      });
-
-      // Bubbles with parallax and highlight gleam
-      bubbles.forEach(b=>{
-        b.wobble+=b.wobbleSpeed;
-        b.x+=b.drift*b.parallax+Math.sin(b.wobble)*0.2; b.y-=b.speed*b.parallax;
-        if(b.y<-b.r*2){b.y=H+b.r;b.x=Math.random()*W;}
-        ctx.save();
-        const sz = b.r * (0.6 + b.parallax*0.4);
-        ctx.beginPath(); ctx.arc(b.x,b.y,sz,0,Math.PI*2);
-        const bg=ctx.createRadialGradient(b.x-sz*0.28,b.y-sz*0.28,0,b.x,b.y,sz);
-        bg.addColorStop(0,`rgba(175,232,255,${b.alpha*0.3*b.parallax})`); bg.addColorStop(1,'rgba(0,140,195,0)');
-        ctx.fillStyle=bg; ctx.fill();
-        ctx.strokeStyle=`rgba(120,210,255,${b.alpha*b.parallax})`; ctx.lineWidth=0.7; ctx.stroke();
-        ctx.beginPath(); ctx.arc(b.x-sz*0.3,b.y-sz*0.32,sz*0.18,0,Math.PI*2);
-        ctx.fillStyle=`rgba(255,255,255,${b.alpha*1.4*b.parallax})`; ctx.fill();
-        ctx.restore();
-      });
-
-      raf=requestAnimationFrame(draw);
-    }
-    draw();
-    return ()=>cancelAnimationFrame(raf);
-  },[]);
-  return <canvas ref={canvasRef} style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",pointerEvents:"none",zIndex:0}} />;
-}
-
-function CausticLight() {
-  const canvasRef = useRef(null);
-  useEffect(()=>{
-    const canvas=canvasRef.current; if(!canvas) return;
-    const ctx=canvas.getContext("2d");
-    const W=canvas.width=window.innerWidth; canvas.height=90;
-    let t=0, raf;
-    function draw(){
-      t+=0.014;
-      ctx.clearRect(0,0,W,90);
-      for(let i=0;i<6;i++){
-        ctx.beginPath();
-        ctx.moveTo(0, 6+i*13);
-        for(let x=0;x<=W;x+=4){
-          const y=6+i*13+Math.sin(x*0.015+t+i*0.9)*4.2+Math.sin(x*0.04+t*1.3+i*0.5)*1.8;
-          ctx.lineTo(x,y);
-        }
-        ctx.strokeStyle=`rgba(0,205,245,${0.05-i*0.007})`; ctx.lineWidth=1; ctx.stroke();
-      }
-      raf=requestAnimationFrame(draw);
-    }
-    draw();
-    return()=>cancelAnimationFrame(raf);
-  },[]);
-  return <canvas ref={canvasRef} style={{position:"fixed",top:0,left:0,width:"100%",height:90,pointerEvents:"none",zIndex:1}} />;
 }
 
 function MiniSchool({ size=200 }) {
@@ -921,7 +812,7 @@ export default function App() {
   if (screen === "hostSetup") return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,flexDirection:"column",position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
-      <BubblesBg /><CausticLight /><OceanCreature />
+      <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:420,textAlign:"center"}}>
         <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Setup your swarm session</div>
         <div style={{fontSize:13,color:OC.textMid,marginBottom:32}}>Choose how deep you want to dive</div>
@@ -951,7 +842,7 @@ export default function App() {
   if (screen === "home") return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,flexDirection:"column",position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
-      <BubblesBg /><CausticLight /><OceanCreature />
+      <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center"}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -971,7 +862,7 @@ export default function App() {
   if (screen === "join") return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
-      <BubblesBg /><OceanCreature />
+      <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:360,width:"100%",textAlign:"center"}}>
         <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Enter swarm code</div>
         <div style={{fontSize:13,color:OC.textMid,marginBottom:28}}>Get the code from your host</div>
@@ -990,7 +881,7 @@ export default function App() {
   if (screen === "hostLive") return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
-      <BubblesBg /><OceanCreature />
+      <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:680,margin:"0 auto"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
           <div>
@@ -1057,7 +948,7 @@ export default function App() {
     return (
       <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
         <style>{GLOBAL_CSS}</style>
-        <BubblesBg /><OceanCreature />
+        <UnderwaterBg />
         <div style={{position:"relative",zIndex:1,maxWidth:520,width:"100%"}}>
           <div style={{marginBottom:36}}>
             <div style={{height:3,background:OC.cardMid,borderRadius:2,overflow:"hidden"}}>
@@ -1097,7 +988,7 @@ export default function App() {
       return (
         <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
           <style>{GLOBAL_CSS}</style>
-          <BubblesBg /><OceanCreature />
+          <UnderwaterBg />
           <div style={{position:"relative",zIndex:1,maxWidth:400,width:"100%",textAlign:"center"}}>
             <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:8}}>Waiting for other signals...</div>
             <div style={{fontSize:13,color:OC.textMid,marginBottom:24}}>The feedback round will begin once other participants join.</div>
@@ -1110,7 +1001,7 @@ export default function App() {
     return (
       <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative",overflowY:"auto"}}>
         <style>{GLOBAL_CSS}</style>
-        <BubblesBg /><OceanCreature />
+        <UnderwaterBg />
         <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",paddingBottom:80}}>
           <div style={{textAlign:"center",marginBottom:24}}>
             <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Feedback Round</div>
@@ -1186,7 +1077,7 @@ export default function App() {
   if (screen === "result" && myScores) return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
-      <BubblesBg /><CausticLight /><OceanCreature />
+      <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:460,margin:"0 auto"}}>
         <div style={{width:90,height:90,margin:"0 auto 18px"}}><MiniSchool size={90} /></div>
         <div style={{textAlign:"center",marginBottom:24}}>
@@ -1213,7 +1104,7 @@ export default function App() {
   if (screen === "signalSent") return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
-      <BubblesBg /><CausticLight /><OceanCreature />
+      <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:400,width:"100%",textAlign:"center"}}>
         <div style={{width:100,height:100,margin:"0 auto 20px"}}><MiniSchool size={100} /></div>
         <div style={{fontSize:10,color:OC.accent2,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Assessment complete</div>
@@ -1228,7 +1119,7 @@ export default function App() {
   if (screen === "guide") return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
       <style>{GLOBAL_CSS}</style>
-      <BubblesBg /><CausticLight /><OceanCreature />
+      <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:500,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:28}}>
           <div style={{width:120,height:120,margin:"0 auto 12px"}}><MiniSchool size={120} /></div>
@@ -1297,7 +1188,7 @@ export default function App() {
   if (screen === "intro") return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 60%,#010d1f 100%)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <style>{GLOBAL_CSS}</style>
-      <BubblesBg /><CausticLight />
+      <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Before the swarm feedback</div>
         <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Explore your five dimensions</div>
@@ -1327,7 +1218,7 @@ export default function App() {
   if (screen === "waiting") return (
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
-      <BubblesBg /><CausticLight /><OceanCreature />
+      <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:360,width:"100%",textAlign:"center"}}>
         <div style={{width:120,height:120,margin:"0 auto 24px"}}><MiniSchool size={120} /></div>
         <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:8}}>You're ready</div>
@@ -1350,7 +1241,7 @@ export default function App() {
     return (
       <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
         <style>{GLOBAL_CSS}</style>
-        <BubblesBg /><OceanCreature />
+        <UnderwaterBg />
         <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
             <button onClick={()=>goTo("hostLive")} className="btn-ocean" style={{background:"none",border:"none",color:OC.textMid,fontSize:12,cursor:"pointer"}}>← Back to session</button>
@@ -1400,7 +1291,7 @@ export default function App() {
     return (
       <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
         <style>{GLOBAL_CSS}</style>
-        <BubblesBg /><CausticLight /><OceanCreature />
+        <UnderwaterBg />
         <div style={{position:"relative",zIndex:1,maxWidth:460,width:"100%",textAlign:"center"}}>
           <div style={{width:100,height:100,margin:"0 auto 20px"}}><MiniSchool size={100} /></div>
           <div style={{fontSize:48,marginBottom:12}}>✓</div>
@@ -1432,7 +1323,7 @@ export default function App() {
     return (
       <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 60%,#010d1f 100%)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <style>{GLOBAL_CSS}</style>
-        <BubblesBg /><CausticLight />
+        <UnderwaterBg />
         <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
           <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Visualization</div>
           <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>The Complete Swarm</div>
