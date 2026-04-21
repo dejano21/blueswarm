@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Swarm Intelligence — User Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #010d1f; --card: #041830; --border: #0c3358;
+    --accent: #00c8f5; --accent2: #00e5b0; --text: #b8dcff;
+    --textMid: #4a80a8; --textDim: #173354;
+    --dimO: #00d4ff; --dimC: #ff6b9d; --dimE: #ffd93d; --dimA: #a855f7; --dimN: #00e5b0;
+  }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+  .slide {
+    width: 100vw; min-height: 100vh; padding: 60px 48px;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    position: relative; overflow: hidden; border-bottom: 1px solid var(--border);
+  }
+  .slide-inner { max-width: 720px; width: 100%; position: relative; z-index: 1; }
+  .slide::before {
+    content: ''; position: absolute; top: -40%; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px; border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(0,200,245,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .slide-number { font-size: 11px; color: var(--textDim); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; }
+  .slide-title { font-size: 36px; font-weight: 800; color: #fff; line-height: 1.15; margin-bottom: 12px; }
+  .slide-subtitle { font-size: 15px; color: var(--textMid); line-height: 1.7; margin-bottom: 32px; }
+  .highlight { color: var(--accent); }
+  .highlight2 { color: var(--accent2); }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 24px 28px; margin-bottom: 14px; position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  .card-label { font-size: 10px; color: var(--textDim); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
+  .card-title { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .card-text { font-size: 13px; color: var(--textMid); line-height: 1.7; }
+  .steps { display: flex; flex-direction: column; gap: 16px; }
+  .step { display: flex; align-items: flex-start; gap: 16px; }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%; background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: var(--bg); flex-shrink: 0;
+  }
+  .step-content { padding-top: 4px; }
+  .step-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+  .step-desc { font-size: 13px; color: var(--textMid); line-height: 1.6; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .badge {
+    display: inline-block; padding: 4px 14px; border-radius: 20px; font-size: 11px;
+    font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 16px;
+  }
+  .badge-host { background: rgba(0,200,245,0.12); border: 1px solid rgba(0,200,245,0.3); color: var(--accent); }
+  .badge-participant { background: rgba(0,229,176,0.12); border: 1px solid rgba(0,229,176,0.3); color: var(--accent2); }
+  .dim-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .mockup {
+    background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+    padding: 20px; text-align: center; margin-bottom: 14px;
+  }
+  .mockup-label { font-size: 10px; color: var(--accent); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+  .mockup-title { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .mockup-desc { font-size: 12px; color: var(--textMid); }
+  .btn-mock { display: inline-block; padding: 10px 24px; border-radius: 10px; font-size: 13px; font-weight: 700; margin-top: 12px; }
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+  .flow-item {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 16px; font-size: 12px; color: var(--text); font-weight: 600;
+  }
+  .flow-arrow { color: var(--accent); font-size: 16px; }
+  @media print {
+    .slide { page-break-after: always; min-height: 100vh; border: none; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide">
+  <div class="slide-inner" style="text-align:center">
+    <div style="font-size:11px;color:var(--textDim);letter-spacing:4px;text-transform:uppercase;margin-bottom:16px">User Guide</div>
+    <div style="font-size:48px;font-weight:800;color:#fff;line-height:1.1;margin-bottom:6px">Swarm</div>
+    <div style="font-size:48px;font-weight:800;line-height:1.1;margin-bottom:16px"><span style="background:var(--accent);color:var(--bg);padding:0 12px;border-radius:8px">Intelligence.</span></div>
+    <div style="font-size:14px;color:var(--textMid);font-style:italic;margin-bottom:40px">The swarm shows what individuals can't.</div>
+    <div style="font-size:12px;color:var(--textDim)">Creativity & Reframing · HSG</div>
+  </div>
+</div>
+
+<!-- SLIDE 2: What is this? -->
+<div class="slide">
+  <div class="slide-inner">
+    <div class="slide-number">01</div>
+    <div class="slide-title">What is Swarm Intelligence?</div>
+    <div class="slide-subtitle">A classroom tool for <span class="highlight">anonymous personality profiling</span> and <span class="highlight2">peer feedback</span>.</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-label">For participants</div>
+        <div class="card-text">Complete a Big Five personality assessment on your phone. Then review anonymous profiles of your peers and give feedback — all without knowing who is who.</div>
+      </div>
+      <div class="card">
+        <div class="card-label">For the host</div>
+        <div class="card-text">Create and manage the session. Control when the feedback round starts — everyone reviews each other.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">The Big Five dimensions</div>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px">
+        <span><span class="dim-dot" style="background:var(--dimO)"></span><strong style="color:#fff">O</strong> Openness</span>
+        <span><span class="dim-dot" style="background:var(--dimC)"></span><strong style="color:#fff">C</strong> Conscientiousness</span>
+        <span><span class="dim-dot" style="background:var(--dimE)"></span><strong style="color:#fff">E</strong> Extraversion</span>
+        <span><span class="dim-dot" style="background:var(--dimA)"></span><strong style="color:#fff">A</strong> Agreeableness</span>
+        <span><span class="dim-dot" style="background:var(--dimN)"></span><strong style="color:#fff">N</strong> Neuroticism</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: Two roles -->
+<div class="slide">
+  <div class="slide-inner">
+    <div class="slide-number">02</div>
+    <div class="slide-title">Two Roles</div>
+    <div class="slide-subtitle">The app has two distinct flows depending on your role.</div>
+    <div class="grid-2">
+      <div class="card" style="border-color:rgba(0,200,245,0.3)">
+        <div class="badge badge-host">Host</div>
+        <div class="card-title">Creates & manages the session</div>
+        <div class="card-text">Generates a session code, monitors incoming signals, and controls when the feedback round starts.</div>
+      </div>
+      <div class="card" style="border-color:rgba(0,229,176,0.3)">
+        <div class="badge badge-participant">Participant</div>
+        <div class="card-title">Assesses & gives peer feedback</div>
+        <div class="card-text">Completes the personality assessment, explores the five dimensions, then reviews anonymous peer profiles and gives each other feedback.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: Host Flow -->
+<div class="slide">
+  <div class="slide-inner">
+    <div class="slide-number">03</div>
+    <div class="badge badge-host">Host Flow</div>
+    <div class="slide-title">Running a Session</div>
+    <div class="slide-subtitle">Step-by-step guide for the host.</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Tap "Host a swarm session"</div><div class="step-desc">A unique 5-character session code is generated. Share it with the group.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Monitor incoming signals</div><div class="step-desc">Watch as participants join. You'll see signal count and ready status — no data is shown yet.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Start swarm feedback</div><div class="step-desc">Once enough participants are ready, tap "Start swarm feedback". Everyone now reviews anonymous profiles together.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Review signals together</div><div class="step-desc">Navigate through anonymous profiles one by one. Everyone sees the scores and can discuss and add notes.</div></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-title">Finish review</div><div class="step-desc">Notes are sent to participants. Everyone can now see their own scores alongside the feedback they received.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5: Participant Flow -->
+<div class="slide">
+  <div class="slide-inner">
+    <div class="slide-number">04</div>
+    <div class="badge badge-participant">Participant Flow</div>
+    <div class="slide-title">Joining a Session</div>
+    <div class="slide-subtitle">Step-by-step guide for participants.</div>
+    <div class="steps">
+      <div class="step"><div class="step-num">1</div><div class="step-content"><div class="step-title">Tap "Join a swarm"</div><div class="step-desc">Enter the 5-character code shared by the host.</div></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-content"><div class="step-title">Complete the assessment</div><div class="step-desc">Answer 20 questions (4 per dimension). Each has 4 options — pick what feels most natural.</div></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-content"><div class="step-title">Signal transmitted</div><div class="step-desc">Your anonymous profile joins the swarm. You won't see your own scores yet.</div></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-content"><div class="step-title">Dive into your dimensions</div><div class="step-desc">Learn about each Big Five dimension through interactive cards and the fish school visualization.</div></div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-content"><div class="step-title">Signal ready & give peer feedback</div><div class="step-desc">Tap "Ready for swarm feedback". Once the round starts, everyone reviews anonymous profiles together and gives each other feedback.</div></div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-content"><div class="step-title">View your pattern</div><div class="step-desc">After the feedback round, your scores are revealed along with the feedback you received from your peers.</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6: Screen Flow -->
+<div class="slide">
+  <div class="slide-inner">
+    <div class="slide-number">05</div>
+    <div class="slide-title">Screen Flow</div>
+    <div class="slide-subtitle">How screens connect for each role.</div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-label">Host path</div>
+      <div class="flow">
+        <div class="flow-item">Home</div><div class="flow-arrow">→</div>
+        <div class="flow-item" style="border-color:rgba(0,200,245,0.4)">Session Live</div><div class="flow-arrow">→</div>
+        <div class="flow-item" style="border-color:rgba(0,200,245,0.4)">Peer Review</div><div class="flow-arrow">→</div>
+        <div class="flow-item" style="border-color:rgba(0,229,176,0.4)">Done ✓</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-label">Participant path</div>
+      <div class="flow">
+        <div class="flow-item">Home</div><div class="flow-arrow">→</div>
+        <div class="flow-item">Join</div><div class="flow-arrow">→</div>
+        <div class="flow-item">Assessment</div><div class="flow-arrow">→</div>
+        <div class="flow-item" style="border-color:rgba(0,229,176,0.4)">Signal Sent</div>
+      </div>
+      <div class="flow" style="margin-top:4px;padding-left:42px">
+        <div class="flow-arrow">→</div>
+        <div class="flow-item">Dimension Guide</div><div class="flow-arrow">→</div>
+        <div class="flow-item">Fish School</div><div class="flow-arrow">→</div>
+        <div class="flow-item">Waiting</div><div class="flow-arrow">→</div>
+        <div class="flow-item" style="border-color:rgba(0,229,176,0.4)">Results</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7: Key Screens -->
+<div class="slide">
+  <div class="slide-inner">
+    <div class="slide-number">06</div>
+    <div class="slide-title">Key Screens</div>
+    <div class="slide-subtitle">What each screen looks like and does.</div>
+    <div class="grid-2">
+      <div class="mockup"><div class="mockup-label">Assessment</div><div class="mockup-title">20 Questions</div><div class="mockup-desc">4 per dimension · 4 options each<br>Progress bar tracks your depth</div></div>
+      <div class="mockup"><div class="mockup-label">Signal Sent</div><div class="mockup-title">Signal Transmitted</div><div class="mockup-desc">Confirmation screen<br>No scores shown yet</div></div>
+      <div class="mockup"><div class="mockup-label">Dimension Guide</div><div class="mockup-title">Meet the Fish School</div><div class="mockup-desc">Interactive accordion cards<br>Tap to explore each dimension</div></div>
+      <div class="mockup"><div class="mockup-label">Fish School</div><div class="mockup-title">Five Swimming Fish</div><div class="mockup-desc">Boids algorithm · Tap a fish<br>Opens reference card with your score</div></div>
+      <div class="mockup"><div class="mockup-label">Peer Review</div><div class="mockup-title">Feedback Round</div><div class="mockup-desc">One signal at a time<br>Score bars + peer notes</div></div>
+      <div class="mockup"><div class="mockup-label">Results</div><div class="mockup-title">Your Pattern Revealed</div><div class="mockup-desc">Full OCEAN scores<br>Peer feedback displayed below</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8: Privacy & Design -->
+<div class="slide">
+  <div class="slide-inner">
+    <div class="slide-number">07</div>
+    <div class="slide-title">Privacy & Design</div>
+    <div class="slide-subtitle">Built for trust and psychological safety.</div>
+    <div class="grid-2">
+      <div class="card"><div class="card-label">Anonymous by design</div><div class="card-text">No names, no accounts, no login. Profiles are labeled "Signal #01", "#02", etc. Only the participant sees their own scores.</div></div>
+      <div class="card"><div class="card-label">No data persistence</div><div class="card-text">Session data lives in Firebase during the session. Each participant writes only to their own path — no race conditions.</div></div>
+      <div class="card"><div class="card-label">Scores hidden until feedback</div><div class="card-text">Participants don't see their own scores until the feedback round is complete. This prevents bias during peer review.</div></div>
+      <div class="card"><div class="card-label">Ocean theme</div><div class="card-text">Deep-sea aesthetic with bioluminescent particles, caustic light, and rare ocean creatures. Calm, fluid, alive.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9: Quick Start -->
+<div class="slide">
+  <div class="slide-inner" style="text-align:center">
+    <div class="slide-number">Quick Start</div>
+    <div class="slide-title">Ready to dive in?</div>
+    <div class="slide-subtitle" style="max-width:400px;margin:0 auto 32px">Open the app, start a session, share the code.<br>The swarm does the rest.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
+      <a href="https://blueswarm.domain-portfolio.workers.dev/" target="_blank" style="text-decoration:none"><div class="btn-mock btn-primary" style="font-size:15px;padding:14px 32px;border-radius:12px;cursor:pointer">Open Swarm Intelligence →</div></a>
+    </div>
+    <div style="margin-top:48px;font-size:12px;color:var(--textDim)">Swarm Intelligence · Creativity & Reframing · HSG</div>
+  </div>
+</div>
+
+</body>
+</html>

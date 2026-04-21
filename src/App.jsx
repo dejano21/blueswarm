@@ -27,7 +27,7 @@ const DIMS = {
   C:{ color:"#ff6b9d",label:"Conscientiousness",short:"Structure & reliability",title:"Conscientiousness",tagline:"How you approach planning, structure, and follow-through",high:"Plans ahead · Delivers reliably · Detail-oriented",low:"Flexible · Adapts on the fly · Values autonomy",teamHigh:"Anchors execution, catches gaps others miss",teamLow:"Enables agility when plans need to shift",tip:"High C: Be specific — what worked, what to improve.\nLow C: Focus on outcomes, not process." },
   E:{ color:"#ffd93d",label:"Extraversion",short:"Energy & social presence",title:"Extraversion",tagline:"Where you draw energy — from others or from solitude",high:"Takes initiative · Expressive · Energised by interaction",low:"Thoughtful · Measured · Recharges alone",teamHigh:"Drives momentum and keeps energy high in the room",teamLow:"Brings considered perspective, sees what others miss",tip:"High E: Give feedback in conversation, not in writing.\nLow E: Give space to process before expecting a response." },
   A:{ color:"#a855f7",label:"Agreeableness",short:"Cooperation & empathy",title:"Agreeableness",tagline:"How you balance harmony with honesty",high:"Empathetic · Cooperative · Builds trust naturally",low:"Direct · Challenge-oriented · Comfortable with tension",teamHigh:"Holds the team together, gives supportive feedback",teamLow:"Names what others avoid, drives honest conversations",tip:"High A: Be clear — they may not push back.\nLow A: Can handle directness — match their style." },
-  N:{ color:"#00e5b0",label:"Neuroticism",short:"Stability under pressure",title:"Emotional Stability",tagline:"How you respond to pressure, setbacks, and uncertainty",high:"Deeply invested · Emotionally reactive · Highly sensitive",low:"Calm under fire · Resilient · Steady in uncertainty",teamHigh:"Brings intensity and care — needs psychological safety",teamLow:"Provides steadiness when things get difficult",tip:"High N: Start with what's working, be reassuring.\nLow N: Can handle blunt feedback — don't over-soften." },
+  N:{ color:"#00e5b0",label:"Neuroticism",short:"Stability under pressure",title:"Neuroticism",tagline:"How you respond to pressure, setbacks, and uncertainty",high:"Deeply invested · Emotionally reactive · Highly sensitive",low:"Calm under fire · Resilient · Steady in uncertainty",teamHigh:"Brings intensity and care — needs psychological safety",teamLow:"Provides steadiness when things get difficult",tip:"High N: Start with what's working, be reassuring.\nLow N: Can handle blunt feedback — don't over-soften." },
 };
 
 const QUESTIONS = [
@@ -425,6 +425,119 @@ function ScoreBars({ scores, compact=false }) {
   );
 }
 
+// Swarm visualization showing all participants as fish
+function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
+  const canvasRef = useRef(null);
+  const selectedRef = useRef(selectedFish);
+  const ripples = useRef([]);
+  selectedRef.current = selectedFish;
+  
+  useEffect(() => {
+    const canvas = canvasRef.current; if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W=canvas.offsetWidth,H=canvas.offsetHeight;
+    canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+    const cx=W/2,cy=H/2;
+    
+    // Create fish for each participant based on their strongest dimension
+    const fishes = participants.map((p,idx)=>{
+      const dims = Object.keys(DIMS);
+      let strongestDim = dims[0];
+      let maxScore = p.scores[dims[0]];
+      dims.forEach(dim => {
+        if (p.scores[dim] > maxScore) {
+          maxScore = p.scores[dim];
+          strongestDim = dim;
+        }
+      });
+      const angle = (idx/participants.length)*Math.PI*2;
+      const radius = Math.min(W,H)*0.25;
+      return {
+        idx,
+        dim: strongestDim,
+        score: maxScore,
+        x: cx + Math.cos(angle)*radius,
+        y: cy + Math.sin(angle)*radius,
+        vx: Math.cos(angle+Math.PI/2)*1.0,
+        vy: Math.sin(angle+Math.PI/2)*1.0,
+        wobble: Math.random()*Math.PI*2,
+        size: 20 + (maxScore/100)*8,
+        speedPhase: Math.random()*Math.PI*2,
+        glowPhase: Math.random()*Math.PI*2
+      };
+    });
+    
+    function updateFish() {
+      const SEP_R=55,VIEW_R=180,W_SEP=0.055,W_ALG=0.008,W_COH=0.0008,W_CTR=0.00010,MAX_SPD=2.0,MIN_SPD=0.5;
+      fishes.forEach(f=>{
+        if(selectedRef.current===f.idx)return;
+        let sx=0,sy=0,ax=0,ay=0,px=0,py=0,cnt=0;
+        fishes.forEach(o=>{if(o===f)return;const dx=f.x-o.x,dy=f.y-o.y,d=Math.sqrt(dx*dx+dy*dy)||0.001;if(d<SEP_R){sx+=dx/d;sy+=dy/d;}if(d<VIEW_R){ax+=o.vx;ay+=o.vy;px+=o.x;py+=o.y;cnt++;}});
+        if(cnt>0){ax/=cnt;ay/=cnt;px=px/cnt-f.x;py=py/cnt-f.y;}
+        f.speedPhase+=0.007;
+        const spdMult = 0.8 + Math.sin(f.speedPhase)*0.25;
+        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+(cx-f.x)*W_CTR; f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+(cy-f.y)*W_CTR;
+        const spd=Math.sqrt(f.vx*f.vx+f.vy*f.vy)||0.001,c=Math.min(MAX_SPD*spdMult,Math.max(MIN_SPD,spd));
+        f.vx=f.vx/spd*c;f.vy=f.vy/spd*c;f.x+=f.vx;f.y+=f.vy;f.wobble+=0.06;
+        const m=40;if(f.x<m)f.vx+=0.15;if(f.x>W-m)f.vx-=0.15;if(f.y<m)f.vy+=0.15;if(f.y>H-m)f.vy-=0.15;
+      });
+    }
+    
+    function drawFish(f) {
+      const{x,y,vx,vy,size,dim,idx,score}=f,angle=Math.atan2(vy,vx),col=DIMS[dim].color,sel=selectedRef.current===idx,wb=Math.sin(f.wobble)*0.06;
+      f.glowPhase+=0.022;
+      const glowPulse = sel ? 22 + Math.sin(f.glowPhase)*6 : 0;
+      ctx.save();ctx.translate(x,y);ctx.rotate(angle+wb);
+      if(sel){ctx.shadowColor=col;ctx.shadowBlur=glowPulse;}
+      // Tail
+      const tailWag = Math.sin(f.wobble*1.4)*0.11;
+      const tx=-size*0.8;
+      ctx.beginPath();ctx.moveTo(tx,0);ctx.lineTo(tx-size*0.5,-size*(0.38+tailWag));ctx.lineTo(tx-size*0.1,0);ctx.lineTo(tx-size*0.5,size*(0.38-tailWag));ctx.closePath();ctx.fillStyle=col+"88";ctx.fill();
+      // Pectoral fin
+      ctx.beginPath();ctx.moveTo(size*0.08,0);ctx.quadraticCurveTo(0,size*0.4,-size*0.25,size*0.25);ctx.quadraticCurveTo(-size*0.04,size*0.08,size*0.08,0);ctx.fillStyle=col+"55";ctx.fill();
+      // Body
+      ctx.beginPath();ctx.ellipse(0,0,size*0.68,size*0.28,0,0,Math.PI*2);ctx.fillStyle=col+(sel?"ff":"cc");ctx.fill();
+      // Dorsal fin
+      ctx.beginPath();ctx.moveTo(-size*0.12,-size*0.28);ctx.quadraticCurveTo(size*0.1,-size*0.52,size*0.38,-size*0.28);ctx.strokeStyle=col+"aa";ctx.lineWidth=1.3;ctx.stroke();
+      // Eye
+      ctx.beginPath();ctx.arc(size*0.4,-size*0.05,size*0.08,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.9)";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.42,-size*0.05,size*0.04,0,Math.PI*2);ctx.fillStyle="#001530";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.43,-size*0.07,size*0.016,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.85)";ctx.fill();
+      ctx.restore();
+      // Label
+      ctx.save();ctx.font=`${sel?"bold ":""}${size*0.35}px -apple-system,sans-serif`;ctx.textAlign="center";ctx.textBaseline="top";ctx.fillStyle=sel?col:col+"99";ctx.fillText(`#${idx+1}`,x,y+size*0.85);ctx.restore();
+      // Selection ring
+      if(sel){ctx.save();ctx.beginPath();ctx.arc(x,y,size*1.5,0,Math.PI*2);ctx.strokeStyle=col+"40";ctx.lineWidth=2;ctx.setLineDash([3,5]);ctx.stroke();ctx.restore();}
+    }
+    
+    let raf;
+    function loop(){
+      ctx.clearRect(0,0,W,H);
+      updateFish();
+      // Connection lines
+      fishes.forEach((f,i)=>fishes.forEach((f2,j)=>{if(j<=i)return;const d=Math.hypot(f.x-f2.x,f.y-f2.y);if(d<110){const a=Math.floor((1-d/110)*16).toString(16).padStart(2,"0");ctx.beginPath();ctx.strokeStyle=`#00c8f5${a}`;ctx.lineWidth=0.5;ctx.moveTo(f.x,f.y);ctx.lineTo(f2.x,f2.y);ctx.stroke();}}));
+      // Ripples
+      ripples.current = ripples.current.filter(r=>{r.age++;r.radius+=2.2;ctx.beginPath();ctx.arc(r.x,r.y,r.radius,0,Math.PI*2);ctx.strokeStyle=`rgba(0,200,245,${0.28*(1-r.age/28)})`;ctx.lineWidth=1.3;ctx.stroke();return r.age<28;});
+      fishes.forEach(f=>drawFish(f));
+      raf=requestAnimationFrame(loop);
+    }
+    loop();
+    
+    function handleClick(e){
+      const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+      ripples.current.push({x:mx,y:my,radius:3,age:0});
+      let hit=null,minD=Infinity;
+      fishes.forEach(f=>{const d=Math.hypot(mx-f.x,my-f.y);if(d<f.size*1.6&&d<minD){minD=d;hit=f.idx;}});
+      onFishClick(hit);
+    }
+    canvas.addEventListener("click",handleClick);
+    return ()=>{cancelAnimationFrame(raf);canvas.removeEventListener("click",handleClick);};
+  },[participants]);
+  
+  return <canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block",cursor:"pointer"}} />;
+}
+
 export default function App() {
   const [screen, setScreen]             = useState("home");
   const [sessionCode, setSessionCode]   = useState("");
@@ -441,6 +554,8 @@ export default function App() {
   const [myAnnotation, setMyAnnotation] = useState(null);
   const [feedbackDone, setFeedbackDone] = useState(false);
   const [screenKey, setScreenKey]       = useState(0); // for transition re-trigger
+  const [questionCount, setQuestionCount] = useState(20); // 10, 20, or 40
+  const [activeQuestions, setActiveQuestions] = useState(QUESTIONS.slice(0, 20));
   const unsubRef          = useRef(null);
   const unsubParticipantRef = useRef(null);
   const unsubFeedbackRef  = useRef(null);
@@ -450,7 +565,7 @@ export default function App() {
   async function createSession() {
     const code = genCode();
     try {
-      await fbSet(`${sp(code)}/meta`, { created: Date.now(), feedbackDone: false });
+      await fbSet(`${sp(code)}/meta`, { created: Date.now(), feedbackDone: false, questionCount });
       setSessionCode(code);
       goTo("hostLive");
       unsubRef.current = fbListen(`${sp(code)}/profiles`, (val) => {
@@ -468,6 +583,9 @@ export default function App() {
     try {
       const meta = await fbGet(`${sp(code)}/meta`);
       if (!meta) { setError("No swarm found. Check the code."); return; }
+      const qCount = meta.questionCount || 20;
+      setQuestionCount(qCount);
+      setActiveQuestions(QUESTIONS.slice(0, qCount));
       setSessionCode(code); goTo("assessment"); setError("");
     } catch (e) { setError("No swarm found."); }
   }
@@ -510,7 +628,7 @@ export default function App() {
   }
 
   function answer(score) { setAnswers(prev => ({ ...prev, [current]: score })); }
-  function next() { if (answers[current] === undefined) return; if (current === QUESTIONS.length - 1) submitResults(calcScores(answers)); else setCurrent(c => c + 1); }
+  function next() { if (answers[current] === undefined) return; if (current === activeQuestions.length - 1) submitResults(calcScores(answers)); else setCurrent(c => c + 1); }
   function prev() { if (current > 0) setCurrent(c => c - 1); }
 
   useEffect(() => { if (screen === "waiting" && feedbackDone) goTo("result"); }, [feedbackDone, screen, goTo]);
@@ -520,8 +638,38 @@ export default function App() {
     if (unsubFeedbackRef.current) { unsubFeedbackRef.current(); unsubFeedbackRef.current = null; }
   }, []);
 
-  const progress = Math.round((current / QUESTIONS.length) * 100);
+  const progress = Math.round((current / activeQuestions.length) * 100);
   const readyCount = participants.filter(p => p.ready).length;
+
+  // HOST SETUP
+  if (screen === "hostSetup") return (
+    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,flexDirection:"column",position:"relative"}}>
+      <style>{GLOBAL_CSS}</style>
+      <BubblesBg /><CausticLight /><OceanCreature />
+      <div style={{position:"relative",zIndex:1,width:"100%",maxWidth:420,textAlign:"center"}}>
+        <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Setup your swarm session</div>
+        <div style={{fontSize:13,color:OC.textMid,marginBottom:32}}>Choose how deep you want to dive</div>
+        <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:28}}>
+          {[
+            {count:10,label:"Quick Round",desc:"Fast personality snapshot",time:"~5 min"},
+            {count:20,label:"Recommended",desc:"Balanced depth & speed",time:"~10 min"},
+            {count:40,label:"Deep Dive",desc:"Comprehensive assessment",time:"~20 min"}
+          ].map(opt=>(
+            <div key={opt.count} onClick={()=>setQuestionCount(opt.count)} className="card-float" style={{display:"flex",alignItems:"center",gap:16,padding:"18px 20px",borderRadius:14,cursor:"pointer",border:questionCount===opt.count?`2px solid ${OC.accent}`:`1px solid ${OC.border}`,background:questionCount===opt.count?`${OC.accent}12`:OC.card,transition:"all 0.2s ease",boxShadow:questionCount===opt.count?`0 0 20px ${OC.accent}22`:"none"}}>
+              <div style={{width:32,height:32,borderRadius:"50%",flexShrink:0,background:questionCount===opt.count?OC.accent:OC.cardMid,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:questionCount===opt.count?"#010d1f":OC.textDim,transition:"all 0.2s"}}>{opt.count}</div>
+              <div style={{flex:1,textAlign:"left"}}>
+                <div style={{fontSize:15,fontWeight:700,color:questionCount===opt.count?"#fff":"#d8f0ff",marginBottom:2}}>{opt.label}</div>
+                <div style={{fontSize:11,color:OC.textMid}}>{opt.desc} · {opt.time}</div>
+              </div>
+              {questionCount===opt.count&&<div style={{fontSize:18,color:OC.accent}}>✓</div>}
+            </div>
+          ))}
+        </div>
+        <button onClick={()=>{setActiveQuestions(QUESTIONS.slice(0,questionCount));createSession();}} className="btn-ocean" style={{width:"100%",padding:15,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Create swarm session →</button>
+        <button onClick={()=>goTo("home")} className="btn-ocean" style={{marginTop:12,background:"none",border:"none",color:OC.textDim,fontSize:12,cursor:"pointer"}}>← Back</button>
+      </div>
+    </div>
+  );
 
   // HOME
   if (screen === "home") return (
@@ -535,7 +683,7 @@ export default function App() {
         <div style={{fontSize:40,fontWeight:800,lineHeight:1.1,marginBottom:6}}><span style={{background:OC.accent,color:"#010d1f",padding:"0 10px",borderRadius:6}}>Intelligence.</span></div>
         <div style={{fontSize:13,color:OC.textMid,marginBottom:36,fontStyle:"italic"}}>The swarm shows what individuals can't.</div>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
-          <button onClick={createSession} className="btn-ocean" style={{padding:15,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Host a swarm session</button>
+          <button onClick={()=>goTo("hostSetup")} className="btn-ocean" style={{padding:15,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Host a swarm session</button>
           <button onClick={()=>goTo("join")} className="btn-ocean" style={{padding:15,borderRadius:12,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textMid,fontSize:14,cursor:"pointer"}}>Join a swarm</button>
         </div>
         {error&&<div style={{color:"#ff6b6b",fontSize:12,marginTop:12}}>{error}</div>}
@@ -577,6 +725,9 @@ export default function App() {
           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:10}}>
             <div style={{background:"#041a0f",border:"1px solid #0d3a1a",borderRadius:8,padding:"6px 14px",fontSize:12,color:OC.accent2}}>
               {participants.length} signal{participants.length!==1?"s":""} · {readyCount} ready ✓
+            </div>
+            <div style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:8,padding:"6px 14px",fontSize:11,color:OC.textMid}}>
+              {questionCount} questions
             </div>
             {participants.length > 0 && (
               <button onClick={startFeedback} className="btn-ocean" style={{padding:"12px 20px",borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
@@ -626,7 +777,7 @@ export default function App() {
 
   // ASSESSMENT
   if (screen === "assessment") {
-    const q = QUESTIONS[current];
+    const q = activeQuestions[current];
     return (
       <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
         <style>{GLOBAL_CSS}</style>
@@ -637,7 +788,7 @@ export default function App() {
               <div style={{height:"100%",width:progress+"%",background:`linear-gradient(90deg,${OC.accent},${OC.accent2})`,borderRadius:2,transition:"width 0.4s ease",boxShadow:`0 0 8px ${OC.accent}66`}} />
             </div>
             <div style={{display:"flex",justifyContent:"space-between",marginTop:6}}>
-              <span style={{fontSize:10,color:OC.textDim}}>{current+1} of {QUESTIONS.length}</span>
+              <span style={{fontSize:10,color:OC.textDim}}>{current+1} of {activeQuestions.length}</span>
               <span style={{fontSize:10,color:OC.textDim}}>{progress}% depth</span>
             </div>
           </div>
@@ -653,7 +804,7 @@ export default function App() {
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
             <button onClick={prev} disabled={current===0} className="btn-ocean" style={{padding:"10px 26px",borderRadius:8,border:"none",background:current>0?OC.accent:OC.cardMid,color:current>0?"#010d1f":"#333",fontSize:13,fontWeight:700,cursor:current>0?"pointer":"default",opacity:current===0?0.3:1}}>Back</button>
             <button onClick={next} disabled={answers[current]===undefined} className="btn-ocean" style={{padding:"10px 26px",borderRadius:8,border:"none",background:answers[current]!==undefined?OC.accent:OC.cardMid,color:answers[current]!==undefined?"#010d1f":"#333",fontSize:13,fontWeight:700,cursor:answers[current]!==undefined?"pointer":"default"}}>
-              {current===QUESTIONS.length-1?"Surface →":"Next →"}
+              {current===activeQuestions.length-1?"Surface →":"Next →"}
             </button>
           </div>
         </div>
@@ -899,7 +1050,45 @@ export default function App() {
           <div className="card-float" style={{padding:"14px 18px",background:`${OC.accent2}0d`,border:`1px solid ${OC.accent2}33`,borderRadius:12,marginBottom:20}}>
             <div style={{fontSize:13,color:OC.accent2,lineHeight:1.6}}>Notes sent to participants. They can now view them alongside their pattern.</div>
           </div>
+          <button onClick={()=>goTo("swarmView")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",marginBottom:10}}>View swarm visualization →</button>
           <button onClick={()=>{goTo("home");setParticipants([]);setSessionCode("");setAnnotations({});setFeedbackIndex(0);stopSession();}} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textMid,fontSize:13,cursor:"pointer"}}>Back to surface</button>
+        </div>
+      </div>
+    );
+  }
+
+  // SWARM VIEW - Visualization of all participants as fish
+  if (screen === "swarmView") {
+    return (
+      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 60%,#010d1f 100%)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+        <style>{GLOBAL_CSS}</style>
+        <BubblesBg /><CausticLight />
+        <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
+          <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Visualization</div>
+          <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>The Complete Swarm</div>
+          <div style={{fontSize:12,color:OC.textMid,marginBottom:16}}>Each fish represents a participant's strongest dimension</div>
+        </div>
+        <div style={{position:"relative",zIndex:1,flex:"1 1 auto",minHeight:"calc(100vh - 280px)",padding:"0 20px"}}>
+          <ParticipantSwarm participants={participants} onFishClick={(idx)=>setSelectedFish(idx)} selectedFish={selectedFish} />
+        </div>
+        {selectedFish !== null && participants[selectedFish] && (
+          <div style={{position:"relative",zIndex:1,padding:"0 16px 16px",maxHeight:"40vh",overflowY:"auto"}}>
+            <div className="card-float" style={{background:"linear-gradient(135deg,#041830 0%,#061c35 100%)",border:`1px solid ${OC.accent}44`,borderRadius:18,padding:"18px 20px",boxShadow:`0 0 40px ${OC.accent}18`,position:"relative",overflow:"hidden",animation:"slideUp 0.35s ease-out"}}>
+              <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${OC.accent},transparent)`}} />
+              <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:10}}>Signal #{String(selectedFish+1).padStart(2,"0")}</div>
+              <ScoreBars scores={participants[selectedFish].scores} compact={true} />
+              {annotations[selectedFish]?.trim() && (
+                <div style={{marginTop:14,padding:"10px 14px",background:`${OC.accent}0d`,borderRadius:10,border:`1px solid ${OC.accent}22`}}>
+                  <div style={{fontSize:9,color:OC.accent+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:5}}>Notes</div>
+                  <div style={{fontSize:11,color:OC.text,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{annotations[selectedFish]}</div>
+                </div>
+              )}
+              <button onClick={()=>setSelectedFish(null)} className="btn-ocean" style={{marginTop:12,width:"100%",padding:"8px",borderRadius:8,background:"none",border:`1px solid ${OC.border}`,color:OC.textMid,fontSize:12,cursor:"pointer"}}>Close</button>
+            </div>
+          </div>
+        )}
+        <div style={{position:"relative",zIndex:1,padding:"12px 20px 28px"}}>
+          <button onClick={()=>goTo("feedbackDone")} className="btn-ocean" style={{width:"100%",padding:12,borderRadius:12,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:"pointer"}}>← Back</button>
         </div>
       </div>
     );
