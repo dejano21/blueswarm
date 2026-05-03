@@ -778,7 +778,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v2.6.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v2.7.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -1050,16 +1050,15 @@ export default function App() {
     });
     
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative",overflowY:"auto"}}>
+      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",padding:24,position:"relative",overflowY:"auto"}}>
         <style>{GLOBAL_CSS}</style>
         <UnderwaterBg />
         <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",paddingBottom:40}}>
-          <div style={{width:90,height:90,margin:"0 auto 18px"}}><MiniSchool size={90} /></div>
           
           {/* Your Results */}
-          <div style={{textAlign:"center",marginBottom:24}}>
+          <div className="content-overlay" style={{textAlign:"center",marginBottom:24,padding:"20px 20px",borderRadius:16}}>
             <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Your Pattern Revealed</div>
-            <div style={{fontSize:13,color:OC.textMid}}>Here's your current across the five dimensions</div>
+            <div style={{fontSize:13,color:"#b8dcff"}}>Here's your current across the five dimensions</div>
           </div>
           
           <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
@@ -1091,9 +1090,9 @@ export default function App() {
           )}
           
           {/* Group Results */}
-          <div style={{textAlign:"center",marginTop:40,marginBottom:24}}>
+          <div className="content-overlay" style={{textAlign:"center",marginTop:40,marginBottom:24,padding:"20px 20px",borderRadius:16}}>
             <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Group Results</div>
-            <div style={{fontSize:13,color:OC.textMid}}>Average scores across all {participants.length} participants</div>
+            <div style={{fontSize:13,color:"#b8dcff"}}>Average scores across all {participants.length} participants</div>
           </div>
           
           <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.accent2}44`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
@@ -1139,11 +1138,10 @@ export default function App() {
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
-      <div style={{position:"relative",zIndex:1,maxWidth:400,width:"100%",textAlign:"center"}}>
-        <div style={{width:100,height:100,margin:"0 auto 20px"}}><MiniSchool size={100} /></div>
+      <div className="content-overlay" style={{position:"relative",zIndex:1,maxWidth:400,width:"100%",textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{fontSize:10,color:OC.accent2,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Assessment complete</div>
         <div style={{fontSize:24,fontWeight:700,color:"#fff",marginBottom:8}}>Signal transmitted</div>
-        <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7,marginBottom:32}}>Your signal joined the swarm — anonymously. Before the swarm feedback, let's dive into the five dimensions of personality.</div>
+        <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7,marginBottom:32}}>Your signal joined the swarm — anonymously. Before the swarm feedback, let's dive into the five dimensions of personality.</div>
         <button onClick={()=>goTo("guide")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Dive into your dimensions →</button>
       </div>
     </div>
@@ -1156,7 +1154,6 @@ export default function App() {
       <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:500,margin:"0 auto"}}>
         <div className="content-overlay" style={{textAlign:"center",marginBottom:28,padding:"24px 20px",borderRadius:16}}>
-          <div style={{width:120,height:120,margin:"0 auto 12px"}}><MiniSchool size={120} /></div>
           <div style={{fontSize:10,color:OC.text,letterSpacing:4,textTransform:"uppercase",marginBottom:8}}>Your personality in five dimensions</div>
           <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Explore Your Dimensions</div>
           <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7,maxWidth:380,margin:"0 auto"}}>
@@ -1211,16 +1208,18 @@ export default function App() {
             );
           })}
         </div>
-        <button onClick={()=>goTo("intro")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
-          Enter the swarm →
-        </button>
+        <div className="content-overlay" style={{padding:"16px 20px",borderRadius:16,marginTop:4}}>
+          <button onClick={()=>goTo("intro")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
+            Enter the swarm →
+          </button>
+        </div>
       </div>
     </div>
   );
 
   // INTRO — fish swarm with underwater background
   if (screen === "intro") return (
-    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 60%,#010d1f 100%)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"auto"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       <div className="content-overlay" style={{position:"relative",zIndex:100,padding:"20px 24px 16px",textAlign:"center",margin:"24px 20px 0",borderRadius:16}}>
@@ -1323,14 +1322,13 @@ export default function App() {
   if (screen === "feedbackDone") {
     const withNotes = Object.values(annotations).filter(a=>a&&a.trim()).length;
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
+      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
         <style>{GLOBAL_CSS}</style>
         <UnderwaterBg />
-        <div style={{position:"relative",zIndex:1,maxWidth:460,width:"100%",textAlign:"center"}}>
-          <div style={{width:100,height:100,margin:"0 auto 20px"}}><MiniSchool size={100} /></div>
+        <div className="content-overlay" style={{position:"relative",zIndex:1,maxWidth:460,width:"100%",textAlign:"center",padding:28,borderRadius:20}}>
           <div style={{fontSize:48,marginBottom:12}}>✓</div>
           <div style={{fontSize:24,fontWeight:700,color:"#fff",marginBottom:8}}>All signals reviewed</div>
-          <div style={{fontSize:13,color:OC.textMid,marginBottom:32}}>{participants.length} signal{participants.length!==1?"s":""} reviewed · {withNotes} with notes</div>
+          <div style={{fontSize:13,color:"#b8dcff",marginBottom:32}}>{participants.length} signal{participants.length!==1?"s":""} reviewed · {withNotes} with notes</div>
           <div style={{textAlign:"left",marginBottom:24}}>
             {participants.map((p,i)=>(
               <div key={i} className="card-float" style={{background:OC.card,border:`1px solid ${annotations[i]?.trim()?OC.accent+"44":OC.border}`,borderRadius:14,padding:"14px 18px",marginBottom:10}}>
@@ -1354,17 +1352,25 @@ export default function App() {
 
   // SWARM VIEW - Visualization of all participants as fish
   if (screen === "swarmView") {
+    // Calculate group averages
+    const groupAvg = {};
+    Object.keys(DIMS).forEach(dim => {
+      const sum = participants.reduce((acc, p) => acc + p.scores[dim], 0);
+      groupAvg[dim] = Math.round(sum / participants.length);
+    });
+    
     return (
       <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <style>{GLOBAL_CSS}</style>
         {/* Coral reef background image */}
         <div style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",zIndex:0,backgroundImage:"url('/coral-reef-bg.jpg')",backgroundSize:"cover",backgroundPosition:"center",opacity:0.8}} />
-        <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
-          <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Visualization</div>
+        <div className="content-overlay" style={{position:"relative",zIndex:1,padding:"20px 24px",textAlign:"center",margin:"16px 20px 0",borderRadius:16}}>
+          <div style={{fontSize:10,color:OC.text,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Visualization</div>
           <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>The Complete Swarm</div>
-          <div style={{fontSize:12,color:OC.textMid,marginBottom:16}}>Each fish swims near the coral reef of their strongest dimension. Reef heights show group averages.</div>
+          <div style={{fontSize:12,color:"#b8dcff",marginBottom:12}}>Each fish swims near the coral reef of their strongest dimension. Reef heights show group averages.</div>
+          <button onClick={()=>goTo("feedbackDone")} className="btn-ocean" style={{padding:"8px 20px",borderRadius:8,border:`1px solid ${OC.border}`,background:"rgba(4,24,48,0.6)",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back to surface</button>
         </div>
-        <div style={{position:"relative",zIndex:1,flex:"1 1 auto",minHeight:"calc(100vh - 280px)",padding:"0 20px"}}>
+        <div style={{position:"relative",zIndex:1,flex:"1 1 auto",minHeight:"calc(100vh - 380px)",padding:"0 20px"}}>
           <ParticipantSwarm participants={participants} onFishClick={(idx)=>setSelectedFish(idx)} selectedFish={selectedFish} />
         </div>
         {selectedFish !== null && participants[selectedFish] && (
@@ -1383,8 +1389,10 @@ export default function App() {
             </div>
           </div>
         )}
-        <div style={{position:"relative",zIndex:1,padding:"12px 20px 28px"}}>
-          <button onClick={()=>goTo("feedbackDone")} className="btn-ocean content-overlay" style={{width:"100%",padding:12,borderRadius:12,border:`1px solid ${OC.border}`,color:OC.textDim,fontSize:13,cursor:"pointer"}}>← Back</button>
+        {/* Swarm Average Stats */}
+        <div className="content-overlay" style={{position:"relative",zIndex:1,margin:"0 20px 16px",padding:"16px 20px",borderRadius:16}}>
+          <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:10}}>Swarm Average</div>
+          <ScoreBars scores={groupAvg} compact={true} />
         </div>
       </div>
     );
