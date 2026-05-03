@@ -259,10 +259,10 @@ function UnderwaterBg() {
         },
         fishScale: [1, 1, 1],
         fishWidthSegments: 8,
-        fishSpeed: 1.5,
+        fishSpeed: 0.6,
         noiseCoordScale: 0.01,
-        noiseTimeCoef: 0.0005,
-        noiseIntensity: 0.0005,
+        noiseTimeCoef: 0.0002,
+        noiseIntensity: 0.0003,
         attractionRadius1: 50,
         attractionRadius2: 150,
         maxVelocity: 0.1
@@ -778,7 +778,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v2.7.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v2.8.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -822,8 +822,8 @@ export default function App() {
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
           <div>
             <button onClick={()=>{stopSession();goTo("home");setSessionCode("");setParticipants([]);}} className="btn-ocean" style={{background:"none",border:"none",color:"#fff",fontSize:12,cursor:"pointer",padding:"0 0 4px 0",display:"block"}}>← Back</button>
-            <div style={{fontSize:18,fontWeight:700,color:"#fff"}}>Session active</div>
-            <div style={{fontSize:12,color:OC.textMid}}>Waiting for signals to surface</div>
+            <div style={{fontSize:24,fontWeight:700,color:"#fff"}}>Session active</div>
+            <div style={{fontSize:14,color:"#b8dcff"}}>Waiting for signals to surface</div>
           </div>
           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:10}}>
             <div style={{background:"#041a0f",border:"1px solid #0d3a1a",borderRadius:8,padding:"6px 14px",fontSize:12,color:OC.accent2}}>
@@ -1067,7 +1067,7 @@ export default function App() {
           </div>
           
           {myAnnotation !== null && (
-            <div className="card-float" style={{marginBottom:20,padding:"16px 18px",background:`${OC.accent}0d`,borderRadius:12,border:`1px solid ${OC.accent}33`}}>
+            <div className="card-float content-overlay" style={{marginBottom:20,padding:"16px 18px",background:`rgba(4,24,48,0.85)`,borderRadius:12,border:`1px solid ${OC.accent}33`}}>
               <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Host Notes</div>
               {myAnnotation ? (
                 <div style={{fontSize:13,color:OC.text,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{myAnnotation}</div>
@@ -1079,7 +1079,7 @@ export default function App() {
           
           {/* Participant Notes */}
           {participantNotesAboutMe.length > 0 && (
-            <div className="card-float" style={{marginBottom:20,padding:"16px 18px",background:`${OC.accent2}0d`,borderRadius:12,border:`1px solid ${OC.accent2}33`}}>
+            <div className="card-float content-overlay" style={{marginBottom:20,padding:"16px 18px",background:`rgba(4,24,48,0.85)`,borderRadius:12,border:`1px solid ${OC.accent2}33`}}>
               <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Swarm Feedback ({participantNotesAboutMe.length})</div>
               {participantNotesAboutMe.map((note, i) => (
                 <div key={i} style={{fontSize:12,color:OC.text,lineHeight:1.6,marginBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,paddingBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,borderBottom:i < participantNotesAboutMe.length - 1 ? `1px solid ${OC.border}` : "none"}}>
@@ -1107,21 +1107,14 @@ export default function App() {
               const diff = myScores[dim] - groupAvg[dim];
               const absDiff = Math.abs(diff);
               return (
-                <div key={dim} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,padding:"8px 12px",background:absDiff>15?DIMS[dim].color+"0d":"transparent",borderRadius:8}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10}}>
-                    <div style={{width:8,height:8,borderRadius:"50%",background:DIMS[dim].color}} />
-                    <span style={{fontSize:12,fontWeight:600,color:OC.text}}>{DIMS[dim].label}</span>
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontSize:11,color:OC.textMid}}>You: {myScores[dim]}%</span>
-                    <span style={{fontSize:11,color:OC.textDim}}>·</span>
-                    <span style={{fontSize:11,color:OC.textMid}}>Group: {groupAvg[dim]}%</span>
-                    {absDiff > 5 && (
-                      <span style={{fontSize:11,fontWeight:600,color:diff>0?OC.accent2:OC.accent}}>
-                        {diff>0?"+":""}{diff}
-                      </span>
-                    )}
-                  </div>
+                <div key={dim} style={{display:"grid",gridTemplateColumns:"28px 110px 70px 70px 50px",alignItems:"center",marginBottom:10,padding:"8px 12px",background:absDiff>15?DIMS[dim].color+"0d":"transparent",borderRadius:8,gap:4}}>
+                  <div style={{width:8,height:8,borderRadius:"50%",background:DIMS[dim].color}} />
+                  <span style={{fontSize:12,fontWeight:600,color:OC.text}}>{DIMS[dim].label}</span>
+                  <span style={{fontSize:11,color:OC.textMid}}>You: {myScores[dim]}%</span>
+                  <span style={{fontSize:11,color:OC.textMid}}>Grp: {groupAvg[dim]}%</span>
+                  <span style={{fontSize:11,fontWeight:600,color:diff>0?OC.accent2:diff<0?OC.accent:"transparent",textAlign:"right"}}>
+                    {absDiff > 5 ? (diff>0?"+":"")+diff : ""}
+                  </span>
                 </div>
               );
             })}
@@ -1149,12 +1142,11 @@ export default function App() {
 
   // GUIDE — Interactive fish school explainer
   if (screen === "guide") return (
-    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
+    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:500,margin:"0 auto"}}>
         <div className="content-overlay" style={{textAlign:"center",marginBottom:28,padding:"24px 20px",borderRadius:16}}>
-          <div style={{fontSize:10,color:OC.text,letterSpacing:4,textTransform:"uppercase",marginBottom:8}}>Your personality in five dimensions</div>
           <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Explore Your Dimensions</div>
           <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7,maxWidth:380,margin:"0 auto"}}>
             Five dimensions that shape how you think, work, and connect. Each reveals a different aspect of your personality. Tap to explore.
@@ -1272,13 +1264,13 @@ export default function App() {
     const isLast = feedbackIndex === participants.length - 1;
     if (!profile) return null;
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
+      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",padding:24,position:"relative"}}>
         <style>{GLOBAL_CSS}</style>
         <UnderwaterBg />
-        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto"}}>
+        <div className="content-overlay" style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",padding:24,borderRadius:20}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
-            <button onClick={()=>goTo("hostLive")} className="btn-ocean content-overlay" style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${OC.border}`,color:"#fff",fontSize:12,cursor:"pointer"}}>← Back to session</button>
-            <div style={{fontSize:12,color:OC.textMid}}>Signal <span style={{color:"#fff",fontWeight:700}}>{feedbackIndex+1}</span> / {participants.length}</div>
+            <button onClick={()=>goTo("hostLive")} className="btn-ocean" style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${OC.border}`,background:"rgba(4,24,48,0.6)",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back to session</button>
+            <div style={{fontSize:12,color:"#b8dcff"}}>Signal <span style={{color:"#fff",fontWeight:700}}>{feedbackIndex+1}</span> / {participants.length}</div>
           </div>
           <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:28}}>
             {participants.map((_,i)=>(
@@ -1326,7 +1318,6 @@ export default function App() {
         <style>{GLOBAL_CSS}</style>
         <UnderwaterBg />
         <div className="content-overlay" style={{position:"relative",zIndex:1,maxWidth:460,width:"100%",textAlign:"center",padding:28,borderRadius:20}}>
-          <div style={{fontSize:48,marginBottom:12}}>✓</div>
           <div style={{fontSize:24,fontWeight:700,color:"#fff",marginBottom:8}}>All signals reviewed</div>
           <div style={{fontSize:13,color:"#b8dcff",marginBottom:32}}>{participants.length} signal{participants.length!==1?"s":""} reviewed · {withNotes} with notes</div>
           <div style={{textAlign:"left",marginBottom:24}}>
@@ -1360,17 +1351,17 @@ export default function App() {
     });
     
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      <div key={screenKey} className="screen-enter" style={{height:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <style>{GLOBAL_CSS}</style>
         {/* Coral reef background image */}
         <div style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",zIndex:0,backgroundImage:"url('/coral-reef-bg.jpg')",backgroundSize:"cover",backgroundPosition:"center",opacity:0.8}} />
-        <div className="content-overlay" style={{position:"relative",zIndex:1,padding:"20px 24px",textAlign:"center",margin:"16px 20px 0",borderRadius:16}}>
-          <div style={{fontSize:10,color:OC.text,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Visualization</div>
+        <div className="content-overlay" style={{position:"relative",zIndex:1,padding:"16px 24px",textAlign:"center",margin:"12px 20px 0",borderRadius:16,flexShrink:0}}>
+          <div style={{fontSize:10,color:OC.text,letterSpacing:4,textTransform:"uppercase",marginBottom:4}}>Swarm Visualization</div>
           <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>The Complete Swarm</div>
-          <div style={{fontSize:12,color:"#b8dcff",marginBottom:12}}>Each fish swims near the coral reef of their strongest dimension. Reef heights show group averages.</div>
-          <button onClick={()=>goTo("feedbackDone")} className="btn-ocean" style={{padding:"8px 20px",borderRadius:8,border:`1px solid ${OC.border}`,background:"rgba(4,24,48,0.6)",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back to surface</button>
+          <div style={{fontSize:12,color:"#b8dcff",marginBottom:8}}>Each fish swims near the coral reef of their strongest dimension.</div>
+          <button onClick={()=>goTo("feedbackDone")} className="btn-ocean" style={{padding:"6px 16px",borderRadius:8,border:`1px solid ${OC.border}`,background:"rgba(4,24,48,0.6)",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back to surface</button>
         </div>
-        <div style={{position:"relative",zIndex:1,flex:"1 1 auto",minHeight:"calc(100vh - 380px)",padding:"0 20px"}}>
+        <div style={{position:"relative",zIndex:1,flex:"1 1 auto",minHeight:0,padding:"0 20px"}}>
           <ParticipantSwarm participants={participants} onFishClick={(idx)=>setSelectedFish(idx)} selectedFish={selectedFish} />
         </div>
         {selectedFish !== null && participants[selectedFish] && (
@@ -1389,9 +1380,9 @@ export default function App() {
             </div>
           </div>
         )}
-        {/* Swarm Average Stats */}
-        <div className="content-overlay" style={{position:"relative",zIndex:1,margin:"0 20px 16px",padding:"16px 20px",borderRadius:16}}>
-          <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:10}}>Swarm Average</div>
+        {/* Swarm Average Stats - fixed at bottom */}
+        <div className="content-overlay" style={{position:"relative",zIndex:1,margin:"0 20px 12px",padding:"12px 20px",borderRadius:16,flexShrink:0}}>
+          <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Swarm Average</div>
           <ScoreBars scores={groupAvg} compact={true} />
         </div>
       </div>
