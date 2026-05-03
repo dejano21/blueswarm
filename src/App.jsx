@@ -818,7 +818,7 @@ export default function App() {
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
-      <div style={{position:"relative",zIndex:1,maxWidth:680,margin:"0 auto"}}>
+      <div style={{position:"relative",zIndex:1,maxWidth:1200,margin:"0 auto"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
           <div>
             <button onClick={()=>{stopSession();goTo("home");setSessionCode("");setParticipants([]);}} className="btn-ocean" style={{background:"none",border:"none",color:OC.textMid,fontSize:12,cursor:"pointer",padding:"0 0 4px 0",display:"block"}}>← Back</button>
@@ -841,7 +841,9 @@ export default function App() {
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:24}}>
           <div className="card-float" style={{background:OC.card,borderRadius:16,border:`1px solid ${OC.border}`,padding:24,textAlign:"center"}}>
-            <div style={{width:100,height:100,margin:"0 auto 14px"}}><MiniSchool size={100} /></div>
+            <div style={{width:200,height:200,margin:"0 auto 14px",background:"#fff",borderRadius:12,padding:12,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://blueswarm-kiro.domain-portfolio.workers.dev`} alt="QR Code" style={{width:"100%",height:"100%",display:"block"}} />
+            </div>
             <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:6}}>Swarm code</div>
             <div style={{fontSize:32,fontWeight:800,letterSpacing:6,color:OC.accent,fontFamily:"monospace"}}>{sessionCode}</div>
             <div style={{fontSize:11,color:OC.textDim,marginTop:8}}>Share with participants</div>
@@ -857,7 +859,11 @@ export default function App() {
           </div>
         </div>
         {participants.length===0 ? (
-          <div style={{textAlign:"center",padding:"48px 0"}}><div style={{fontSize:13,color:OC.textDim}}>Waiting for signals from the deep...</div></div>
+          <div style={{textAlign:"center",padding:"48px 0"}}>
+            <div style={{fontSize:16,color:OC.text,background:"rgba(4,24,48,0.85)",backdropFilter:"blur(8px)",padding:"16px 32px",borderRadius:12,display:"inline-block",border:`1px solid ${OC.border}`,boxShadow:"0 4px 24px rgba(0,0,0,0.3)"}}>
+              Waiting for signals from the deep...
+            </div>
+          </div>
         ) : (
           <div>
             <div style={{fontSize:13,fontWeight:600,color:"#fff",marginBottom:14}}>Anonymous signals — {participants.length} received</div>
