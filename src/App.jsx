@@ -632,7 +632,8 @@ export default function App() {
   const [activeQuestions, setActiveQuestions] = useState(QUESTIONS.slice(0, 20));
   const [participantNotes, setParticipantNotes] = useState({}); // notes from participant to other profiles
   const [feedbackStarted, setFeedbackStarted] = useState(false);
-  const [currentFeedbackIndex, setCurrentFeedbackIndex] = useState(0); // Track which profile participant is reviewing
+  const [currentFeedbackIndex, setCurrentFeedbackIndex] = useState(0);
+  const [resultTab, setResultTab] = useState("scores"); // scores, group, compare, feedback // Track which profile participant is reviewing
   const unsubRef          = useRef(null);
   const unsubParticipantRef = useRef(null);
   const unsubFeedbackRef  = useRef(null);
@@ -778,7 +779,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v2.9.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.0.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -970,10 +971,10 @@ export default function App() {
             ))}
           </div>
           
-          <div style={{textAlign:"center",marginBottom:24}}>
-            <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Anonymous Signal #{String(currentFeedbackIndex+1).padStart(2,"0")}</div>
+          <div className="content-overlay" style={{textAlign:"center",marginBottom:24,padding:"16px 20px",borderRadius:16}}>
+            <div style={{fontSize:10,color:"#b8dcff",letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Anonymous Signal #{String(currentFeedbackIndex+1).padStart(2,"0")}</div>
             <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Add Your Observations</div>
-            <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7}}>Review this profile and share your insights.</div>
+            <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7}}>Review this profile and share your insights.</div>
           </div>
           
           <div className="card-float" style={{background:OC.card,border:`1px solid ${DIMS[strongestDim].color+"44"}`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
@@ -1048,79 +1049,99 @@ export default function App() {
         }
       }
     });
+
+    const hasFeedback = (myAnnotation && myAnnotation.trim()) || participantNotesAboutMe.length > 0;
+    const tabs = [
+      {id:"scores",label:"Your Scores"},
+      {id:"group",label:"Group"},
+      {id:"compare",label:"You vs Group"},
+      ...(hasFeedback ? [{id:"feedback",label:"Feedback"}] : [])
+    ];
     
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",padding:24,position:"relative",overflowY:"auto"}}>
+      <div key={screenKey} className="screen-enter" style={{height:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <style>{GLOBAL_CSS}</style>
         <UnderwaterBg />
-        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",paddingBottom:40}}>
+        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",width:"100%",display:"flex",flexDirection:"column",height:"100%",padding:"20px 24px"}}>
           
-          {/* Your Results */}
-          <div className="content-overlay" style={{textAlign:"center",marginBottom:24,padding:"20px 20px",borderRadius:16}}>
-            <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Your Pattern Revealed</div>
-            <div style={{fontSize:13,color:"#b8dcff"}}>Here's your current across the five dimensions</div>
+          {/* Header */}
+          <div className="content-overlay" style={{textAlign:"center",marginBottom:16,padding:"16px 20px",borderRadius:16,flexShrink:0}}>
+            <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Your Pattern Revealed</div>
+            <div style={{fontSize:12,color:"#b8dcff"}}>Tap a tab to explore your results</div>
           </div>
-          
-          <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
-            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Your Scores</div>
-            <ScoreBars scores={myScores} />
+
+          {/* Tabs */}
+          <div style={{display:"flex",gap:6,marginBottom:16,flexShrink:0,flexWrap:"wrap",justifyContent:"center"}}>
+            {tabs.map(t=>(
+              <button key={t.id} onClick={()=>setResultTab(t.id)} className="btn-ocean" style={{padding:"6px 14px",borderRadius:20,fontSize:11,fontWeight:resultTab===t.id?700:400,cursor:"pointer",background:resultTab===t.id?"rgba(0,200,245,0.2)":"rgba(1,13,31,0.7)",border:`1px solid ${resultTab===t.id?OC.accent:OC.border}`,color:resultTab===t.id?OC.accent:"#b8dcff",backdropFilter:"blur(8px)"}}>{t.label}</button>
+            ))}
           </div>
-          
-          {myAnnotation !== null && (
-            <div className="card-float content-overlay" style={{marginBottom:20,padding:"16px 18px",background:`rgba(4,24,48,0.85)`,borderRadius:12,border:`1px solid ${OC.accent}33`}}>
-              <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Host Notes</div>
-              {myAnnotation ? (
-                <div style={{fontSize:13,color:OC.text,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{myAnnotation}</div>
-              ) : (
-                <div style={{fontSize:13,color:OC.textMid,fontStyle:"italic"}}>No notes were added for this signal.</div>
-              )}
-            </div>
-          )}
-          
-          {/* Participant Notes */}
-          {participantNotesAboutMe.length > 0 && (
-            <div className="card-float content-overlay" style={{marginBottom:20,padding:"16px 18px",background:`rgba(4,24,48,0.85)`,borderRadius:12,border:`1px solid ${OC.accent2}33`}}>
-              <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Swarm Feedback ({participantNotesAboutMe.length})</div>
-              {participantNotesAboutMe.map((note, i) => (
-                <div key={i} style={{fontSize:12,color:OC.text,lineHeight:1.6,marginBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,paddingBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,borderBottom:i < participantNotesAboutMe.length - 1 ? `1px solid ${OC.border}` : "none"}}>
-                  "{ note}"
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {/* Group Results */}
-          <div className="content-overlay" style={{textAlign:"center",marginTop:40,marginBottom:24,padding:"20px 20px",borderRadius:16}}>
-            <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Group Results</div>
-            <div style={{fontSize:13,color:"#b8dcff"}}>Average scores across all {participants.length} participants</div>
+
+          {/* Tab Content */}
+          <div style={{flex:"1 1 auto",overflowY:"auto",minHeight:0}}>
+            {resultTab==="scores" && (
+              <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"20px 22px"}}>
+                <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Your Scores</div>
+                <ScoreBars scores={myScores} />
+              </div>
+            )}
+
+            {resultTab==="group" && (
+              <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.accent2}44`,borderRadius:16,padding:"20px 22px"}}>
+                <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Swarm Average — {participants.length} participants</div>
+                <ScoreBars scores={groupAvg} />
+              </div>
+            )}
+
+            {resultTab==="compare" && (
+              <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"18px 20px"}}>
+                <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>You vs. Group</div>
+                {Object.keys(DIMS).map(dim => {
+                  const diff = myScores[dim] - groupAvg[dim];
+                  const absDiff = Math.abs(diff);
+                  return (
+                    <div key={dim} style={{display:"grid",gridTemplateColumns:"28px 110px 70px 70px 50px",alignItems:"center",marginBottom:10,padding:"8px 12px",background:absDiff>15?DIMS[dim].color+"0d":"transparent",borderRadius:8,gap:4}}>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:DIMS[dim].color}} />
+                      <span style={{fontSize:12,fontWeight:600,color:OC.text}}>{DIMS[dim].label}</span>
+                      <span style={{fontSize:11,color:OC.textMid}}>You: {myScores[dim]}%</span>
+                      <span style={{fontSize:11,color:OC.textMid}}>Grp: {groupAvg[dim]}%</span>
+                      <span style={{fontSize:11,fontWeight:600,color:diff>0?OC.accent2:diff<0?OC.accent:"transparent",textAlign:"right"}}>
+                        {absDiff > 5 ? (diff>0?"+":"")+diff : ""}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {resultTab==="feedback" && (
+              <div style={{display:"flex",flexDirection:"column",gap:16}}>
+                {myAnnotation !== null && (
+                  <div className="card-float" style={{padding:"16px 18px",background:`rgba(4,24,48,0.85)`,borderRadius:12,border:`1px solid ${OC.accent}33`}}>
+                    <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Host Notes</div>
+                    {myAnnotation ? (
+                      <div style={{fontSize:13,color:OC.text,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{myAnnotation}</div>
+                    ) : (
+                      <div style={{fontSize:13,color:OC.textMid,fontStyle:"italic"}}>No notes were added for this signal.</div>
+                    )}
+                  </div>
+                )}
+                {participantNotesAboutMe.length > 0 && (
+                  <div className="card-float" style={{padding:"16px 18px",background:`rgba(4,24,48,0.85)`,borderRadius:12,border:`1px solid ${OC.accent2}33`}}>
+                    <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Swarm Feedback ({participantNotesAboutMe.length})</div>
+                    {participantNotesAboutMe.map((note, i) => (
+                      <div key={i} style={{fontSize:12,color:OC.text,lineHeight:1.6,marginBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,paddingBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,borderBottom:i < participantNotesAboutMe.length - 1 ? `1px solid ${OC.border}` : "none"}}>
+                        "{note}"
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          
-          <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.accent2}44`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
-            <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Swarm Average</div>
-            <ScoreBars scores={groupAvg} />
-          </div>
-          
-          {/* Comparison */}
-          <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"18px 20px",marginBottom:20}}>
-            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>You vs. Group</div>
-            {Object.keys(DIMS).map(dim => {
-              const diff = myScores[dim] - groupAvg[dim];
-              const absDiff = Math.abs(diff);
-              return (
-                <div key={dim} style={{display:"grid",gridTemplateColumns:"28px 110px 70px 70px 50px",alignItems:"center",marginBottom:10,padding:"8px 12px",background:absDiff>15?DIMS[dim].color+"0d":"transparent",borderRadius:8,gap:4}}>
-                  <div style={{width:8,height:8,borderRadius:"50%",background:DIMS[dim].color}} />
-                  <span style={{fontSize:12,fontWeight:600,color:OC.text}}>{DIMS[dim].label}</span>
-                  <span style={{fontSize:11,color:OC.textMid}}>You: {myScores[dim]}%</span>
-                  <span style={{fontSize:11,color:OC.textMid}}>Grp: {groupAvg[dim]}%</span>
-                  <span style={{fontSize:11,fontWeight:600,color:diff>0?OC.accent2:diff<0?OC.accent:"transparent",textAlign:"right"}}>
-                    {absDiff > 5 ? (diff>0?"+":"")+diff : ""}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          
-          <button onClick={()=>{goTo("home");setAnswers({});setCurrent(0);setMyScores(null);}} className="btn-ocean" style={{width:"100%",marginTop:24,padding:12,borderRadius:8,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:"pointer"}}>Back to surface</button>
+
+          {/* Bottom button */}
+          <button onClick={()=>{goTo("home");setAnswers({});setCurrent(0);setMyScores(null);setResultTab("scores");}} className="btn-ocean" style={{width:"100%",marginTop:16,padding:12,borderRadius:8,border:`1px solid ${OC.border}`,background:"rgba(1,13,31,0.7)",backdropFilter:"blur(8px)",color:"#b8dcff",fontSize:13,cursor:"pointer",flexShrink:0}}>Back to surface</button>
         </div>
       </div>
     );
@@ -1142,65 +1163,36 @@ export default function App() {
 
   // GUIDE — Interactive fish school explainer
   if (screen === "guide") return (
-    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"transparent",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
+    <div key={screenKey} className="screen-enter" style={{height:"100vh",background:"transparent",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
-      <div style={{position:"relative",zIndex:1,maxWidth:500,margin:"0 auto"}}>
-        <div style={{textAlign:"center",marginBottom:28,padding:"24px 20px",borderRadius:16,background:"rgba(1,13,31,0.7)",backdropFilter:"blur(8px)",border:"1px solid rgba(12,51,88,0.3)"}}>
-          <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Explore Your Dimensions</div>
-          <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7,maxWidth:380,margin:"0 auto"}}>
-            Five dimensions that shape how you think, work, and connect. Each reveals a different aspect of your personality. Tap to explore.
+      <div style={{position:"relative",zIndex:1,display:"flex",flexDirection:"column",height:"100%",padding:"28px 20px 20px"}}>
+        <div style={{textAlign:"center",marginBottom:20,padding:"20px 20px",borderRadius:16,background:"rgba(1,13,31,0.7)",backdropFilter:"blur(8px)",border:"1px solid rgba(12,51,88,0.3)",flexShrink:0}}>
+          <div style={{fontSize:22,fontWeight:800,color:"#fff",marginBottom:6}}>Explore Your Dimensions</div>
+          <div style={{fontSize:12,color:"#b8dcff",lineHeight:1.6,maxWidth:380,margin:"0 auto"}}>
+            Tap a dimension to learn what it means for you.
           </div>
         </div>
-        <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:28}}>
-          {Object.entries(DIMS).map(([key, d]) => {
-            const isOpen = selectedFish === key;
-            return (
-              <div key={key} onClick={()=>setSelectedFish(isOpen?null:key)} className="card-float" style={{background:isOpen?`linear-gradient(135deg,${OC.card} 0%,${d.color}08 100%)`:OC.card,border:`1px solid ${isOpen?d.color+"66":d.color+"22"}`,borderRadius:16,overflow:"hidden",cursor:"pointer",transition:"all 0.3s ease",boxShadow:isOpen?`0 0 30px ${d.color}15`:"none"}}>
-                <div style={{position:"relative"}}>
-                  <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${d.color}${isOpen?"":"66"},transparent)`,transition:"all 0.3s"}} />
-                  <div style={{padding:"16px 18px",display:"flex",alignItems:"center",gap:14}}>
-                    <div style={{width:44,height:44,borderRadius:12,background:`${d.color}${isOpen?"28":"15"}`,border:`1px solid ${d.color}${isOpen?"66":"33"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.3s",animation:isOpen?`fishFloat 2s ease-in-out infinite`:"none"}}>
-                      <span style={{fontSize:18,fontWeight:800,color:d.color}}>{key}</span>
-                    </div>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:15,fontWeight:700,color:isOpen?"#fff":"#d8f0ff",transition:"color 0.3s"}}>{d.title}</div>
-                      <div style={{fontSize:11,color:OC.textMid,lineHeight:1.4,marginTop:2}}>{d.short}</div>
-                    </div>
-                    <div style={{fontSize:18,color:isOpen?d.color:OC.textDim,transition:"transform 0.3s ease, color 0.3s",transform:isOpen?"rotate(180deg)":"rotate(0deg)",flexShrink:0}}>▾</div>
-                  </div>
-                </div>
-                {isOpen && (
-                  <div onClick={e=>e.stopPropagation()} style={{padding:"0 18px 18px",animation:"accordionOpen 0.35s ease forwards",overflow:"hidden",cursor:"default"}}>
-                    <div style={{fontSize:12,color:OC.text,lineHeight:1.7,marginBottom:14,padding:"10px 14px",background:`${d.color}0a`,borderRadius:10,border:`1px solid ${d.color}18`}}>
-                      {d.tagline}
-                    </div>
-                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-                      <div style={{background:"#030f20",borderRadius:10,padding:"10px 12px",border:`1px solid ${OC.border}`}}>
-                        <div style={{fontSize:9,color:d.color,letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>↓ Low</div>
-                        <div style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{d.low}</div>
-                      </div>
-                      <div style={{background:"#030f20",borderRadius:10,padding:"10px 12px",border:`1px solid ${OC.border}`}}>
-                        <div style={{fontSize:9,color:d.color,letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>↑ High</div>
-                        <div style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{d.high}</div>
-                      </div>
-                    </div>
-                    <div style={{background:"#030f20",borderRadius:10,padding:"10px 14px",border:`1px solid ${OC.border}`,marginBottom:12}}>
-                      <div style={{fontSize:9,color:"#4a80a8",letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>In your team</div>
-                      <div style={{fontSize:11,color:OC.text,lineHeight:1.6,marginBottom:4}}><span style={{color:d.color}}>↑ </span>{d.teamHigh}</div>
-                      <div style={{fontSize:11,color:OC.text,lineHeight:1.6}}><span style={{color:d.color}}>↓ </span>{d.teamLow}</div>
-                    </div>
-                    <div style={{background:`${d.color}0d`,borderRadius:10,padding:"10px 14px",border:`1px solid ${d.color}22`}}>
-                      <div style={{fontSize:9,color:d.color,letterSpacing:2,textTransform:"uppercase",marginBottom:5,fontWeight:600}}>💡 Feedback tip</div>
-                      {d.tip.split("\n").map((line,i)=><div key={i} style={{fontSize:11,color:OC.text,lineHeight:1.6}}>{line}</div>)}
-                    </div>
-                  </div>
-                )}
+        <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:16,flexShrink:0,maxWidth:500,margin:"0 auto",width:"100%"}}>
+          {Object.entries(DIMS).map(([key, d]) => (
+            <div key={key} onClick={()=>setSelectedFish(selectedFish===key?null:key)} className="btn-ocean" style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",borderRadius:12,cursor:"pointer",background:selectedFish===key?`rgba(1,13,31,0.85)`:OC.card,border:`1px solid ${selectedFish===key?d.color+"66":d.color+"22"}`,transition:"all 0.2s",boxShadow:selectedFish===key?`0 0 20px ${d.color}22`:"none"}}>
+              <div style={{width:36,height:36,borderRadius:10,background:`${d.color}${selectedFish===key?"28":"15"}`,border:`1px solid ${d.color}${selectedFish===key?"66":"33"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                <span style={{fontSize:16,fontWeight:800,color:d.color}}>{key}</span>
               </div>
-            );
-          })}
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:14,fontWeight:700,color:selectedFish===key?"#fff":"#d8f0ff"}}>{d.title}</div>
+                <div style={{fontSize:10,color:OC.textMid}}>{d.short}</div>
+              </div>
+            </div>
+          ))}
         </div>
-        <div style={{padding:"16px 20px",borderRadius:16,marginTop:4,background:"rgba(1,13,31,0.7)",backdropFilter:"blur(8px)",border:"1px solid rgba(12,51,88,0.3)"}}>
+        {/* Selected dimension details */}
+        {selectedFish && (
+          <div style={{flex:"1 1 auto",overflowY:"auto",minHeight:0,maxWidth:500,margin:"0 auto",width:"100%",marginBottom:12}}>
+            <RefCard dim={selectedFish} score={myScores?myScores[selectedFish]:undefined} onClose={()=>setSelectedFish(null)} />
+          </div>
+        )}
+        <div style={{padding:"12px 0 0",flexShrink:0,maxWidth:500,margin:"0 auto",width:"100%"}}>
           <button onClick={()=>goTo("intro")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
             Enter the swarm →
           </button>
