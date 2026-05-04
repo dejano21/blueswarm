@@ -521,7 +521,7 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
       
       // Position fish near their reef with some randomness
       const offsetAngle = Math.random() * Math.PI * 2;
-      const offsetDist = 30 + Math.random() * 50;
+      const offsetDist = 60 + Math.random() * 120;
       
       return {
         idx,
@@ -542,7 +542,7 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
     
     
     function updateFish() {
-      const SEP_R=45,VIEW_R=140,W_SEP=0.045,W_ALG=0.006,W_COH=0.0006,W_TARGET=0.0015,MAX_SPD=1.8,MIN_SPD=0.4;
+      const SEP_R=45,VIEW_R=140,W_SEP=0.045,W_ALG=0.006,W_COH=0.0006,W_TARGET=0.0004,MAX_SPD=1.8,MIN_SPD=0.4;
       fishes.forEach(f=>{
         if(selectedRef.current===f.idx)return;
         let sx=0,sy=0,ax=0,ay=0,px=0,py=0,cnt=0;
@@ -810,7 +810,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.2</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.3</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
