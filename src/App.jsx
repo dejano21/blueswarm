@@ -23,11 +23,11 @@ const sp       = (code)       => `swarm__${code}`;
 const OC = { bg:"#010d1f",deep:"#020f24",card:"#041830",cardMid:"#061f3a",border:"#0c3358",borderGlow:"#1a5a8a",accent:"#00c8f5",accent2:"#00e5b0",text:"#b8dcff",textMid:"#4a80a8",textDim:"#173354" };
 
 const DIMS = {
-  O:{ color:"#00d4ff",label:"Openness",short:"Curiosity & new ideas",title:"Openness to Experience",tagline:"How much you seek novelty and embrace ambiguity",high:"Energised by new ideas · Pivots easily · Loves experiments",low:"Practical & grounded · Values what's proven · Consistent",teamHigh:"Sparks creative directions, challenges the status quo",teamLow:"Keeps the team focused and execution-oriented",tip:"High O: Validate ideas before optimising.\nLow O: Frame changes as improvements, not disruptions." },
-  C:{ color:"#ff6b9d",label:"Conscientiousness",short:"Structure & reliability",title:"Conscientiousness",tagline:"How you approach planning, structure, and follow-through",high:"Plans ahead · Delivers reliably · Detail-oriented",low:"Flexible · Adapts on the fly · Values autonomy",teamHigh:"Anchors execution, catches gaps others miss",teamLow:"Enables agility when plans need to shift",tip:"High C: Be specific — what worked, what to improve.\nLow C: Focus on outcomes, not process." },
-  E:{ color:"#ffd93d",label:"Extraversion",short:"Energy & social presence",title:"Extraversion",tagline:"Where you draw energy — from others or from solitude",high:"Takes initiative · Expressive · Energised by interaction",low:"Thoughtful · Measured · Recharges alone",teamHigh:"Drives momentum and keeps energy high in the room",teamLow:"Brings considered perspective, sees what others miss",tip:"High E: Give feedback in conversation, not in writing.\nLow E: Give space to process before expecting a response." },
-  A:{ color:"#a855f7",label:"Agreeableness",short:"Cooperation & empathy",title:"Agreeableness",tagline:"How you balance harmony with honesty",high:"Empathetic · Cooperative · Builds trust naturally",low:"Direct · Challenge-oriented · Comfortable with tension",teamHigh:"Holds the team together, gives supportive feedback",teamLow:"Names what others avoid, drives honest conversations",tip:"High A: Be clear — they may not push back.\nLow A: Can handle directness — match their style." },
-  N:{ color:"#00e5b0",label:"Neuroticism",short:"Stability under pressure",title:"Neuroticism",tagline:"How you respond to pressure, setbacks, and uncertainty",high:"Deeply invested · Emotionally reactive · Highly sensitive",low:"Calm under fire · Resilient · Steady in uncertainty",teamHigh:"Brings intensity and care — needs psychological safety",teamLow:"Provides steadiness when things get difficult",tip:"High N: Start with what's working, be reassuring.\nLow N: Can handle blunt feedback — don't over-soften." },
+  O:{ color:"#00d4ff",label:"Openness",short:"Curiosity & new ideas",title:"Openness to Experience",tagline:"How much you seek novelty and embrace ambiguity",high:"Energised by new ideas · Pivots easily · Loves experiments",low:"Practical & grounded · Values what's proven · Consistent",teamHigh:"Sparks creative directions, challenges the status quo",teamLow:"Keeps the team focused and execution-oriented",tip:"High O: Validate ideas before optimising.\nLow O: Frame changes as improvements, not disruptions.",leverage:"High: Channel your curiosity into structured experiments — test one idea at a time.\nLow: Your consistency is your superpower. Use it to build trust and deliver when others pivot." },
+  C:{ color:"#ff6b9d",label:"Conscientiousness",short:"Structure & reliability",title:"Conscientiousness",tagline:"How you approach planning, structure, and follow-through",high:"Plans ahead · Delivers reliably · Detail-oriented",low:"Flexible · Adapts on the fly · Values autonomy",teamHigh:"Anchors execution, catches gaps others miss",teamLow:"Enables agility when plans need to shift",tip:"High C: Be specific — what worked, what to improve.\nLow C: Focus on outcomes, not process.",leverage:"High: Your reliability earns trust. Use it to take ownership of critical deliverables.\nLow: Your flexibility lets you adapt fast. Lean into roles that need quick pivots." },
+  E:{ color:"#ffd93d",label:"Extraversion",short:"Energy & social presence",title:"Extraversion",tagline:"Where you draw energy — from others or from solitude",high:"Takes initiative · Expressive · Energised by interaction",low:"Thoughtful · Measured · Recharges alone",teamHigh:"Drives momentum and keeps energy high in the room",teamLow:"Brings considered perspective, sees what others miss",tip:"High E: Give feedback in conversation, not in writing.\nLow E: Give space to process before expecting a response.",leverage:"High: Use your energy to rally the team and drive momentum in meetings.\nLow: Your depth of thought is an asset. Share insights in writing where they land best." },
+  A:{ color:"#a855f7",label:"Agreeableness",short:"Cooperation & empathy",title:"Agreeableness",tagline:"How you balance harmony with honesty",high:"Empathetic · Cooperative · Builds trust naturally",low:"Direct · Challenge-oriented · Comfortable with tension",teamHigh:"Holds the team together, gives supportive feedback",teamLow:"Names what others avoid, drives honest conversations",tip:"High A: Be clear — they may not push back.\nLow A: Can handle directness — match their style.",leverage:"High: You build trust naturally. Use it to mediate conflicts and create safe spaces.\nLow: Your directness cuts through noise. Use it to challenge ideas and push quality." },
+  N:{ color:"#00e5b0",label:"Neuroticism",short:"Stability under pressure",title:"Neuroticism",tagline:"How you respond to pressure, setbacks, and uncertainty",high:"Deeply invested · Emotionally reactive · Highly sensitive",low:"Calm under fire · Resilient · Steady in uncertainty",teamHigh:"Brings intensity and care — needs psychological safety",teamLow:"Provides steadiness when things get difficult",tip:"High N: Start with what's working, be reassuring.\nLow N: Can handle blunt feedback — don't over-soften.",leverage:"High: Your sensitivity means you care deeply. Use it to spot risks others miss.\nLow: Your calm anchors the team in crisis. Step up when pressure rises." },
 };
 
 const QUESTIONS = [
@@ -760,8 +760,8 @@ export default function App() {
   useEffect(() => { 
     if (screen === "waiting" && feedbackDone) goTo("result");
     if (screen === "waiting" && feedbackStarted) {
-      setCurrentFeedbackIndex(0); // Reset to first profile
-      goTo("participantFeedback");
+      setCurrentFeedbackIndex(0);
+      goTo("feedbackIntro");
     }
   }, [feedbackDone, feedbackStarted, screen, goTo]);
   useEffect(() => () => {
@@ -810,7 +810,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.5.1</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.6.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -952,6 +952,37 @@ export default function App() {
       </div>
     );
   }
+
+  // FEEDBACK INTRO — explains the feedback round to participants
+  if (screen === "feedbackIntro") return (
+    <div key={screenKey} className="screen-enter" style={{height:"100vh",background:"#031F48",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
+      <style>{GLOBAL_CSS}</style>
+      <UnderwaterBg />
+      <div className="content-overlay" style={{position:"relative",zIndex:1,maxWidth:440,width:"100%",padding:28,borderRadius:20}}>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{fontSize:10,color:OC.accent,letterSpacing:4,textTransform:"uppercase",marginBottom:8}}>Swarm Feedback</div>
+          <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:6}}>Time to observe the swarm</div>
+          <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7}}>You'll now see anonymous profiles of other participants. Your observations help everyone grow.</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:24}}>
+          {[
+            {num:"1",text:"You'll see one profile at a time — their scores across all 5 dimensions"},
+            {num:"2",text:"Look for patterns: What stands out? What strengths do you notice?"},
+            {num:"3",text:"Add a short note (optional): What could this person leverage or be aware of?"}
+          ].map(step=>(
+            <div key={step.num} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+              <div style={{width:24,height:24,borderRadius:"50%",background:OC.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#010d1f",flexShrink:0}}>{step.num}</div>
+              <div style={{fontSize:13,color:OC.text,lineHeight:1.6,paddingTop:2}}>{step.text}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{background:`${OC.accent2}0d`,border:`1px solid ${OC.accent2}33`,borderRadius:12,padding:"12px 16px",marginBottom:24}}>
+          <div style={{fontSize:11,color:OC.accent2,lineHeight:1.6}}>💡 Focus on what you observe, not what you judge. Think: "What would help this person grow?"</div>
+        </div>
+        <button onClick={()=>goTo("participantFeedback")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>Start reviewing profiles →</button>
+      </div>
+    </div>
+  );
 
   // PARTICIPANT FEEDBACK - Participants add notes to profiles ONE AT A TIME
   if (screen === "participantFeedback") {
@@ -1111,9 +1142,26 @@ export default function App() {
           {/* Tab Content */}
           <div style={{flex:"1 1 auto",overflowY:"auto",minHeight:0}}>
             {resultTab==="scores" && (
-              <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"20px 22px"}}>
-                <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Your Scores</div>
-                <ScoreBars scores={myScores} />
+              <div style={{display:"flex",flexDirection:"column",gap:16}}>
+                <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"20px 22px"}}>
+                  <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Your Scores</div>
+                  <ScoreBars scores={myScores} />
+                </div>
+                <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.accent}33`,borderRadius:16,padding:"18px 20px"}}>
+                  <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>How to leverage your profile</div>
+                  {Object.keys(DIMS).map(dim => {
+                    const score = myScores[dim];
+                    const isHigh = score >= 50;
+                    const lines = DIMS[dim].leverage.split("\n");
+                    const relevantLine = isHigh ? lines[0] : lines[1];
+                    return (
+                      <div key={dim} style={{marginBottom:10,padding:"8px 12px",borderRadius:8,background:DIMS[dim].color+"0a",border:`1px solid ${DIMS[dim].color}15`}}>
+                        <div style={{fontSize:11,fontWeight:600,color:DIMS[dim].color,marginBottom:3}}>{DIMS[dim].label} ({score}% — {isHigh?"High":"Low"})</div>
+                        <div style={{fontSize:11,color:OC.text,lineHeight:1.5}}>{relevantLine.replace(/^(High|Low): /,"")}</div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -1199,9 +1247,9 @@ export default function App() {
       <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:500,margin:"0 auto"}}>
         <div style={{textAlign:"center",marginBottom:28,padding:"24px 20px",borderRadius:16,background:"rgba(1,13,31,0.7)",backdropFilter:"blur(8px)",border:"1px solid rgba(12,51,88,0.3)"}}>
-          <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Explore Your Dimensions</div>
+          <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Meet Your Inner Fish School</div>
           <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7,maxWidth:380,margin:"0 auto"}}>
-            Five dimensions that shape how you think, work, and connect. Each reveals a different aspect of your personality. Tap to explore.
+            Every person is a school of five fish — each one representing a dimension of your personality. Together they form your unique pattern. Tap to meet each fish.
           </div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:28}}>
