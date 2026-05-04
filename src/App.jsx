@@ -815,7 +815,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.6</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.7</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -1046,7 +1046,7 @@ export default function App() {
           
           <div className="card-float" style={{background:OC.card,border:`1px solid ${DIMS[strongestDim].color+"44"}`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase"}}>Profile Overview</div>
+              <div style={{fontSize:10,color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>Profile Overview</div>
               <div style={{display:"flex",alignItems:"center",gap:6}}>
                 <div style={{width:24,height:24,borderRadius:"50%",background:DIMS[strongestDim].color+"33",border:`2px solid ${DIMS[strongestDim].color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:DIMS[strongestDim].color}}>{strongestDim}</div>
                 <span style={{fontSize:12,color:DIMS[strongestDim].color,fontWeight:600}}>{maxScore}%</span>
@@ -1149,11 +1149,11 @@ export default function App() {
             {resultTab==="scores" && (
               <div style={{display:"flex",flexDirection:"column",gap:16}}>
                 <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"20px 22px"}}>
-                  <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Your Scores</div>
+                  <div style={{fontSize:10,color:"#fff",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Your Scores</div>
                   <ScoreBars scores={myScores} />
                 </div>
                 <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.accent}33`,borderRadius:16,padding:"18px 20px"}}>
-                  <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>How to leverage your profile</div>
+                  <div style={{fontSize:10,color:"#fff",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>How to leverage your profile</div>
                   {Object.keys(DIMS).map(dim => {
                     const score = myScores[dim];
                     const isHigh = score >= 50;
