@@ -259,13 +259,13 @@ function UnderwaterBg() {
         },
         fishScale: [1, 1, 1],
         fishWidthSegments: 8,
-        fishSpeed: 0.6,
+        fishSpeed: 0.3,
         noiseCoordScale: 0.01,
-        noiseTimeCoef: 0.0002,
-        noiseIntensity: 0.0003,
+        noiseTimeCoef: 0.0001,
+        noiseIntensity: 0.0002,
         attractionRadius1: 50,
         attractionRadius2: 150,
-        maxVelocity: 0.1
+        maxVelocity: 0.05
       });
     `;
     document.body.appendChild(script);
@@ -329,11 +329,11 @@ function FishSchool({ selectedDim, onFishClick, scores }) {
     <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden'}}>
       {/* Add colorful koi fish for each dimension - swimming slowly and randomly */}
       <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none'}}>
-        <KoiFish color={DIMS.O.color} delay={0} duration={45000} />
-        <KoiFish color={DIMS.C.color} delay={9000} duration={52000} reverse={true} />
-        <KoiFish color={DIMS.E.color} delay={18000} duration={48000} />
-        <KoiFish color={DIMS.A.color} delay={27000} duration={50000} reverse={true} />
-        <KoiFish color={DIMS.N.color} delay={36000} duration={46000} />
+        <KoiFish color={DIMS.O.color} delay={0} duration={90000} />
+        <KoiFish color={DIMS.C.color} delay={9000} duration={104000} reverse={true} />
+        <KoiFish color={DIMS.E.color} delay={18000} duration={96000} />
+        <KoiFish color={DIMS.A.color} delay={27000} duration={100000} reverse={true} />
+        <KoiFish color={DIMS.N.color} delay={36000} duration={92000} />
       </div>
       
       {/* Interactive overlay for clicking dimensions */}
@@ -778,7 +778,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v2.8.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v2.9.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -1142,11 +1142,11 @@ export default function App() {
 
   // GUIDE — Interactive fish school explainer
   if (screen === "guide") return (
-    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
+    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"transparent",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:500,margin:"0 auto"}}>
-        <div className="content-overlay" style={{textAlign:"center",marginBottom:28,padding:"24px 20px",borderRadius:16}}>
+        <div style={{textAlign:"center",marginBottom:28,padding:"24px 20px",borderRadius:16,background:"rgba(1,13,31,0.7)",backdropFilter:"blur(8px)",border:"1px solid rgba(12,51,88,0.3)"}}>
           <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Explore Your Dimensions</div>
           <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7,maxWidth:380,margin:"0 auto"}}>
             Five dimensions that shape how you think, work, and connect. Each reveals a different aspect of your personality. Tap to explore.
@@ -1200,7 +1200,7 @@ export default function App() {
             );
           })}
         </div>
-        <div className="content-overlay" style={{padding:"16px 20px",borderRadius:16,marginTop:4}}>
+        <div style={{padding:"16px 20px",borderRadius:16,marginTop:4,background:"rgba(1,13,31,0.7)",backdropFilter:"blur(8px)",border:"1px solid rgba(12,51,88,0.3)"}}>
           <button onClick={()=>goTo("intro")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
             Enter the swarm →
           </button>
@@ -1380,10 +1380,12 @@ export default function App() {
             </div>
           </div>
         )}
-        {/* Swarm Average Stats - fixed at bottom */}
-        <div className="content-overlay" style={{position:"relative",zIndex:1,margin:"0 20px 12px",padding:"12px 20px",borderRadius:16,flexShrink:0}}>
-          <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Swarm Average</div>
-          <ScoreBars scores={groupAvg} compact={true} />
+        {/* Swarm Average Stats - centered */}
+        <div style={{position:"relative",zIndex:1,display:"flex",justifyContent:"center",padding:"8px 20px 12px",flexShrink:0}}>
+          <div className="content-overlay" style={{padding:"12px 28px",borderRadius:16,maxWidth:500,width:"100%"}}>
+            <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8,textAlign:"center"}}>Swarm Average</div>
+            <ScoreBars scores={groupAvg} compact={true} />
+          </div>
         </div>
       </div>
     );
