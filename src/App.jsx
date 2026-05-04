@@ -779,7 +779,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.1.2</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.2.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -1232,29 +1232,49 @@ export default function App() {
 
   // INTRO — fish swarm with underwater background
   if (screen === "intro") return (
-    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"auto"}}>
+    <div key={screenKey} className="screen-enter" style={{height:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
-      <div className="content-overlay" style={{position:"relative",zIndex:100,padding:"20px 24px 16px",textAlign:"center",margin:"24px 20px 0",borderRadius:16}}>
-        <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Before the swarm feedback</div>
-        <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Explore your five dimensions</div>
-        <div style={{fontSize:12,color:OC.textMid,marginBottom:12}}>Tap a dimension to learn what it means for you</div>
+      {/* Header */}
+      <div className="content-overlay" style={{position:"relative",zIndex:100,padding:"16px 24px 12px",textAlign:"center",margin:"20px 20px 0",borderRadius:16,flexShrink:0}}>
+        <div style={{fontSize:10,color:"#b8dcff",letterSpacing:4,textTransform:"uppercase",marginBottom:4}}>Before the swarm feedback</div>
+        <div style={{fontSize:18,fontWeight:700,color:"#fff",marginBottom:4}}>Explore your five dimensions</div>
+        <div style={{fontSize:11,color:"#b8dcff",marginBottom:10}}>Tap a fish or dimension button to open its reference card</div>
         <div style={{display:"flex",justifyContent:"center",gap:6,flexWrap:"wrap"}}>
           {Object.keys(DIMS).map(dim=>(
-            <div key={dim} onClick={()=>setSelectedFish(selectedFish===dim?null:dim)} className="btn-ocean" style={{padding:"3px 10px",borderRadius:20,fontSize:10,cursor:"pointer",background:selectedFish===dim?DIMS[dim].color+"22":"transparent",border:`1px solid ${selectedFish===dim?DIMS[dim].color+"88":OC.border}`,color:selectedFish===dim?DIMS[dim].color:OC.textMid,transition:"all 0.2s"}}>{DIMS[dim].label}</div>
+            <div key={dim} onClick={()=>setSelectedFish(selectedFish===dim?null:dim)} className="btn-ocean" style={{padding:"3px 10px",borderRadius:20,fontSize:10,cursor:"pointer",background:selectedFish===dim?DIMS[dim].color+"22":"transparent",border:`1px solid ${selectedFish===dim?DIMS[dim].color+"88":OC.border}`,color:selectedFish===dim?DIMS[dim].color:"#b8dcff",transition:"all 0.2s"}}>{DIMS[dim].label}</div>
           ))}
         </div>
       </div>
-      <div style={{position:"relative",zIndex:10,flex:"1 1 auto",minHeight:"calc(100vh - 320px)"}}>
-        <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} scores={myScores} />
+      {/* Fish swimming area */}
+      <div style={{position:"relative",zIndex:10,flex:"1 1 auto",minHeight:0,margin:"12px 20px",borderRadius:16,background:"rgba(3,31,72,0.6)",border:"1px solid rgba(12,51,88,0.3)",overflow:"hidden"}}>
+        {Object.entries(DIMS).map(([key, d], idx) => (
+          <div key={key} onClick={()=>setSelectedFish(selectedFish===key?null:key)} style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",pointerEvents:"none"}}>
+            <div style={{pointerEvents:"auto",cursor:"pointer"}}>
+              <KoiFish color={d.color} delay={idx * 5000} duration={70000 + idx * 8000} reverse={idx % 2 === 1} />
+            </div>
+          </div>
+        ))}
+        {/* Clickable labels for each fish */}
+        <div style={{position:"absolute",top:0,left:0,width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:16,flexWrap:"wrap",padding:20,zIndex:20}}>
+          {Object.entries(DIMS).map(([key, d]) => (
+            <div key={key} onClick={()=>setSelectedFish(selectedFish===key?null:key)} style={{cursor:"pointer",padding:"10px 16px",borderRadius:12,background:selectedFish===key?d.color+"33":"rgba(1,13,31,0.7)",border:`2px solid ${selectedFish===key?d.color:d.color+"44"}`,backdropFilter:"blur(8px)",transition:"all 0.3s",boxShadow:selectedFish===key?`0 0 20px ${d.color}66`:"none"}}>
+              <div style={{fontSize:13,fontWeight:700,color:d.color}}>{d.label}</div>
+              {myScores?.[key] !== undefined && <div style={{fontSize:16,fontWeight:800,color:"#fff"}}>{myScores[key]}%</div>}
+            </div>
+          ))}
+        </div>
       </div>
-      {!selectedFish&&<div className="content-overlay" style={{position:"relative",zIndex:100,textAlign:"center",padding:"8px 24px",margin:"0 20px 8px",borderRadius:12}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any dimension to open its reference card</div></div>}
-      <div style={{position:"relative",zIndex:100,padding:"12px 20px 28px"}}>
-        {selectedFish&&(
-          <div style={{marginBottom:16}}>
+      {/* RefCard as overlay */}
+      {selectedFish && (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)"}} onClick={()=>setSelectedFish(null)}>
+          <div style={{maxWidth:440,width:"100%",maxHeight:"85vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
             <RefCard dim={selectedFish} score={myScores?myScores[selectedFish]:undefined} onClose={()=>setSelectedFish(null)} />
           </div>
-        )}
+        </div>
+      )}
+      {/* Bottom button */}
+      <div style={{position:"relative",zIndex:100,padding:"12px 20px 24px",flexShrink:0}}>
         <button onClick={markReady} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer"}}>Ready for swarm feedback ✓</button>
       </div>
     </div>
@@ -1345,7 +1365,7 @@ export default function App() {
             {participants.map((p,i)=>(
               <div key={i} className="card-float" style={{background:OC.card,border:`1px solid ${annotations[i]?.trim()?OC.accent+"44":OC.border}`,borderRadius:14,padding:"14px 18px",marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:annotations[i]?.trim()?8:0}}>
-                  <div style={{fontSize:11,color:OC.textDim,letterSpacing:2,textTransform:"uppercase"}}>Signal #{String(i+1).padStart(2,"0")}</div>
+                  <div style={{fontSize:11,color:"#fff",letterSpacing:2,textTransform:"uppercase"}}>Signal #{String(i+1).padStart(2,"0")}</div>
                   <div style={{display:"flex",gap:5}}>{Object.keys(DIMS).map(dim=><div key={dim} style={{width:6,height:6,borderRadius:"50%",background:DIMS[dim].color,opacity:p.scores[dim]/100}} />)}</div>
                 </div>
                 {annotations[i]?.trim()&&<div style={{fontSize:12,color:OC.textMid,lineHeight:1.5,fontStyle:"italic",borderTop:`1px solid ${OC.border}`,paddingTop:8}}>"{annotations[i]}"</div>}
