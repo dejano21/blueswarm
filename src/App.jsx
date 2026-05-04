@@ -810,7 +810,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.3</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.4</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -880,12 +880,12 @@ export default function App() {
             <div style={{fontSize:32,fontWeight:800,letterSpacing:6,color:OC.accent,fontFamily:"monospace"}}>{sessionCode}</div>
             <div style={{fontSize:11,color:OC.textDim,marginTop:8}}>Share with participants</div>
           </div>
-          <div className="card-float" style={{background:OC.card,borderRadius:16,border:`1px solid ${OC.border}`,padding:24}}>
-            <div style={{fontSize:10,color:"#fff",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>How to join</div>
+          <div className="card-float" style={{background:OC.card,borderRadius:16,border:`1px solid ${OC.border}`,padding:24,display:"flex",flexDirection:"column",justifyContent:"center"}}>
+            <div style={{fontSize:14,color:"#fff",letterSpacing:3,textTransform:"uppercase",marginBottom:20}}>How to join</div>
             {["Open this app","Tap 'Join a swarm'","Enter the code","Complete 20 questions","Your signal joins the swarm"].map((step,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:9}}>
-                <div style={{width:20,height:20,borderRadius:"50%",background:OC.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#010d1f",flexShrink:0}}>{i+1}</div>
-                <div style={{fontSize:12,color:"#fff",paddingTop:2}}>{step}</div>
+              <div key={i} style={{display:"flex",alignItems:"flex-start",gap:14,marginBottom:16}}>
+                <div style={{width:28,height:28,borderRadius:"50%",background:OC.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#010d1f",flexShrink:0}}>{i+1}</div>
+                <div style={{fontSize:16,color:"#fff",paddingTop:4}}>{step}</div>
               </div>
             ))}
           </div>
