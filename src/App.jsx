@@ -283,10 +283,10 @@ function UnderwaterBg() {
       ref={containerRef}
       style={{
         position: 'fixed',
-        top: '-25%',
-        left: '-20%',
-        width: '140vw',
-        height: '140vh',
+        top: '-35%',
+        left: '-30%',
+        width: '160vw',
+        height: '160vh',
         zIndex: -1,
         pointerEvents: 'none'
       }}
@@ -810,7 +810,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.6.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -1261,7 +1261,7 @@ export default function App() {
                   <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${d.color}${isOpen?"":"66"},transparent)`,transition:"all 0.3s"}} />
                   <div style={{padding:"16px 18px",display:"flex",alignItems:"center",gap:14}}>
                     <div style={{width:44,height:44,borderRadius:12,background:`${d.color}${isOpen?"28":"15"}`,border:`1px solid ${d.color}${isOpen?"66":"33"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.3s",animation:isOpen?`fishFloat 2s ease-in-out infinite`:"none"}}>
-                      <span style={{fontSize:18,fontWeight:800,color:d.color}}>{key}</span>
+                      <CardFish color={d.color} score={50} size={36} />
                     </div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:15,fontWeight:700,color:isOpen?"#fff":"#d8f0ff",transition:"color 0.3s"}}>{d.title}</div>
@@ -1319,9 +1319,9 @@ export default function App() {
         <div style={{fontSize:10,color:"#b8dcff",letterSpacing:4,textTransform:"uppercase",marginBottom:4}}>Before the swarm feedback</div>
         <div style={{fontSize:18,fontWeight:700,color:"#fff",marginBottom:4}}>Explore your five dimensions</div>
         <div style={{fontSize:11,color:"#b8dcff",marginBottom:10}}>Tap a fish to learn what each dimension means</div>
-        <div style={{display:"flex",justifyContent:"center",gap:6,flexWrap:"wrap"}}>
+        <div style={{display:"flex",justifyContent:"center",gap:8,flexWrap:"wrap"}}>
           {Object.keys(DIMS).map(dim=>(
-            <div key={dim} onClick={()=>setSelectedFish(selectedFish===dim?null:dim)} className="btn-ocean" style={{padding:"3px 10px",borderRadius:20,fontSize:10,cursor:"pointer",background:selectedFish===dim?DIMS[dim].color+"22":"transparent",border:`1px solid ${selectedFish===dim?DIMS[dim].color+"88":OC.border}`,color:selectedFish===dim?DIMS[dim].color:"#b8dcff",transition:"all 0.2s"}}>{DIMS[dim].label}</div>
+            <div key={dim} onClick={()=>setSelectedFish(selectedFish===dim?null:dim)} className="btn-ocean" style={{padding:"6px 14px",borderRadius:24,fontSize:12,fontWeight:600,cursor:"pointer",background:selectedFish===dim?DIMS[dim].color+"33":DIMS[dim].color+"15",border:`2px solid ${selectedFish===dim?DIMS[dim].color:DIMS[dim].color+"66"}`,color:DIMS[dim].color,transition:"all 0.2s",boxShadow:selectedFish===dim?`0 0 12px ${DIMS[dim].color}44`:"none"}}>{DIMS[dim].label}</div>
           ))}
         </div>
       </div>
