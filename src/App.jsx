@@ -542,14 +542,14 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
     
     
     function updateFish() {
-      const SEP_R=45,VIEW_R=140,W_SEP=0.045,W_ALG=0.006,W_COH=0.0006,W_TARGET=0.0004,MAX_SPD=1.8,MIN_SPD=0.4;
+      const SEP_R=80,VIEW_R=200,W_SEP=0.03,W_ALG=0.004,W_COH=0.0003,W_TARGET=0.00008,MAX_SPD=2.2,MIN_SPD=0.6;
       fishes.forEach(f=>{
         if(selectedRef.current===f.idx)return;
         let sx=0,sy=0,ax=0,ay=0,px=0,py=0,cnt=0;
         
-        // Flock with nearby fish of same dimension
+        // Flock with ALL nearby fish (not just same dimension)
         fishes.forEach(o=>{
-          if(o===f || o.dim !== f.dim)return;
+          if(o===f)return;
           const dx=f.x-o.x,dy=f.y-o.y,d=Math.sqrt(dx*dx+dy*dy)||0.001;
           if(d<SEP_R){sx+=dx/d;sy+=dy/d;}
           if(d<VIEW_R){ax+=o.vx;ay+=o.vy;px+=o.x;py+=o.y;cnt++;}
@@ -557,20 +557,25 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
         
         if(cnt>0){ax/=cnt;ay/=cnt;px=px/cnt-f.x;py=py/cnt-f.y;}
         
-        f.speedPhase+=0.006;
-        const spdMult = 0.75 + Math.sin(f.speedPhase)*0.2;
+        f.speedPhase+=0.004;
+        const spdMult = 0.8 + Math.sin(f.speedPhase)*0.3;
         
-        // Attraction to target reef
+        // Very weak attraction to target — let them roam freely
         const toTargetX = f.targetX - f.x;
         const toTargetY = f.targetY - f.y;
         
-        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+toTargetX*W_TARGET;
-        f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+toTargetY*W_TARGET;
+        // Add random noise for more natural movement
+        const noiseX = (Math.random()-0.5)*0.15;
+        const noiseY = (Math.random()-0.5)*0.15;
+        
+        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+toTargetX*W_TARGET+noiseX;
+        f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+toTargetY*W_TARGET+noiseY;
         
         const spd=Math.sqrt(f.vx*f.vx+f.vy*f.vy)||0.001,c=Math.min(MAX_SPD*spdMult,Math.max(MIN_SPD,spd));
         f.vx=f.vx/spd*c;f.vy=f.vy/spd*c;f.x+=f.vx;f.y+=f.vy;f.wobble+=0.055;
         
-        const m=35;if(f.x<m)f.vx+=0.12;if(f.x>W-m)f.vx-=0.12;if(f.y<m)f.vy+=0.12;if(f.y>H-m)f.vy-=0.12;
+        // Soft boundary — bounce gently
+        const m=60;if(f.x<m)f.vx+=0.2;if(f.x>W-m)f.vx-=0.2;if(f.y<m)f.vy+=0.2;if(f.y>H-m)f.vy-=0.2;
       });
     }
     
@@ -810,7 +815,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.4</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.5</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
