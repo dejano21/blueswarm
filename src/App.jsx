@@ -325,43 +325,74 @@ function MiniSchool({ size=200 }) {
 }
 
 function FishSchool({ selectedDim, onFishClick, scores }) {
-  return (
-    <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden'}}>
-      {/* Add colorful koi fish for each dimension - swimming slowly and randomly */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none'}}>
-        <KoiFish color={DIMS.O.color} delay={0} duration={90000} />
-        <KoiFish color={DIMS.C.color} delay={9000} duration={104000} reverse={true} />
-        <KoiFish color={DIMS.E.color} delay={18000} duration={96000} />
-        <KoiFish color={DIMS.A.color} delay={27000} duration={100000} reverse={true} />
-        <KoiFish color={DIMS.N.color} delay={36000} duration={92000} />
-      </div>
-      
-      {/* Interactive overlay for clicking dimensions */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20, zIndex: 20}}>
-        {Object.keys(DIMS).map(dim => (
-          <div
-            key={dim}
-            onClick={() => onFishClick(dim)}
-            style={{
-              cursor: 'pointer',
-              padding: '12px 20px',
-              borderRadius: 12,
-              background: selectedDim === dim ? DIMS[dim].color + '33' : 'rgba(1,13,31,0.85)',
-              border: `2px solid ${selectedDim === dim ? DIMS[dim].color : DIMS[dim].color + '44'}`,
-              backdropFilter: 'blur(10px)',
-              transition: 'all 0.3s ease',
-              boxShadow: selectedDim === dim ? `0 0 20px ${DIMS[dim].color}66` : 'none'
-            }}
-          >
-            <div style={{fontSize: 14, fontWeight: 700, color: DIMS[dim].color, marginBottom: 4}}>{DIMS[dim].label}</div>
-            {scores?.[dim] !== undefined && (
-              <div style={{fontSize: 18, fontWeight: 800, color: '#fff'}}>{scores[dim]}%</div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const canvasRef = useRef(null);
+  const selectedRef = useRef(selectedDim);
+  const ripples = useRef([]);
+  selectedRef.current = selectedDim;
+  useEffect(() => {
+    const canvas = canvasRef.current; if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W=canvas.offsetWidth,H=canvas.offsetHeight;
+    canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+    const cx=W/2,cy=H/2;
+    const fishes=["O","C","E","A","N"].map((dim,i)=>{const angle=(i/5)*Math.PI*2;return{dim,x:cx+Math.cos(angle)*60,y:cy+Math.sin(angle)*60,vx:Math.cos(angle+Math.PI/2)*1.2,vy:Math.sin(angle+Math.PI/2)*1.2,wobble:Math.random()*Math.PI*2,size:24,speedVar:0.8+Math.random()*0.8,speedPhase:Math.random()*Math.PI*2,glowPhase:Math.random()*Math.PI*2};});
+    function updateFish() {
+      const SEP_R=65,VIEW_R=220,W_SEP=0.065,W_ALG=0.009,W_COH=0.0009,W_CTR=0.00012,MAX_SPD=2.4,MIN_SPD=0.6;
+      fishes.forEach(f=>{
+        if(selectedRef.current===f.dim)return;
+        let sx=0,sy=0,ax=0,ay=0,px=0,py=0,cnt=0;
+        fishes.forEach(o=>{if(o===f)return;const dx=f.x-o.x,dy=f.y-o.y,d=Math.sqrt(dx*dx+dy*dy)||0.001;if(d<SEP_R){sx+=dx/d;sy+=dy/d;}if(d<VIEW_R){ax+=o.vx;ay+=o.vy;px+=o.x;py+=o.y;cnt++;}});
+        if(cnt>0){ax/=cnt;ay/=cnt;px=px/cnt-f.x;py=py/cnt-f.y;}
+        f.speedPhase+=0.008;
+        const spdMult = 0.85 + Math.sin(f.speedPhase)*0.3;
+        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+(cx-f.x)*W_CTR; f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+(cy-f.y)*W_CTR;
+        const spd=Math.sqrt(f.vx*f.vx+f.vy*f.vy)||0.001,c=Math.min(MAX_SPD*spdMult,Math.max(MIN_SPD,spd));
+        f.vx=f.vx/spd*c;f.vy=f.vy/spd*c;f.x+=f.vx;f.y+=f.vy;f.wobble+=0.07;
+        const m=50;if(f.x<m)f.vx+=0.18;if(f.x>W-m)f.vx-=0.18;if(f.y<m)f.vy+=0.18;if(f.y>H-m)f.vy-=0.18;
+      });
+    }
+    function drawFish(f) {
+      const{x,y,vx,vy,size,dim}=f,angle=Math.atan2(vy,vx),col=DIMS[dim].color,sel=selectedRef.current===dim,wb=Math.sin(f.wobble)*0.07;
+      f.glowPhase+=0.025;
+      const glowPulse = sel ? 28 + Math.sin(f.glowPhase)*8 : 0;
+      ctx.save();ctx.translate(x,y);ctx.rotate(angle+wb);
+      if(sel){ctx.shadowColor=col;ctx.shadowBlur=glowPulse;}
+      const tailWag = Math.sin(f.wobble*1.5)*0.12;
+      const tx=-size*0.85;
+      ctx.beginPath();ctx.moveTo(tx,0);ctx.lineTo(tx-size*0.55,-size*(0.42+tailWag));ctx.lineTo(tx-size*0.12,0);ctx.lineTo(tx-size*0.55,size*(0.42-tailWag));ctx.closePath();ctx.fillStyle=col+"88";ctx.fill();
+      ctx.beginPath();ctx.moveTo(size*0.1,0);ctx.quadraticCurveTo(0,size*0.45,-size*0.3,size*0.28);ctx.quadraticCurveTo(-size*0.05,size*0.1,size*0.1,0);ctx.fillStyle=col+"55";ctx.fill();
+      ctx.beginPath();ctx.ellipse(0,0,size*0.72,size*0.3,0,0,Math.PI*2);ctx.fillStyle=col+(sel?"ff":"cc");ctx.fill();
+      ctx.beginPath();ctx.moveTo(-size*0.15,-size*0.3);ctx.quadraticCurveTo(size*0.12,-size*0.58,size*0.42,-size*0.3);ctx.strokeStyle=col+"aa";ctx.lineWidth=1.5;ctx.stroke();
+      ctx.beginPath();ctx.arc(size*0.44,-size*0.06,size*0.085,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.9)";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.46,-size*0.06,size*0.042,0,Math.PI*2);ctx.fillStyle="#001530";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.47,-size*0.085,size*0.018,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.85)";ctx.fill();
+      if(scores?.[dim]!==undefined){ctx.rotate(-angle-wb);ctx.fillStyle=col;ctx.font=`bold ${size*0.38}px sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(scores[dim]+"%",0,size*0.72);}
+      ctx.restore();
+      ctx.save();ctx.font=`${sel?"bold ":""}${size*0.42}px -apple-system,sans-serif`;ctx.textAlign="center";ctx.textBaseline="top";ctx.fillStyle=sel?col:col+"99";ctx.fillText(DIMS[dim].label,x,y+size*1.0);ctx.restore();
+      if(sel){ctx.save();ctx.beginPath();ctx.arc(x,y,size*1.6,0,Math.PI*2);ctx.strokeStyle=col+"40";ctx.lineWidth=2;ctx.setLineDash([4,6]);ctx.stroke();ctx.restore();}
+    }
+    let raf;
+    function loop(){
+      ctx.clearRect(0,0,W,H);
+      updateFish();
+      fishes.forEach((f,i)=>fishes.forEach((f2,j)=>{if(j<=i)return;const d=Math.hypot(f.x-f2.x,f.y-f2.y);if(d<130){const a=Math.floor((1-d/130)*18).toString(16).padStart(2,"0");ctx.beginPath();ctx.strokeStyle=`#00c8f5${a}`;ctx.lineWidth=0.6;ctx.moveTo(f.x,f.y);ctx.lineTo(f2.x,f2.y);ctx.stroke();}}));
+      ripples.current = ripples.current.filter(r=>{r.age++;r.radius+=2.5;ctx.beginPath();ctx.arc(r.x,r.y,r.radius,0,Math.PI*2);ctx.strokeStyle=`rgba(0,200,245,${0.3*(1-r.age/30)})`;ctx.lineWidth=1.5;ctx.stroke();return r.age<30;});
+      fishes.forEach(f=>drawFish(f));
+      raf=requestAnimationFrame(loop);
+    }
+    loop();
+    function handleClick(e){
+      const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+      ripples.current.push({x:mx,y:my,radius:4,age:0});
+      let hit=null,minD=Infinity;
+      fishes.forEach(f=>{const d=Math.hypot(mx-f.x,my-f.y);if(d<f.size*1.8&&d<minD){minD=d;hit=f.dim;}});
+      onFishClick(hit);
+    }
+    canvas.addEventListener("click",handleClick);
+    return ()=>{cancelAnimationFrame(raf);canvas.removeEventListener("click",handleClick);};
+  },[]);
+  return <canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block",cursor:"pointer"}} />;
 }
 
 // Mini fish SVG for reference cards — behavior based on score
@@ -779,7 +810,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.3.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.4.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
