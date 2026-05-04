@@ -779,7 +779,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.1.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.1.1</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -1359,13 +1359,14 @@ export default function App() {
         <style>{GLOBAL_CSS}</style>
         {/* Coral reef background image */}
         <div style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",zIndex:0,backgroundImage:"url('/coral-reef-bg.jpg')",backgroundSize:"cover",backgroundPosition:"center",opacity:0.8}} />
-        <div style={{position:"relative",zIndex:1,display:"flex",justifyContent:"center",padding:"12px 20px 0",flexShrink:0}}>
-          <div className="content-overlay" style={{padding:"14px 28px",textAlign:"center",borderRadius:16,display:"inline-block"}}>
-            <div style={{fontSize:10,color:OC.text,letterSpacing:4,textTransform:"uppercase",marginBottom:4}}>Swarm Visualization</div>
-            <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>The Complete Swarm</div>
-            <div style={{fontSize:12,color:"#b8dcff",marginBottom:8}}>Each fish swims near the coral reef of their strongest dimension.</div>
-            <button onClick={()=>goTo("feedbackDone")} className="btn-ocean" style={{padding:"6px 16px",borderRadius:8,border:`1px solid ${OC.border}`,background:"rgba(4,24,48,0.6)",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back to surface</button>
+        <div className="content-overlay" style={{position:"relative",zIndex:1,padding:"16px 24px",textAlign:"center",margin:"12px 20px 0",borderRadius:16,flexShrink:0}}>
+          <div style={{fontSize:10,color:OC.text,letterSpacing:4,textTransform:"uppercase",marginBottom:4}}>Swarm Visualization</div>
+          <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>The Complete Swarm</div>
+          <div style={{fontSize:12,color:"#b8dcff",marginBottom:12}}>Each fish swims near the coral reef of their strongest dimension.</div>
+          <div style={{textAlign:"left",marginBottom:12}}>
+            <ScoreBars scores={groupAvg} compact={true} />
           </div>
+          <button onClick={()=>goTo("feedbackDone")} className="btn-ocean" style={{padding:"6px 16px",borderRadius:8,border:`1px solid ${OC.border}`,background:"rgba(4,24,48,0.6)",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back to surface</button>
         </div>
         <div style={{position:"relative",zIndex:1,flex:"1 1 auto",minHeight:0,padding:"0 20px"}}>
           <ParticipantSwarm participants={participants} onFishClick={(idx)=>setSelectedFish(idx)} selectedFish={selectedFish} />
@@ -1386,13 +1387,6 @@ export default function App() {
             </div>
           </div>
         )}
-        {/* Swarm Average Stats - centered, compact */}
-        <div style={{position:"relative",zIndex:1,display:"flex",justifyContent:"center",padding:"8px 20px 12px",flexShrink:0}}>
-          <div className="content-overlay" style={{padding:"12px 24px",borderRadius:16,maxWidth:420}}>
-            <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8,textAlign:"center"}}>Swarm Average</div>
-            <ScoreBars scores={groupAvg} compact={true} />
-          </div>
-        </div>
       </div>
     );
   }
