@@ -283,10 +283,10 @@ function UnderwaterBg() {
       ref={containerRef}
       style={{
         position: 'fixed',
-        top: '-15%',
-        left: '-10%',
-        width: '120vw',
-        height: '120vh',
+        top: '-25%',
+        left: '-20%',
+        width: '140vw',
+        height: '140vh',
         zIndex: -1,
         pointerEvents: 'none'
       }}
@@ -810,7 +810,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.4.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.5.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -881,11 +881,11 @@ export default function App() {
             <div style={{fontSize:11,color:OC.textDim,marginTop:8}}>Share with participants</div>
           </div>
           <div className="card-float" style={{background:OC.card,borderRadius:16,border:`1px solid ${OC.border}`,padding:24}}>
-            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>How to join</div>
+            <div style={{fontSize:10,color:"#fff",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>How to join</div>
             {["Open this app","Tap 'Join a swarm'","Enter the code","Complete 20 questions","Your signal joins the swarm"].map((step,i)=>(
               <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:9}}>
                 <div style={{width:20,height:20,borderRadius:"50%",background:OC.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#010d1f",flexShrink:0}}>{i+1}</div>
-                <div style={{fontSize:12,color:OC.textMid,paddingTop:2}}>{step}</div>
+                <div style={{fontSize:12,color:"#fff",paddingTop:2}}>{step}</div>
               </div>
             ))}
           </div>
@@ -1278,7 +1278,7 @@ export default function App() {
         </div>
       </div>
       {/* Fish swimming area */}
-      <div style={{position:"relative",zIndex:10,flex:"1 1 auto",minHeight:0}}>
+      <div style={{position:"relative",zIndex:10,flex:"1 1 auto",minHeight:0,margin:"12px 20px",borderRadius:16,background:"rgba(1,13,31,0.6)",border:"1px solid rgba(12,51,88,0.4)",overflow:"hidden"}}>
         <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} scores={myScores} />
       </div>
       {/* RefCard as overlay */}
