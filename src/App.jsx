@@ -810,7 +810,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.5.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.5.1</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
@@ -1425,18 +1425,18 @@ export default function App() {
           <ParticipantSwarm participants={participants} onFishClick={(idx)=>setSelectedFish(idx)} selectedFish={selectedFish} />
         </div>
         {selectedFish !== null && participants[selectedFish] && (
-          <div style={{position:"relative",zIndex:1,padding:"0 16px 16px",maxHeight:"40vh",overflowY:"auto"}}>
-            <div className="card-float" style={{background:"linear-gradient(135deg,#041830 0%,#061c35 100%)",border:`1px solid ${OC.accent}44`,borderRadius:18,padding:"18px 20px",boxShadow:`0 0 40px ${OC.accent}18`,position:"relative",overflow:"hidden",animation:"slideUp 0.35s ease-out"}}>
+          <div style={{position:"absolute",bottom:20,right:20,zIndex:10,maxWidth:320,width:"100%"}}>
+            <div className="card-float" style={{background:"linear-gradient(135deg,#041830 0%,#061c35 100%)",border:`1px solid ${OC.accent}44`,borderRadius:14,padding:"14px 16px",boxShadow:`0 0 30px ${OC.accent}18`,position:"relative",overflow:"hidden",animation:"slideUp 0.35s ease-out"}}>
               <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${OC.accent},transparent)`}} />
-              <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:10}}>Signal #{String(selectedFish+1).padStart(2,"0")}</div>
+              <div style={{fontSize:10,color:"#fff",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Signal #{String(selectedFish+1).padStart(2,"0")}</div>
               <ScoreBars scores={participants[selectedFish].scores} compact={true} />
               {annotations[selectedFish]?.trim() && (
-                <div style={{marginTop:14,padding:"10px 14px",background:`${OC.accent}0d`,borderRadius:10,border:`1px solid ${OC.accent}22`}}>
-                  <div style={{fontSize:9,color:OC.accent+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:5}}>Notes</div>
-                  <div style={{fontSize:11,color:OC.text,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{annotations[selectedFish]}</div>
+                <div style={{marginTop:10,padding:"8px 10px",background:`${OC.accent}0d`,borderRadius:8,border:`1px solid ${OC.accent}22`}}>
+                  <div style={{fontSize:9,color:OC.accent+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Notes</div>
+                  <div style={{fontSize:10,color:OC.text,lineHeight:1.5,whiteSpace:"pre-wrap"}}>{annotations[selectedFish]}</div>
                 </div>
               )}
-              <button onClick={()=>setSelectedFish(null)} className="btn-ocean" style={{marginTop:12,width:"100%",padding:"8px",borderRadius:8,background:"none",border:`1px solid ${OC.border}`,color:OC.textMid,fontSize:12,cursor:"pointer"}}>Close</button>
+              <button onClick={()=>setSelectedFish(null)} className="btn-ocean" style={{marginTop:10,width:"100%",padding:"6px",borderRadius:6,background:"none",border:`1px solid ${OC.border}`,color:OC.textMid,fontSize:11,cursor:"pointer"}}>Close</button>
             </div>
           </div>
         )}
