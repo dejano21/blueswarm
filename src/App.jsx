@@ -74,6 +74,7 @@ function calcScores(answers, activeQuestions) {
 
 function genCode() { return Math.random().toString(36).substr(2, 5).toUpperCase(); }
 function genPid()  { return Math.random().toString(36).substr(2, 10); }
+function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
 // Global CSS for transitions and microinteractions
 const GLOBAL_CSS = `
@@ -700,7 +701,7 @@ export default function App() {
       if (!meta) { setError("No swarm found. Check the code."); return; }
       const qCount = meta.questionCount || 20;
       setQuestionCount(qCount);
-      setActiveQuestions(QUESTIONS.slice(0, qCount));
+      setActiveQuestions(shuffle(QUESTIONS.slice(0, qCount)));
       setSessionCode(code); 
       
       // Listen to all profiles so participant can see them during feedback
@@ -803,7 +804,7 @@ export default function App() {
             </div>
           ))}
         </div>
-        <button onClick={()=>{setActiveQuestions(QUESTIONS.slice(0,questionCount));createSession();}} className="btn-ocean" style={{width:"100%",padding:15,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Create swarm session →</button>
+        <button onClick={()=>{setActiveQuestions(shuffle(QUESTIONS.slice(0,questionCount)));createSession();}} className="btn-ocean" style={{width:"100%",padding:15,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Create swarm session →</button>
         <button onClick={()=>goTo("home")} className="btn-ocean" style={{marginTop:12,background:"none",border:"none",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back</button>
       </div>
     </div>
@@ -815,7 +816,7 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.8</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.7.9</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
