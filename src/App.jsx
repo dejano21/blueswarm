@@ -23,11 +23,11 @@ const sp       = (code)       => `swarm__${code}`;
 const OC = { bg:"#010d1f",deep:"#020f24",card:"#041830",cardMid:"#061f3a",border:"#0c3358",borderGlow:"#1a5a8a",accent:"#00c8f5",accent2:"#00e5b0",text:"#b8dcff",textMid:"#4a80a8",textDim:"#173354" };
 
 const DIMS = {
-  O:{ color:"#00d4ff",label:"Openness",short:"Curiosity & new ideas",title:"Openness to Experience",tagline:"How much you seek novelty and embrace ambiguity",high:"Energised by new ideas · Pivots easily · Loves experiments",low:"Practical & grounded · Values what's proven · Consistent",teamHigh:"Sparks creative directions, challenges the status quo",teamLow:"Keeps the team focused and execution-oriented",tip:"High O: Validate ideas before optimising.\nLow O: Frame changes as improvements, not disruptions." },
-  C:{ color:"#ff6b9d",label:"Conscientiousness",short:"Structure & reliability",title:"Conscientiousness",tagline:"How you approach planning, structure, and follow-through",high:"Plans ahead · Delivers reliably · Detail-oriented",low:"Flexible · Adapts on the fly · Values autonomy",teamHigh:"Anchors execution, catches gaps others miss",teamLow:"Enables agility when plans need to shift",tip:"High C: Be specific — what worked, what to improve.\nLow C: Focus on outcomes, not process." },
-  E:{ color:"#ffd93d",label:"Extraversion",short:"Energy & social presence",title:"Extraversion",tagline:"Where you draw energy — from others or from solitude",high:"Takes initiative · Expressive · Energised by interaction",low:"Thoughtful · Measured · Recharges alone",teamHigh:"Drives momentum and keeps energy high in the room",teamLow:"Brings considered perspective, sees what others miss",tip:"High E: Give feedback in conversation, not in writing.\nLow E: Give space to process before expecting a response." },
-  A:{ color:"#a855f7",label:"Agreeableness",short:"Cooperation & empathy",title:"Agreeableness",tagline:"How you balance harmony with honesty",high:"Empathetic · Cooperative · Builds trust naturally",low:"Direct · Challenge-oriented · Comfortable with tension",teamHigh:"Holds the team together, gives supportive feedback",teamLow:"Names what others avoid, drives honest conversations",tip:"High A: Be clear — they may not push back.\nLow A: Can handle directness — match their style." },
-  N:{ color:"#00e5b0",label:"Neuroticism",short:"Stability under pressure",title:"Neuroticism",tagline:"How you respond to pressure, setbacks, and uncertainty",high:"Deeply invested · Emotionally reactive · Highly sensitive",low:"Calm under fire · Resilient · Steady in uncertainty",teamHigh:"Brings intensity and care — needs psychological safety",teamLow:"Provides steadiness when things get difficult",tip:"High N: Start with what's working, be reassuring.\nLow N: Can handle blunt feedback — don't over-soften." },
+  O:{ color:"#00d4ff",label:"Openness",short:"Curiosity & new ideas",title:"Openness to Experience",tagline:"How much you seek novelty and embrace ambiguity",high:"Energised by new ideas · Pivots easily · Loves experiments",low:"Practical & grounded · Values what's proven · Consistent",teamHigh:"Sparks creative directions, challenges the status quo",teamLow:"Keeps the team focused and execution-oriented",tip:"High O: Validate ideas before optimising.\nLow O: Frame changes as improvements, not disruptions.",leverage:"High: Channel your curiosity into structured experiments — test one idea at a time.\nLow: Your consistency is your superpower. Use it to build trust and deliver when others pivot." },
+  C:{ color:"#ff6b9d",label:"Conscientiousness",short:"Structure & reliability",title:"Conscientiousness",tagline:"How you approach planning, structure, and follow-through",high:"Plans ahead · Delivers reliably · Detail-oriented",low:"Flexible · Adapts on the fly · Values autonomy",teamHigh:"Anchors execution, catches gaps others miss",teamLow:"Enables agility when plans need to shift",tip:"High C: Be specific — what worked, what to improve.\nLow C: Focus on outcomes, not process.",leverage:"High: Your reliability earns trust. Use it to take ownership of critical deliverables.\nLow: Your flexibility lets you adapt fast. Lean into roles that need quick pivots." },
+  E:{ color:"#ffd93d",label:"Extraversion",short:"Energy & social presence",title:"Extraversion",tagline:"Where you draw energy — from others or from solitude",high:"Takes initiative · Expressive · Energised by interaction",low:"Thoughtful · Measured · Recharges alone",teamHigh:"Drives momentum and keeps energy high in the room",teamLow:"Brings considered perspective, sees what others miss",tip:"High E: Give feedback in conversation, not in writing.\nLow E: Give space to process before expecting a response.",leverage:"High: Use your energy to rally the team and drive momentum in meetings.\nLow: Your depth of thought is an asset. Share insights in writing where they land best." },
+  A:{ color:"#a855f7",label:"Agreeableness",short:"Cooperation & empathy",title:"Agreeableness",tagline:"How you balance harmony with honesty",high:"Empathetic · Cooperative · Builds trust naturally",low:"Direct · Challenge-oriented · Comfortable with tension",teamHigh:"Holds the team together, gives supportive feedback",teamLow:"Names what others avoid, drives honest conversations",tip:"High A: Be clear — they may not push back.\nLow A: Can handle directness — match their style.",leverage:"High: You build trust naturally. Use it to mediate conflicts and create safe spaces.\nLow: Your directness cuts through noise. Use it to challenge ideas and push quality." },
+  N:{ color:"#00e5b0",label:"Neuroticism",short:"Stability under pressure",title:"Neuroticism",tagline:"How you respond to pressure, setbacks, and uncertainty",high:"Deeply invested · Emotionally reactive · Highly sensitive",low:"Calm under fire · Resilient · Steady in uncertainty",teamHigh:"Brings intensity and care — needs psychological safety",teamLow:"Provides steadiness when things get difficult",tip:"High N: Start with what's working, be reassuring.\nLow N: Can handle blunt feedback — don't over-soften.",leverage:"High: Your sensitivity means you care deeply. Use it to spot risks others miss.\nLow: Your calm anchors the team in crisis. Step up when pressure rises." },
 };
 
 const QUESTIONS = [
@@ -51,6 +51,32 @@ const QUESTIONS = [
   { dim:"N", text:"A project you cared about didn't go well. Two days later, you are:", opts:[{t:"Mostly moved on; other things to focus on",s:1},{t:"Still thinking about it, but functioning normally",s:2},{t:"Still bothered and replaying what went wrong",s:3},{t:"Still feeling it heavily; these things stick",s:4}]},
   { dim:"N", text:"Something unexpected changes your plan at the last minute. You usually:", opts:[{t:"Feel thrown off for a while afterward",s:4},{t:"Get visibly frustrated before adjusting",s:3},{t:"Regroup quickly, with a bit of friction",s:2},{t:"Roll with it; plans change",s:1}]},
   { dim:"N", text:"How often do small worries about work keep you up at night?", opts:[{t:"Almost never",s:1},{t:"Occasionally, when something big is on",s:2},{t:"Fairly often; I think about work a lot",s:3},{t:"Most nights, if I'm honest",s:4}]},
+  // Extended questions (21-40)
+  // Openness (4 more)
+  { dim:"O", text:"You discover a completely new tool that could replace your current workflow. You:", opts:[{t:"Stick with what works; switching costs are real",s:1},{t:"Bookmark it and maybe try it later",s:2},{t:"Spend an afternoon testing it to see if it fits",s:3},{t:"Dive in immediately and start rebuilding your workflow around it",s:4}]},
+  { dim:"O", text:"A friend invites you to an event in a field you know nothing about. You:", opts:[{t:"Politely decline; it is not really my thing",s:1},{t:"Go if nothing else is on, but without high expectations",s:2},{t:"Go because unfamiliar environments often spark ideas",s:3},{t:"Jump at the chance; the less I know, the more curious I am",s:4}]},
+  { dim:"O", text:"When reading or watching something, you prefer:", opts:[{t:"Content directly related to my work or goals",s:1},{t:"A mix of practical and exploratory content",s:2},{t:"Things that challenge my current thinking",s:3},{t:"Anything that takes me somewhere unexpected",s:4}]},
+  { dim:"O", text:"Your team is stuck on a problem. Your instinct is to:", opts:[{t:"Go back to basics and apply a proven method",s:1},{t:"Look at how similar problems were solved elsewhere",s:2},{t:"Reframe the problem from a completely different angle",s:3},{t:"Throw out all assumptions and start from zero",s:4}]},
+  // Conscientiousness (4 more)
+  { dim:"C", text:"When packing for a trip, you typically:", opts:[{t:"Pack the night before or morning of; it always works out",s:1},{t:"Throw things together a day or two before",s:2},{t:"Make a mental list and pack methodically the day before",s:3},{t:"Have a packing list and check items off days in advance",s:4}]},
+  { dim:"C", text:"You have three projects running at once. You manage them by:", opts:[{t:"Keeping it all in my head and switching as needed",s:1},{t:"Rough notes and reminders when things get urgent",s:2},{t:"A simple system — lists or calendar blocks",s:3},{t:"Detailed tracking with deadlines, priorities, and progress notes",s:4}]},
+  { dim:"C", text:"After finishing a piece of work, you:", opts:[{t:"Move on immediately to the next thing",s:1},{t:"Give it a quick glance before sending",s:2},{t:"Review it once carefully for errors",s:3},{t:"Go through it multiple times and check every detail",s:4}]},
+  { dim:"C", text:"Someone asks you to take on an extra task. You:", opts:[{t:"Say yes and figure it out later",s:1},{t:"Agree but keep it loose in terms of timing",s:2},{t:"Accept and immediately think about where it fits in my schedule",s:3},{t:"Only agree if I can commit to doing it properly within a clear timeframe",s:4}]},
+  // Extraversion (4 more)
+  { dim:"E", text:"When working on a difficult problem, you prefer to:", opts:[{t:"Work alone in silence until I have a solution",s:1},{t:"Think alone first, then maybe bounce ideas off someone",s:2},{t:"Talk it through with one trusted person",s:3},{t:"Gather a group and hash it out together immediately",s:4}]},
+  { dim:"E", text:"On a free weekend with no plans, your ideal scenario is:", opts:[{t:"Staying home alone with a book or project",s:1},{t:"Quiet time with maybe one close friend",s:2},{t:"A mix of social and solo time",s:3},{t:"Filling the day with people and activities",s:4}]},
+  { dim:"E", text:"In a new group where you do not know anyone, you:", opts:[{t:"Wait for others to approach me",s:1},{t:"Observe for a while before engaging",s:2},{t:"Introduce myself to one or two people nearby",s:3},{t:"Work the room and try to meet as many people as possible",s:4}]},
+  { dim:"E", text:"Your energy level at the end of a solo deep-work day is:", opts:[{t:"High; I feel accomplished and recharged",s:1},{t:"Good; productive days feel satisfying",s:2},{t:"Okay but I am ready for some interaction",s:3},{t:"Low; I need people around me to feel energized",s:4}]},
+  // Agreeableness (4 more)
+  { dim:"A", text:"A team member's work is below standard. You:", opts:[{t:"Tell them directly what needs to change",s:1},{t:"Point out the issues clearly but offer to help",s:2},{t:"Frame it as suggestions and ask how you can support them",s:3},{t:"Focus on what they did well first, then gently mention areas to improve",s:4}]},
+  { dim:"A", text:"Two colleagues are in a conflict. You:", opts:[{t:"Stay out of it; they are adults",s:1},{t:"Share your honest opinion if asked",s:2},{t:"Try to help both sides see the other perspective",s:3},{t:"Actively mediate and look for a compromise everyone can live with",s:4}]},
+  { dim:"A", text:"You strongly believe your approach is better, but the team wants to go another way. You:", opts:[{t:"Push hard for my approach; I know it is right",s:1},{t:"Make my case firmly one more time",s:2},{t:"State my preference but ultimately go with the group",s:3},{t:"Support the team decision fully; unity matters more",s:4}]},
+  { dim:"A", text:"When giving feedback, your natural style is:", opts:[{t:"Blunt and direct; people can handle it",s:1},{t:"Honest with minimal sugar-coating",s:2},{t:"Balanced; I mix positives with areas to improve",s:3},{t:"Gentle and encouraging; I focus on strengths first",s:4}]},
+  // Neuroticism (4 more)
+  { dim:"N", text:"You made a mistake at work that others noticed. A week later, you:", opts:[{t:"Have completely moved on; everyone makes mistakes",s:1},{t:"Barely think about it anymore",s:2},{t:"Still cringe when it crosses my mind",s:3},{t:"Replay it often and worry about how people see me now",s:4}]},
+  { dim:"N", text:"When facing uncertainty about the future, you typically:", opts:[{t:"Feel calm; things tend to work out",s:1},{t:"Feel mild unease but manage it well",s:2},{t:"Worry noticeably and run scenarios in my head",s:3},{t:"Feel significant anxiety that is hard to shake",s:4}]},
+  { dim:"N", text:"After receiving critical feedback, your first emotional response is:", opts:[{t:"Neutral; I take it as information",s:1},{t:"Slightly stung but I recover quickly",s:2},{t:"Quite affected; I need time to process",s:3},{t:"Deeply hurt; it stays with me for days",s:4}]},
+  { dim:"N", text:"On a scale of emotional ups and downs, your typical week is:", opts:[{t:"Very steady; my mood rarely shifts much",s:1},{t:"Mostly stable with occasional dips",s:2},{t:"Noticeable highs and lows depending on what happens",s:3},{t:"Quite volatile; small things can shift my mood significantly",s:4}]},
 ];
 
 function calcScores(answers, activeQuestions) {
@@ -74,6 +100,7 @@ function calcScores(answers, activeQuestions) {
 
 function genCode() { return Math.random().toString(36).substr(2, 5).toUpperCase(); }
 function genPid()  { return Math.random().toString(36).substr(2, 10); }
+function shuffle(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 
 // Global CSS for transitions and microinteractions
 const GLOBAL_CSS = `
@@ -104,8 +131,8 @@ function KoiFish({ color = "#ff6b00", delay = 0, duration = 20000, reverse = fal
   
   const koiStyle = {
     position: 'absolute',
-    top: '-35%',
-    left: 0,
+    top: '-45%',
+    left: '-10%',
     width: '100%',
     height: '100%',
     filter: `drop-shadow(${reverse ? '-' : ''}56px 4.67px 5px rgba(0, 0, 0, 0.3))`,
@@ -259,13 +286,13 @@ function UnderwaterBg() {
         },
         fishScale: [1, 1, 1],
         fishWidthSegments: 8,
-        fishSpeed: 1.5,
+        fishSpeed: 0.3,
         noiseCoordScale: 0.01,
-        noiseTimeCoef: 0.0005,
-        noiseIntensity: 0.0005,
+        noiseTimeCoef: 0.0001,
+        noiseIntensity: 0.0002,
         attractionRadius1: 50,
         attractionRadius2: 150,
-        maxVelocity: 0.1
+        maxVelocity: 0.05
       });
     `;
     document.body.appendChild(script);
@@ -283,10 +310,10 @@ function UnderwaterBg() {
       ref={containerRef}
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
+        top: '-35%',
+        left: '-30%',
+        width: '160vw',
+        height: '160vh',
         zIndex: -1,
         pointerEvents: 'none'
       }}
@@ -325,43 +352,74 @@ function MiniSchool({ size=200 }) {
 }
 
 function FishSchool({ selectedDim, onFishClick, scores }) {
-  return (
-    <div style={{position: 'relative', width: '100%', height: '100%', overflow: 'hidden'}}>
-      {/* Add colorful koi fish for each dimension - swimming slowly and randomly */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10, pointerEvents: 'none'}}>
-        <KoiFish color={DIMS.O.color} delay={0} duration={45000} />
-        <KoiFish color={DIMS.C.color} delay={9000} duration={52000} reverse={true} />
-        <KoiFish color={DIMS.E.color} delay={18000} duration={48000} />
-        <KoiFish color={DIMS.A.color} delay={27000} duration={50000} reverse={true} />
-        <KoiFish color={DIMS.N.color} delay={36000} duration={46000} />
-      </div>
-      
-      {/* Interactive overlay for clicking dimensions */}
-      <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, flexWrap: 'wrap', padding: 20, zIndex: 20}}>
-        {Object.keys(DIMS).map(dim => (
-          <div
-            key={dim}
-            onClick={() => onFishClick(dim)}
-            style={{
-              cursor: 'pointer',
-              padding: '12px 20px',
-              borderRadius: 12,
-              background: selectedDim === dim ? DIMS[dim].color + '33' : 'rgba(1,13,31,0.85)',
-              border: `2px solid ${selectedDim === dim ? DIMS[dim].color : DIMS[dim].color + '44'}`,
-              backdropFilter: 'blur(10px)',
-              transition: 'all 0.3s ease',
-              boxShadow: selectedDim === dim ? `0 0 20px ${DIMS[dim].color}66` : 'none'
-            }}
-          >
-            <div style={{fontSize: 14, fontWeight: 700, color: DIMS[dim].color, marginBottom: 4}}>{DIMS[dim].label}</div>
-            {scores?.[dim] !== undefined && (
-              <div style={{fontSize: 18, fontWeight: 800, color: '#fff'}}>{scores[dim]}%</div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  const canvasRef = useRef(null);
+  const selectedRef = useRef(selectedDim);
+  const ripples = useRef([]);
+  selectedRef.current = selectedDim;
+  useEffect(() => {
+    const canvas = canvasRef.current; if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W=canvas.offsetWidth,H=canvas.offsetHeight;
+    canvas.width=W*window.devicePixelRatio; canvas.height=H*window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+    const cx=W/2,cy=H/2;
+    const fishes=["O","C","E","A","N"].map((dim,i)=>{const angle=(i/5)*Math.PI*2;return{dim,x:cx+Math.cos(angle)*60,y:cy+Math.sin(angle)*60,vx:Math.cos(angle+Math.PI/2)*1.2,vy:Math.sin(angle+Math.PI/2)*1.2,wobble:Math.random()*Math.PI*2,size:24,speedVar:0.8+Math.random()*0.8,speedPhase:Math.random()*Math.PI*2,glowPhase:Math.random()*Math.PI*2};});
+    function updateFish() {
+      const SEP_R=65,VIEW_R=220,W_SEP=0.065,W_ALG=0.009,W_COH=0.0009,W_CTR=0.00012,MAX_SPD=2.4,MIN_SPD=0.6;
+      fishes.forEach(f=>{
+        if(selectedRef.current===f.dim)return;
+        let sx=0,sy=0,ax=0,ay=0,px=0,py=0,cnt=0;
+        fishes.forEach(o=>{if(o===f)return;const dx=f.x-o.x,dy=f.y-o.y,d=Math.sqrt(dx*dx+dy*dy)||0.001;if(d<SEP_R){sx+=dx/d;sy+=dy/d;}if(d<VIEW_R){ax+=o.vx;ay+=o.vy;px+=o.x;py+=o.y;cnt++;}});
+        if(cnt>0){ax/=cnt;ay/=cnt;px=px/cnt-f.x;py=py/cnt-f.y;}
+        f.speedPhase+=0.008;
+        const spdMult = 0.85 + Math.sin(f.speedPhase)*0.3;
+        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+(cx-f.x)*W_CTR; f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+(cy-f.y)*W_CTR;
+        const spd=Math.sqrt(f.vx*f.vx+f.vy*f.vy)||0.001,c=Math.min(MAX_SPD*spdMult,Math.max(MIN_SPD,spd));
+        f.vx=f.vx/spd*c;f.vy=f.vy/spd*c;f.x+=f.vx;f.y+=f.vy;f.wobble+=0.07;
+        const m=50;if(f.x<m)f.vx+=0.18;if(f.x>W-m)f.vx-=0.18;if(f.y<m)f.vy+=0.18;if(f.y>H-m)f.vy-=0.18;
+      });
+    }
+    function drawFish(f) {
+      const{x,y,vx,vy,size,dim}=f,angle=Math.atan2(vy,vx),col=DIMS[dim].color,sel=selectedRef.current===dim,wb=Math.sin(f.wobble)*0.07;
+      f.glowPhase+=0.025;
+      const glowPulse = sel ? 28 + Math.sin(f.glowPhase)*8 : 0;
+      ctx.save();ctx.translate(x,y);ctx.rotate(angle+wb);
+      if(sel){ctx.shadowColor=col;ctx.shadowBlur=glowPulse;}
+      const tailWag = Math.sin(f.wobble*1.5)*0.12;
+      const tx=-size*0.85;
+      ctx.beginPath();ctx.moveTo(tx,0);ctx.lineTo(tx-size*0.55,-size*(0.42+tailWag));ctx.lineTo(tx-size*0.12,0);ctx.lineTo(tx-size*0.55,size*(0.42-tailWag));ctx.closePath();ctx.fillStyle=col+"88";ctx.fill();
+      ctx.beginPath();ctx.moveTo(size*0.1,0);ctx.quadraticCurveTo(0,size*0.45,-size*0.3,size*0.28);ctx.quadraticCurveTo(-size*0.05,size*0.1,size*0.1,0);ctx.fillStyle=col+"55";ctx.fill();
+      ctx.beginPath();ctx.ellipse(0,0,size*0.72,size*0.3,0,0,Math.PI*2);ctx.fillStyle=col+(sel?"ff":"cc");ctx.fill();
+      ctx.beginPath();ctx.moveTo(-size*0.15,-size*0.3);ctx.quadraticCurveTo(size*0.12,-size*0.58,size*0.42,-size*0.3);ctx.strokeStyle=col+"aa";ctx.lineWidth=1.5;ctx.stroke();
+      ctx.beginPath();ctx.arc(size*0.44,-size*0.06,size*0.085,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.9)";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.46,-size*0.06,size*0.042,0,Math.PI*2);ctx.fillStyle="#001530";ctx.fill();
+      ctx.beginPath();ctx.arc(size*0.47,-size*0.085,size*0.018,0,Math.PI*2);ctx.fillStyle="rgba(255,255,255,0.85)";ctx.fill();
+      if(scores?.[dim]!==undefined){ctx.rotate(-angle-wb);ctx.fillStyle=col;ctx.font=`bold ${size*0.38}px sans-serif`;ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(scores[dim]+"%",0,size*0.72);}
+      ctx.restore();
+      ctx.save();ctx.font=`${sel?"bold ":""}${size*0.42}px -apple-system,sans-serif`;ctx.textAlign="center";ctx.textBaseline="top";ctx.fillStyle=sel?col:col+"99";ctx.fillText(DIMS[dim].label,x,y+size*1.0);ctx.restore();
+      if(sel){ctx.save();ctx.beginPath();ctx.arc(x,y,size*1.6,0,Math.PI*2);ctx.strokeStyle=col+"40";ctx.lineWidth=2;ctx.setLineDash([4,6]);ctx.stroke();ctx.restore();}
+    }
+    let raf;
+    function loop(){
+      ctx.clearRect(0,0,W,H);
+      updateFish();
+      fishes.forEach((f,i)=>fishes.forEach((f2,j)=>{if(j<=i)return;const d=Math.hypot(f.x-f2.x,f.y-f2.y);if(d<130){const a=Math.floor((1-d/130)*18).toString(16).padStart(2,"0");ctx.beginPath();ctx.strokeStyle=`#00c8f5${a}`;ctx.lineWidth=0.6;ctx.moveTo(f.x,f.y);ctx.lineTo(f2.x,f2.y);ctx.stroke();}}));
+      ripples.current = ripples.current.filter(r=>{r.age++;r.radius+=2.5;ctx.beginPath();ctx.arc(r.x,r.y,r.radius,0,Math.PI*2);ctx.strokeStyle=`rgba(0,200,245,${0.3*(1-r.age/30)})`;ctx.lineWidth=1.5;ctx.stroke();return r.age<30;});
+      fishes.forEach(f=>drawFish(f));
+      raf=requestAnimationFrame(loop);
+    }
+    loop();
+    function handleClick(e){
+      const rect=canvas.getBoundingClientRect(),mx=e.clientX-rect.left,my=e.clientY-rect.top;
+      ripples.current.push({x:mx,y:my,radius:4,age:0});
+      let hit=null,minD=Infinity;
+      fishes.forEach(f=>{const d=Math.hypot(mx-f.x,my-f.y);if(d<f.size*1.8&&d<minD){minD=d;hit=f.dim;}});
+      onFishClick(hit);
+    }
+    canvas.addEventListener("click",handleClick);
+    return ()=>{cancelAnimationFrame(raf);canvas.removeEventListener("click",handleClick);};
+  },[]);
+  return <canvas ref={canvasRef} style={{width:"100%",height:"100%",display:"block",cursor:"pointer"}} />;
 }
 
 // Mini fish SVG for reference cards — behavior based on score
@@ -490,7 +548,7 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
       
       // Position fish near their reef with some randomness
       const offsetAngle = Math.random() * Math.PI * 2;
-      const offsetDist = 30 + Math.random() * 50;
+      const offsetDist = 60 + Math.random() * 120;
       
       return {
         idx,
@@ -503,7 +561,7 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
         vx: (Math.random()-0.5)*0.5,
         vy: (Math.random()-0.5)*0.5,
         wobble: Math.random()*Math.PI*2,
-        size: 18 + (maxScore/100)*10,
+        size: 72 + (maxScore/100)*40,
         speedPhase: Math.random()*Math.PI*2,
         glowPhase: Math.random()*Math.PI*2
       };
@@ -511,14 +569,14 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
     
     
     function updateFish() {
-      const SEP_R=45,VIEW_R=140,W_SEP=0.045,W_ALG=0.006,W_COH=0.0006,W_TARGET=0.0015,MAX_SPD=1.8,MIN_SPD=0.4;
+      const SEP_R=80,VIEW_R=200,W_SEP=0.03,W_ALG=0.004,W_COH=0.0003,W_TARGET=0.00008,MAX_SPD=2.2,MIN_SPD=0.6;
       fishes.forEach(f=>{
         if(selectedRef.current===f.idx)return;
         let sx=0,sy=0,ax=0,ay=0,px=0,py=0,cnt=0;
         
-        // Flock with nearby fish of same dimension
+        // Flock with ALL nearby fish (not just same dimension)
         fishes.forEach(o=>{
-          if(o===f || o.dim !== f.dim)return;
+          if(o===f)return;
           const dx=f.x-o.x,dy=f.y-o.y,d=Math.sqrt(dx*dx+dy*dy)||0.001;
           if(d<SEP_R){sx+=dx/d;sy+=dy/d;}
           if(d<VIEW_R){ax+=o.vx;ay+=o.vy;px+=o.x;py+=o.y;cnt++;}
@@ -526,20 +584,25 @@ function ParticipantSwarm({ participants, onFishClick, selectedFish }) {
         
         if(cnt>0){ax/=cnt;ay/=cnt;px=px/cnt-f.x;py=py/cnt-f.y;}
         
-        f.speedPhase+=0.006;
-        const spdMult = 0.75 + Math.sin(f.speedPhase)*0.2;
+        f.speedPhase+=0.004;
+        const spdMult = 0.8 + Math.sin(f.speedPhase)*0.3;
         
-        // Attraction to target reef
+        // Very weak attraction to target — let them roam freely
         const toTargetX = f.targetX - f.x;
         const toTargetY = f.targetY - f.y;
         
-        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+toTargetX*W_TARGET;
-        f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+toTargetY*W_TARGET;
+        // Add random noise for more natural movement
+        const noiseX = (Math.random()-0.5)*0.02;
+        const noiseY = (Math.random()-0.5)*0.02;
+        
+        f.vx+=sx*W_SEP+ax*W_ALG+px*W_COH+toTargetX*W_TARGET+noiseX;
+        f.vy+=sy*W_SEP+ay*W_ALG+py*W_COH+toTargetY*W_TARGET+noiseY;
         
         const spd=Math.sqrt(f.vx*f.vx+f.vy*f.vy)||0.001,c=Math.min(MAX_SPD*spdMult,Math.max(MIN_SPD,spd));
         f.vx=f.vx/spd*c;f.vy=f.vy/spd*c;f.x+=f.vx;f.y+=f.vy;f.wobble+=0.055;
         
-        const m=35;if(f.x<m)f.vx+=0.12;if(f.x>W-m)f.vx-=0.12;if(f.y<m)f.vy+=0.12;if(f.y>H-m)f.vy-=0.12;
+        // Soft boundary — bounce gently
+        const m=60;if(f.x<m)f.vx+=0.2;if(f.x>W-m)f.vx-=0.2;if(f.y<m)f.vy+=0.2;if(f.y>H-m)f.vy-=0.2;
       });
     }
     
@@ -632,7 +695,8 @@ export default function App() {
   const [activeQuestions, setActiveQuestions] = useState(QUESTIONS.slice(0, 20));
   const [participantNotes, setParticipantNotes] = useState({}); // notes from participant to other profiles
   const [feedbackStarted, setFeedbackStarted] = useState(false);
-  const [currentFeedbackIndex, setCurrentFeedbackIndex] = useState(0); // Track which profile participant is reviewing
+  const [currentFeedbackIndex, setCurrentFeedbackIndex] = useState(0);
+  const [resultTab, setResultTab] = useState("scores"); // scores, group, compare, feedback // Track which profile participant is reviewing
   const unsubRef          = useRef(null);
   const unsubParticipantRef = useRef(null);
   const unsubFeedbackRef  = useRef(null);
@@ -663,7 +727,7 @@ export default function App() {
       if (!meta) { setError("No swarm found. Check the code."); return; }
       const qCount = meta.questionCount || 20;
       setQuestionCount(qCount);
-      setActiveQuestions(QUESTIONS.slice(0, qCount));
+      setActiveQuestions(shuffle(QUESTIONS.slice(0, qCount)));
       setSessionCode(code); 
       
       // Listen to all profiles so participant can see them during feedback
@@ -728,8 +792,8 @@ export default function App() {
   useEffect(() => { 
     if (screen === "waiting" && feedbackDone) goTo("result");
     if (screen === "waiting" && feedbackStarted) {
-      setCurrentFeedbackIndex(0); // Reset to first profile
-      goTo("participantFeedback");
+      setCurrentFeedbackIndex(0);
+      goTo("feedbackIntro");
     }
   }, [feedbackDone, feedbackStarted, screen, goTo]);
   useEffect(() => () => {
@@ -766,8 +830,8 @@ export default function App() {
             </div>
           ))}
         </div>
-        <button onClick={()=>{setActiveQuestions(QUESTIONS.slice(0,questionCount));createSession();}} className="btn-ocean" style={{width:"100%",padding:15,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Create swarm session →</button>
-        <button onClick={()=>goTo("home")} className="btn-ocean" style={{marginTop:12,background:"none",border:"none",color:OC.textDim,fontSize:12,cursor:"pointer"}}>← Back</button>
+        <button onClick={()=>{setActiveQuestions(shuffle(QUESTIONS.slice(0,questionCount)));createSession();}} className="btn-ocean" style={{width:"100%",padding:15,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Create swarm session →</button>
+        <button onClick={()=>goTo("home")} className="btn-ocean" style={{marginTop:12,background:"none",border:"none",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back</button>
       </div>
     </div>
   );
@@ -778,12 +842,12 @@ export default function App() {
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       {/* Version number in top right corner */}
-      <div style={{position:"absolute",top:16,right:16,fontSize:10,color:OC.textDim,background:"rgba(1,13,31,0.6)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.border}`,backdropFilter:"blur(10px)",zIndex:10}}>v2.4.0</div>
+      <div style={{position:"absolute",top:16,right:16,fontSize:11,color:"#b8dcff",background:"rgba(1,13,31,0.75)",padding:"4px 10px",borderRadius:6,border:`1px solid ${OC.borderGlow}`,backdropFilter:"blur(10px)",zIndex:10,fontWeight:600}}>v3.8.0</div>
       <div className="content-overlay" style={{position:"relative",zIndex:1,width:"100%",maxWidth:380,textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{margin:"0 auto 4px",width:180,height:180}}><MiniSchool size={180} /></div>
         <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Creativity & Reframing · HSG</div>
-        <div style={{fontSize:40,fontWeight:800,color:"#fff",lineHeight:1.1,marginBottom:4}}>Swarm</div>
-        <div style={{fontSize:40,fontWeight:800,lineHeight:1.1,marginBottom:6}}><span style={{background:OC.accent,color:"#010d1f",padding:"0 10px",borderRadius:6}}>Intelligence.</span></div>
+        <div style={{fontSize:40,fontWeight:800,color:"#fff",lineHeight:1.1,marginBottom:4}}>Blue</div>
+        <div style={{fontSize:40,fontWeight:800,lineHeight:1.1,marginBottom:6}}><span style={{background:OC.accent,color:"#010d1f",padding:"0 10px",borderRadius:6}}>Swarm.</span></div>
         <div style={{fontSize:13,color:OC.textMid,marginBottom:36,fontStyle:"italic"}}>The swarm shows what individuals can't.</div>
         <div style={{display:"flex",flexDirection:"column",gap:10}}>
           <button onClick={()=>goTo("hostSetup")} className="btn-ocean" style={{padding:15,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Host a swarm session</button>
@@ -808,7 +872,7 @@ export default function App() {
           onKeyDown={e=>e.key==="Enter"&&joinSession()} />
         {error&&<div style={{color:"#ff6b6b",fontSize:12,marginBottom:12}}>{error}</div>}
         <button onClick={joinSession} disabled={joinCode.length<4} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:joinCode.length>=4?OC.accent:OC.border,color:joinCode.length>=4?"#010d1f":"#333",fontSize:14,fontWeight:700,cursor:joinCode.length>=4?"pointer":"default"}}>Dive in</button>
-        <button onClick={()=>{goTo("home");setError("");}} className="btn-ocean" style={{marginTop:12,background:"none",border:"none",color:OC.textDim,fontSize:12,cursor:"pointer"}}>← Back</button>
+        <button onClick={()=>{goTo("home");setError("");}} className="btn-ocean" style={{marginTop:12,background:"none",border:"none",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back</button>
       </div>
     </div>
   );
@@ -818,12 +882,12 @@ export default function App() {
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
-      <div style={{position:"relative",zIndex:1,maxWidth:680,margin:"0 auto"}}>
+      <div style={{position:"relative",zIndex:1,maxWidth:1200,margin:"0 auto"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
           <div>
-            <button onClick={()=>{stopSession();goTo("home");setSessionCode("");setParticipants([]);}} className="btn-ocean" style={{background:"none",border:"none",color:OC.textMid,fontSize:12,cursor:"pointer",padding:"0 0 4px 0",display:"block"}}>← Back</button>
-            <div style={{fontSize:18,fontWeight:700,color:"#fff"}}>Session active</div>
-            <div style={{fontSize:12,color:OC.textMid}}>Waiting for signals to surface</div>
+            <button onClick={()=>{stopSession();goTo("home");setSessionCode("");setParticipants([]);}} className="btn-ocean" style={{background:"none",border:"none",color:"#fff",fontSize:12,cursor:"pointer",padding:"0 0 4px 0",display:"block"}}>← Back</button>
+            <div style={{fontSize:24,fontWeight:700,color:"#fff"}}>Session active</div>
+            <div style={{fontSize:14,color:"#b8dcff"}}>Waiting for signals to surface</div>
           </div>
           <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:10}}>
             <div style={{background:"#041a0f",border:"1px solid #0d3a1a",borderRadius:8,padding:"6px 14px",fontSize:12,color:OC.accent2}}>
@@ -841,23 +905,29 @@ export default function App() {
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:24}}>
           <div className="card-float" style={{background:OC.card,borderRadius:16,border:`1px solid ${OC.border}`,padding:24,textAlign:"center"}}>
-            <div style={{width:100,height:100,margin:"0 auto 14px"}}><MiniSchool size={100} /></div>
+            <div style={{width:200,height:200,margin:"0 auto 14px",background:"#fff",borderRadius:12,padding:12,display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://blueswarm-kiro.domain-portfolio.workers.dev`} alt="QR Code" style={{width:"100%",height:"100%",display:"block"}} />
+            </div>
             <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:6}}>Swarm code</div>
             <div style={{fontSize:32,fontWeight:800,letterSpacing:6,color:OC.accent,fontFamily:"monospace"}}>{sessionCode}</div>
             <div style={{fontSize:11,color:OC.textDim,marginTop:8}}>Share with participants</div>
           </div>
-          <div className="card-float" style={{background:OC.card,borderRadius:16,border:`1px solid ${OC.border}`,padding:24}}>
-            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>How to join</div>
-            {["Open this app","Tap 'Join a swarm'","Enter the code","Complete 20 questions","Your signal joins the swarm"].map((step,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:9}}>
-                <div style={{width:20,height:20,borderRadius:"50%",background:OC.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:"#010d1f",flexShrink:0}}>{i+1}</div>
-                <div style={{fontSize:12,color:OC.textMid,paddingTop:2}}>{step}</div>
+          <div className="card-float" style={{background:OC.card,borderRadius:16,border:`1px solid ${OC.border}`,padding:24,display:"flex",flexDirection:"column",justifyContent:"center"}}>
+            <div style={{fontSize:14,color:"#fff",letterSpacing:3,textTransform:"uppercase",marginBottom:20}}>How to join</div>
+            {["Open this app","Tap 'Join a swarm'","Enter the code",`Complete ${questionCount} questions`,"Your signal joins the swarm"].map((step,i)=>(
+              <div key={i} style={{display:"flex",alignItems:"flex-start",gap:14,marginBottom:16}}>
+                <div style={{width:28,height:28,borderRadius:"50%",background:OC.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#010d1f",flexShrink:0}}>{i+1}</div>
+                <div style={{fontSize:16,color:"#fff",paddingTop:4}}>{step}</div>
               </div>
             ))}
           </div>
         </div>
         {participants.length===0 ? (
-          <div style={{textAlign:"center",padding:"48px 0"}}><div style={{fontSize:13,color:OC.textDim}}>Waiting for signals from the deep...</div></div>
+          <div style={{textAlign:"center",padding:"48px 0"}}>
+            <div style={{fontSize:16,color:OC.text,background:"rgba(4,24,48,0.85)",backdropFilter:"blur(8px)",padding:"16px 32px",borderRadius:12,display:"inline-block",border:`1px solid ${OC.border}`,boxShadow:"0 4px 24px rgba(0,0,0,0.3)"}}>
+              Waiting for signals from the deep...
+            </div>
+          </div>
         ) : (
           <div>
             <div style={{fontSize:13,fontWeight:600,color:"#fff",marginBottom:14}}>Anonymous signals — {participants.length} received</div>
@@ -915,6 +985,37 @@ export default function App() {
     );
   }
 
+  // FEEDBACK INTRO — explains the feedback round to participants
+  if (screen === "feedbackIntro") return (
+    <div key={screenKey} className="screen-enter" style={{height:"100vh",background:"#031F48",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
+      <style>{GLOBAL_CSS}</style>
+      <UnderwaterBg />
+      <div className="content-overlay" style={{position:"relative",zIndex:1,maxWidth:440,width:"100%",padding:28,borderRadius:20}}>
+        <div style={{textAlign:"center",marginBottom:24}}>
+          <div style={{fontSize:10,color:OC.accent,letterSpacing:4,textTransform:"uppercase",marginBottom:8}}>Swarm Feedback</div>
+          <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:6}}>Time to observe the swarm</div>
+          <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7}}>You'll now see anonymous profiles of other participants. Your observations help everyone grow.</div>
+        </div>
+        <div style={{display:"flex",flexDirection:"column",gap:12,marginBottom:24}}>
+          {[
+            {num:"1",text:"You'll see one profile at a time — their scores across all 5 dimensions"},
+            {num:"2",text:"Look for patterns: What stands out? What strengths do you notice?"},
+            {num:"3",text:"Add a short note (optional): What could this person leverage or be aware of?"}
+          ].map(step=>(
+            <div key={step.num} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+              <div style={{width:24,height:24,borderRadius:"50%",background:OC.accent,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#010d1f",flexShrink:0}}>{step.num}</div>
+              <div style={{fontSize:13,color:OC.text,lineHeight:1.6,paddingTop:2}}>{step.text}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{background:`${OC.accent2}0d`,border:`1px solid ${OC.accent2}33`,borderRadius:12,padding:"12px 16px",marginBottom:24}}>
+          <div style={{fontSize:11,color:OC.accent2,lineHeight:1.6}}>💡 Focus on what you observe, not what you judge. Think: "What would help this person grow?"</div>
+        </div>
+        <button onClick={()=>goTo("participantFeedback")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>Start reviewing profiles →</button>
+      </div>
+    </div>
+  );
+
   // PARTICIPANT FEEDBACK - Participants add notes to profiles ONE AT A TIME
   if (screen === "participantFeedback") {
     // Show all participants except self
@@ -954,7 +1055,7 @@ export default function App() {
         <UnderwaterBg />
         <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto"}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
-            <button onClick={()=>goTo("waiting")} className="btn-ocean content-overlay" style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${OC.border}`,color:OC.textMid,fontSize:12,cursor:"pointer"}}>← Back</button>
+            <button onClick={()=>goTo("waiting")} className="btn-ocean content-overlay" style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${OC.border}`,color:"#fff",fontSize:12,cursor:"pointer"}}>← Back</button>
             <div style={{fontSize:12,color:OC.textMid}}>Profile <span style={{color:"#fff",fontWeight:700}}>{currentFeedbackIndex+1}</span> / {otherParticipants.length}</div>
           </div>
           
@@ -964,15 +1065,15 @@ export default function App() {
             ))}
           </div>
           
-          <div style={{textAlign:"center",marginBottom:24}}>
-            <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Anonymous Signal #{String(currentFeedbackIndex+1).padStart(2,"0")}</div>
+          <div className="content-overlay" style={{textAlign:"center",marginBottom:24,padding:"16px 20px",borderRadius:16}}>
+            <div style={{fontSize:10,color:"#b8dcff",letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Anonymous Signal #{String(currentFeedbackIndex+1).padStart(2,"0")}</div>
             <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:6}}>Add Your Observations</div>
-            <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7}}>Review this profile and share your insights.</div>
+            <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7}}>Review this profile and share your insights.</div>
           </div>
           
           <div className="card-float" style={{background:OC.card,border:`1px solid ${DIMS[strongestDim].color+"44"}`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-              <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase"}}>Profile Overview</div>
+              <div style={{fontSize:10,color:"#fff",letterSpacing:3,textTransform:"uppercase"}}>Profile Overview</div>
               <div style={{display:"flex",alignItems:"center",gap:6}}>
                 <div style={{width:24,height:24,borderRadius:"50%",background:DIMS[strongestDim].color+"33",border:`2px solid ${DIMS[strongestDim].color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:DIMS[strongestDim].color}}>{strongestDim}</div>
                 <span style={{fontSize:12,color:DIMS[strongestDim].color,fontWeight:600}}>{maxScore}%</span>
@@ -1042,87 +1143,116 @@ export default function App() {
         }
       }
     });
+
+    const hasFeedback = (myAnnotation && myAnnotation.trim()) || participantNotesAboutMe.length > 0;
+    const tabs = [
+      {id:"scores",label:"Your Scores"},
+      {id:"group",label:"Group"},
+      {id:"compare",label:"You vs Group"},
+      ...(hasFeedback ? [{id:"feedback",label:"Feedback"}] : [])
+    ];
     
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative",overflowY:"auto"}}>
+      <div key={screenKey} className="screen-enter" style={{height:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <style>{GLOBAL_CSS}</style>
         <UnderwaterBg />
-        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",paddingBottom:40}}>
-          <div style={{width:90,height:90,margin:"0 auto 18px"}}><MiniSchool size={90} /></div>
+        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",width:"100%",display:"flex",flexDirection:"column",height:"100%",padding:"20px 24px"}}>
           
-          {/* Your Results */}
-          <div style={{textAlign:"center",marginBottom:24}}>
-            <div style={{fontSize:22,fontWeight:700,color:"#fff",marginBottom:4}}>Your Pattern Revealed</div>
-            <div style={{fontSize:13,color:OC.textMid}}>Here's your current across the five dimensions</div>
+          {/* Header */}
+          <div className="content-overlay" style={{textAlign:"center",marginBottom:16,padding:"16px 20px",borderRadius:16,flexShrink:0}}>
+            <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Your Pattern Revealed</div>
+            <div style={{fontSize:12,color:"#b8dcff"}}>Tap a tab to explore your results</div>
           </div>
-          
-          <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
-            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Your Scores</div>
-            <ScoreBars scores={myScores} />
+
+          {/* Tabs */}
+          <div style={{display:"flex",gap:6,marginBottom:16,flexShrink:0,flexWrap:"wrap",justifyContent:"center"}}>
+            {tabs.map(t=>(
+              <button key={t.id} onClick={()=>setResultTab(t.id)} className="btn-ocean" style={{padding:"6px 14px",borderRadius:20,fontSize:11,fontWeight:resultTab===t.id?700:400,cursor:"pointer",background:resultTab===t.id?"rgba(0,200,245,0.2)":"rgba(1,13,31,0.7)",border:`1px solid ${resultTab===t.id?OC.accent:OC.border}`,color:resultTab===t.id?OC.accent:"#b8dcff",backdropFilter:"blur(8px)"}}>{t.label}</button>
+            ))}
           </div>
-          
-          {myAnnotation !== null && (
-            <div className="card-float" style={{marginBottom:20,padding:"16px 18px",background:`${OC.accent}0d`,borderRadius:12,border:`1px solid ${OC.accent}33`}}>
-              <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Host Notes</div>
-              {myAnnotation ? (
-                <div style={{fontSize:13,color:OC.text,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{myAnnotation}</div>
-              ) : (
-                <div style={{fontSize:13,color:OC.textMid,fontStyle:"italic"}}>No notes were added for this signal.</div>
-              )}
-            </div>
-          )}
-          
-          {/* Participant Notes */}
-          {participantNotesAboutMe.length > 0 && (
-            <div className="card-float" style={{marginBottom:20,padding:"16px 18px",background:`${OC.accent2}0d`,borderRadius:12,border:`1px solid ${OC.accent2}33`}}>
-              <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Swarm Feedback ({participantNotesAboutMe.length})</div>
-              {participantNotesAboutMe.map((note, i) => (
-                <div key={i} style={{fontSize:12,color:OC.text,lineHeight:1.6,marginBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,paddingBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,borderBottom:i < participantNotesAboutMe.length - 1 ? `1px solid ${OC.border}` : "none"}}>
-                  "{ note}"
+
+          {/* Tab Content */}
+          <div style={{flex:"1 1 auto",overflowY:"auto",minHeight:0}}>
+            {resultTab==="scores" && (
+              <div style={{display:"flex",flexDirection:"column",gap:16}}>
+                <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"20px 22px"}}>
+                  <div style={{fontSize:10,color:"#fff",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Your Scores</div>
+                  <ScoreBars scores={myScores} />
                 </div>
-              ))}
-            </div>
-          )}
-          
-          {/* Group Results */}
-          <div style={{textAlign:"center",marginTop:40,marginBottom:24}}>
-            <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Group Results</div>
-            <div style={{fontSize:13,color:OC.textMid}}>Average scores across all {participants.length} participants</div>
-          </div>
-          
-          <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.accent2}44`,borderRadius:16,padding:"20px 22px",marginBottom:20}}>
-            <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Swarm Average</div>
-            <ScoreBars scores={groupAvg} />
-          </div>
-          
-          {/* Comparison */}
-          <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"18px 20px",marginBottom:20}}>
-            <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>You vs. Group</div>
-            {Object.keys(DIMS).map(dim => {
-              const diff = myScores[dim] - groupAvg[dim];
-              const absDiff = Math.abs(diff);
-              return (
-                <div key={dim} style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10,padding:"8px 12px",background:absDiff>15?DIMS[dim].color+"0d":"transparent",borderRadius:8}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10}}>
-                    <div style={{width:8,height:8,borderRadius:"50%",background:DIMS[dim].color}} />
-                    <span style={{fontSize:12,fontWeight:600,color:OC.text}}>{DIMS[dim].label}</span>
-                  </div>
-                  <div style={{display:"flex",alignItems:"center",gap:8}}>
-                    <span style={{fontSize:11,color:OC.textMid}}>You: {myScores[dim]}%</span>
-                    <span style={{fontSize:11,color:OC.textDim}}>·</span>
-                    <span style={{fontSize:11,color:OC.textMid}}>Group: {groupAvg[dim]}%</span>
-                    {absDiff > 5 && (
-                      <span style={{fontSize:11,fontWeight:600,color:diff>0?OC.accent2:OC.accent}}>
-                        {diff>0?"+":""}{diff}
+                <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.accent}33`,borderRadius:16,padding:"18px 20px"}}>
+                  <div style={{fontSize:10,color:"#fff",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>How to leverage your profile</div>
+                  {Object.keys(DIMS).map(dim => {
+                    const score = myScores[dim];
+                    const isHigh = score >= 50;
+                    const lines = DIMS[dim].leverage.split("\n");
+                    const relevantLine = isHigh ? lines[0] : lines[1];
+                    return (
+                      <div key={dim} style={{marginBottom:10,padding:"8px 12px",borderRadius:8,background:DIMS[dim].color+"0a",border:`1px solid ${DIMS[dim].color}15`}}>
+                        <div style={{fontSize:11,fontWeight:600,color:DIMS[dim].color,marginBottom:3}}>{DIMS[dim].label} ({score}% — {isHigh?"High":"Low"})</div>
+                        <div style={{fontSize:11,color:OC.text,lineHeight:1.5}}>{relevantLine.replace(/^(High|Low): /,"")}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {resultTab==="group" && (
+              <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.accent2}44`,borderRadius:16,padding:"20px 22px"}}>
+                <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>Swarm Average — {participants.length} participants</div>
+                <ScoreBars scores={groupAvg} />
+              </div>
+            )}
+
+            {resultTab==="compare" && (
+              <div className="card-float" style={{background:OC.card,border:`1px solid ${OC.border}`,borderRadius:16,padding:"18px 20px"}}>
+                <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:14}}>You vs. Group</div>
+                {Object.keys(DIMS).map(dim => {
+                  const diff = myScores[dim] - groupAvg[dim];
+                  const absDiff = Math.abs(diff);
+                  return (
+                    <div key={dim} style={{display:"grid",gridTemplateColumns:"28px 110px 70px 70px 50px",alignItems:"center",marginBottom:10,padding:"8px 12px",background:absDiff>15?DIMS[dim].color+"0d":"transparent",borderRadius:8,gap:4}}>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:DIMS[dim].color}} />
+                      <span style={{fontSize:12,fontWeight:600,color:OC.text}}>{DIMS[dim].label}</span>
+                      <span style={{fontSize:11,color:OC.textMid}}>You: {myScores[dim]}%</span>
+                      <span style={{fontSize:11,color:OC.textMid}}>Grp: {groupAvg[dim]}%</span>
+                      <span style={{fontSize:11,fontWeight:600,color:diff>0?OC.accent2:diff<0?OC.accent:"transparent",textAlign:"right"}}>
+                        {absDiff > 5 ? (diff>0?"+":"")+diff : ""}
                       </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {resultTab==="feedback" && (
+              <div style={{display:"flex",flexDirection:"column",gap:16}}>
+                {myAnnotation !== null && (
+                  <div className="card-float" style={{padding:"16px 18px",background:`rgba(4,24,48,0.85)`,borderRadius:12,border:`1px solid ${OC.accent}33`}}>
+                    <div style={{fontSize:10,color:OC.accent+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Host Notes</div>
+                    {myAnnotation ? (
+                      <div style={{fontSize:13,color:OC.text,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{myAnnotation}</div>
+                    ) : (
+                      <div style={{fontSize:13,color:OC.textMid,fontStyle:"italic"}}>No notes were added for this signal.</div>
                     )}
                   </div>
-                </div>
-              );
-            })}
+                )}
+                {participantNotesAboutMe.length > 0 && (
+                  <div className="card-float" style={{padding:"16px 18px",background:`rgba(4,24,48,0.85)`,borderRadius:12,border:`1px solid ${OC.accent2}33`}}>
+                    <div style={{fontSize:10,color:OC.accent2+"88",letterSpacing:3,textTransform:"uppercase",marginBottom:12}}>Swarm Feedback ({participantNotesAboutMe.length})</div>
+                    {participantNotesAboutMe.map((note, i) => (
+                      <div key={i} style={{fontSize:12,color:OC.text,lineHeight:1.6,marginBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,paddingBottom:i < participantNotesAboutMe.length - 1 ? 12 : 0,borderBottom:i < participantNotesAboutMe.length - 1 ? `1px solid ${OC.border}` : "none"}}>
+                        "{note}"
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          
-          <button onClick={()=>{goTo("home");setAnswers({});setCurrent(0);setMyScores(null);}} className="btn-ocean" style={{width:"100%",marginTop:24,padding:12,borderRadius:8,border:`1px solid ${OC.border}`,background:"transparent",color:OC.textDim,fontSize:13,cursor:"pointer"}}>Back to surface</button>
+
+          {/* Bottom button */}
+          <button onClick={()=>{goTo("home");setAnswers({});setCurrent(0);setMyScores(null);setResultTab("scores");}} className="btn-ocean" style={{width:"100%",marginTop:16,padding:12,borderRadius:8,border:`1px solid ${OC.border}`,background:"rgba(1,13,31,0.7)",backdropFilter:"blur(8px)",color:"#b8dcff",fontSize:13,cursor:"pointer",flexShrink:0}}>Back to surface</button>
         </div>
       </div>
     );
@@ -1133,11 +1263,10 @@ export default function App() {
     <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
-      <div style={{position:"relative",zIndex:1,maxWidth:400,width:"100%",textAlign:"center"}}>
-        <div style={{width:100,height:100,margin:"0 auto 20px"}}><MiniSchool size={100} /></div>
+      <div className="content-overlay" style={{position:"relative",zIndex:1,maxWidth:400,width:"100%",textAlign:"center",padding:32,borderRadius:20}}>
         <div style={{fontSize:10,color:OC.accent2,letterSpacing:4,textTransform:"uppercase",marginBottom:10}}>Assessment complete</div>
         <div style={{fontSize:24,fontWeight:700,color:"#fff",marginBottom:8}}>Signal transmitted</div>
-        <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7,marginBottom:32}}>Your signal joined the swarm — anonymously. Before the swarm feedback, let's dive into the five dimensions of personality.</div>
+        <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7,marginBottom:32}}>Your signal joined the swarm — anonymously. Before the swarm feedback, let's dive into the five dimensions of personality.</div>
         <button onClick={()=>goTo("guide")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:OC.accent,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`,animation:"btnGlow 3s ease-in-out infinite"}}>Dive into your dimensions →</button>
       </div>
     </div>
@@ -1145,16 +1274,14 @@ export default function App() {
 
   // GUIDE — Interactive fish school explainer
   if (screen === "guide") return (
-    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
+    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"transparent",padding:"28px 20px 40px",position:"relative",overflowY:"auto"}}>
       <style>{GLOBAL_CSS}</style>
       <UnderwaterBg />
       <div style={{position:"relative",zIndex:1,maxWidth:500,margin:"0 auto"}}>
-        <div style={{textAlign:"center",marginBottom:28}}>
-          <div style={{width:120,height:120,margin:"0 auto 12px"}}><MiniSchool size={120} /></div>
-          <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:8}}>Your personality in five dimensions</div>
-          <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Explore Your Dimensions</div>
-          <div style={{fontSize:13,color:OC.textMid,lineHeight:1.7,maxWidth:380,margin:"0 auto"}}>
-            Five dimensions that shape how you think, work, and connect. Each reveals a different aspect of your personality. Tap to explore.
+        <div style={{textAlign:"center",marginBottom:28,padding:"24px 20px",borderRadius:16,background:"rgba(1,13,31,0.7)",backdropFilter:"blur(8px)",border:"1px solid rgba(12,51,88,0.3)"}}>
+          <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:8}}>Meet Your Inner Fish School</div>
+          <div style={{fontSize:13,color:"#b8dcff",lineHeight:1.7,maxWidth:380,margin:"0 auto"}}>
+            Every person is a school of five fish — each one representing a dimension of your personality. Together they form your unique pattern. Tap to meet each fish.
           </div>
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:28}}>
@@ -1166,7 +1293,7 @@ export default function App() {
                   <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${d.color}${isOpen?"":"66"},transparent)`,transition:"all 0.3s"}} />
                   <div style={{padding:"16px 18px",display:"flex",alignItems:"center",gap:14}}>
                     <div style={{width:44,height:44,borderRadius:12,background:`${d.color}${isOpen?"28":"15"}`,border:`1px solid ${d.color}${isOpen?"66":"33"}`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,transition:"all 0.3s",animation:isOpen?`fishFloat 2s ease-in-out infinite`:"none"}}>
-                      <span style={{fontSize:18,fontWeight:800,color:d.color}}>{key}</span>
+                      <CardFish color={d.color} score={50} size={36} />
                     </div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:15,fontWeight:700,color:isOpen?"#fff":"#d8f0ff",transition:"color 0.3s"}}>{d.title}</div>
@@ -1205,38 +1332,45 @@ export default function App() {
             );
           })}
         </div>
-        <button onClick={()=>goTo("intro")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
-          Enter the swarm →
-        </button>
+        <div style={{padding:"16px 20px",borderRadius:16,marginTop:4,background:"rgba(1,13,31,0.7)",backdropFilter:"blur(8px)",border:"1px solid rgba(12,51,88,0.3)"}}>
+          <button onClick={()=>goTo("intro")} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer",boxShadow:`0 0 24px ${OC.accent}44`}}>
+            Enter the swarm →
+          </button>
+        </div>
       </div>
     </div>
   );
 
-  // INTRO — fish swarm (NO Three.js background here, only koi fish)
+  // INTRO — fish swarm with underwater background
   if (screen === "intro") return (
-    <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 60%,#010d1f 100%)",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+    <div key={screenKey} className="screen-enter" style={{height:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
       <style>{GLOBAL_CSS}</style>
-      {/* NO UnderwaterBg here - only koi fish */}
-      <div className="content-overlay" style={{position:"relative",zIndex:100,padding:"20px 24px 16px",textAlign:"center",margin:"24px 20px 0",borderRadius:16}}>
-        <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Before the swarm feedback</div>
-        <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>Explore your five dimensions</div>
-        <div style={{fontSize:12,color:OC.textMid,marginBottom:12}}>Tap a dimension to learn what it means for you</div>
-        <div style={{display:"flex",justifyContent:"center",gap:6,flexWrap:"wrap"}}>
+      <UnderwaterBg />
+      {/* Header */}
+      <div className="content-overlay" style={{position:"relative",zIndex:100,padding:"16px 24px 12px",textAlign:"center",margin:"20px 20px 0",borderRadius:16,flexShrink:0}}>
+        <div style={{fontSize:10,color:"#b8dcff",letterSpacing:4,textTransform:"uppercase",marginBottom:4}}>Before the swarm feedback</div>
+        <div style={{fontSize:18,fontWeight:700,color:"#fff",marginBottom:4}}>Explore your five dimensions</div>
+        <div style={{fontSize:11,color:"#b8dcff",marginBottom:10}}>Tap a fish to learn what each dimension means</div>
+        <div style={{display:"flex",justifyContent:"center",gap:8,flexWrap:"wrap"}}>
           {Object.keys(DIMS).map(dim=>(
-            <div key={dim} onClick={()=>setSelectedFish(selectedFish===dim?null:dim)} className="btn-ocean" style={{padding:"3px 10px",borderRadius:20,fontSize:10,cursor:"pointer",background:selectedFish===dim?DIMS[dim].color+"22":"transparent",border:`1px solid ${selectedFish===dim?DIMS[dim].color+"88":OC.border}`,color:selectedFish===dim?DIMS[dim].color:OC.textMid,transition:"all 0.2s"}}>{DIMS[dim].label}</div>
+            <div key={dim} onClick={()=>setSelectedFish(selectedFish===dim?null:dim)} className="btn-ocean" style={{padding:"6px 14px",borderRadius:24,fontSize:12,fontWeight:600,cursor:"pointer",background:selectedFish===dim?DIMS[dim].color+"33":DIMS[dim].color+"15",border:`2px solid ${selectedFish===dim?DIMS[dim].color:DIMS[dim].color+"66"}`,color:DIMS[dim].color,transition:"all 0.2s",boxShadow:selectedFish===dim?`0 0 12px ${DIMS[dim].color}44`:"none"}}>{DIMS[dim].label}</div>
           ))}
         </div>
       </div>
-      <div style={{position:"relative",zIndex:10,flex:selectedFish?"0 0 260px":"1 1 auto",minHeight:selectedFish?260:"calc(100vh - 320px)",transition:"flex 0.4s ease"}}>
+      {/* Fish swimming area */}
+      <div style={{position:"relative",zIndex:10,flex:"1 1 auto",minHeight:0,margin:"12px 20px",borderRadius:16,background:"rgba(1,13,31,0.6)",border:"1px solid rgba(12,51,88,0.4)",overflow:"hidden"}}>
         <FishSchool selectedDim={selectedFish} onFishClick={dim=>setSelectedFish(prev=>prev===dim?null:dim)} scores={myScores} />
       </div>
-      {selectedFish&&(
-        <div style={{position:"relative",zIndex:100,padding:"0 16px 16px",flex:"1 1 auto",overflowY:"auto"}}>
-          <RefCard dim={selectedFish} score={myScores?myScores[selectedFish]:undefined} onClose={()=>setSelectedFish(null)} />
+      {/* RefCard as overlay */}
+      {selectedFish && (
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)"}} onClick={()=>setSelectedFish(null)}>
+          <div style={{maxWidth:440,width:"100%",maxHeight:"85vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+            <RefCard dim={selectedFish} score={myScores?myScores[selectedFish]:undefined} onClose={()=>setSelectedFish(null)} />
+          </div>
         </div>
       )}
-      {!selectedFish&&<div className="content-overlay" style={{position:"relative",zIndex:100,textAlign:"center",padding:"8px 24px",margin:"0 20px 8px",borderRadius:12}}><div style={{fontSize:11,color:OC.textDim}}>↑ Tap any dimension to open its reference card</div></div>}
-      <div style={{position:"relative",zIndex:100,padding:"12px 20px 28px"}}>
+      {/* Bottom button */}
+      <div style={{position:"relative",zIndex:100,padding:"12px 20px 24px",flexShrink:0}}>
         <button onClick={markReady} className="btn-ocean" style={{width:"100%",padding:14,borderRadius:12,border:"none",background:`linear-gradient(135deg,${OC.accent},${OC.accent2})`,color:"#010d1f",fontSize:14,fontWeight:700,cursor:"pointer"}}>Ready for swarm feedback ✓</button>
       </div>
     </div>
@@ -1267,13 +1401,13 @@ export default function App() {
     const isLast = feedbackIndex === participants.length - 1;
     if (!profile) return null;
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",padding:24,position:"relative"}}>
+      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",padding:24,position:"relative"}}>
         <style>{GLOBAL_CSS}</style>
         <UnderwaterBg />
-        <div style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto"}}>
+        <div className="content-overlay" style={{position:"relative",zIndex:1,maxWidth:520,margin:"0 auto",padding:24,borderRadius:20}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:28}}>
-            <button onClick={()=>goTo("hostLive")} className="btn-ocean content-overlay" style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${OC.border}`,color:OC.textMid,fontSize:12,cursor:"pointer"}}>← Back to session</button>
-            <div style={{fontSize:12,color:OC.textMid}}>Signal <span style={{color:"#fff",fontWeight:700}}>{feedbackIndex+1}</span> / {participants.length}</div>
+            <button onClick={()=>goTo("hostLive")} className="btn-ocean" style={{padding:"8px 16px",borderRadius:8,border:`1px solid ${OC.border}`,background:"rgba(4,24,48,0.6)",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back to session</button>
+            <div style={{fontSize:12,color:"#b8dcff"}}>Signal <span style={{color:"#fff",fontWeight:700}}>{feedbackIndex+1}</span> / {participants.length}</div>
           </div>
           <div style={{display:"flex",justifyContent:"center",gap:6,marginBottom:28}}>
             {participants.map((_,i)=>(
@@ -1317,19 +1451,17 @@ export default function App() {
   if (screen === "feedbackDone") {
     const withNotes = Object.values(annotations).filter(a=>a&&a.trim()).length;
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"linear-gradient(180deg,#010d1f 0%,#020b18 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
+      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",display:"flex",alignItems:"center",justifyContent:"center",padding:24,position:"relative"}}>
         <style>{GLOBAL_CSS}</style>
         <UnderwaterBg />
-        <div style={{position:"relative",zIndex:1,maxWidth:460,width:"100%",textAlign:"center"}}>
-          <div style={{width:100,height:100,margin:"0 auto 20px"}}><MiniSchool size={100} /></div>
-          <div style={{fontSize:48,marginBottom:12}}>✓</div>
+        <div className="content-overlay" style={{position:"relative",zIndex:1,maxWidth:460,width:"100%",textAlign:"center",padding:28,borderRadius:20}}>
           <div style={{fontSize:24,fontWeight:700,color:"#fff",marginBottom:8}}>All signals reviewed</div>
-          <div style={{fontSize:13,color:OC.textMid,marginBottom:32}}>{participants.length} signal{participants.length!==1?"s":""} reviewed · {withNotes} with notes</div>
+          <div style={{fontSize:13,color:"#b8dcff",marginBottom:32}}>{participants.length} signal{participants.length!==1?"s":""} reviewed · {withNotes} with notes</div>
           <div style={{textAlign:"left",marginBottom:24}}>
             {participants.map((p,i)=>(
               <div key={i} className="card-float" style={{background:OC.card,border:`1px solid ${annotations[i]?.trim()?OC.accent+"44":OC.border}`,borderRadius:14,padding:"14px 18px",marginBottom:10}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:annotations[i]?.trim()?8:0}}>
-                  <div style={{fontSize:11,color:OC.textDim,letterSpacing:2,textTransform:"uppercase"}}>Signal #{String(i+1).padStart(2,"0")}</div>
+                  <div style={{fontSize:11,color:"#fff",letterSpacing:2,textTransform:"uppercase"}}>Signal #{String(i+1).padStart(2,"0")}</div>
                   <div style={{display:"flex",gap:5}}>{Object.keys(DIMS).map(dim=><div key={dim} style={{width:6,height:6,borderRadius:"50%",background:DIMS[dim].color,opacity:p.scores[dim]/100}} />)}</div>
                 </div>
                 {annotations[i]?.trim()&&<div style={{fontSize:12,color:OC.textMid,lineHeight:1.5,fontStyle:"italic",borderTop:`1px solid ${OC.border}`,paddingTop:8}}>"{annotations[i]}"</div>}
@@ -1348,38 +1480,46 @@ export default function App() {
 
   // SWARM VIEW - Visualization of all participants as fish
   if (screen === "swarmView") {
+    // Calculate group averages
+    const groupAvg = {};
+    Object.keys(DIMS).forEach(dim => {
+      const sum = participants.reduce((acc, p) => acc + p.scores[dim], 0);
+      groupAvg[dim] = Math.round(sum / participants.length);
+    });
+    
     return (
-      <div key={screenKey} className="screen-enter" style={{minHeight:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
+      <div key={screenKey} className="screen-enter" style={{height:"100vh",background:"#031F48",display:"flex",flexDirection:"column",position:"relative",overflow:"hidden"}}>
         <style>{GLOBAL_CSS}</style>
         {/* Coral reef background image */}
         <div style={{position:"fixed",top:0,left:0,width:"100%",height:"100%",zIndex:0,backgroundImage:"url('/coral-reef-bg.jpg')",backgroundSize:"cover",backgroundPosition:"center",opacity:0.8}} />
-        <div style={{position:"relative",zIndex:1,padding:"24px 24px 0",textAlign:"center"}}>
-          <div style={{fontSize:10,color:OC.textDim,letterSpacing:4,textTransform:"uppercase",marginBottom:6}}>Swarm Visualization</div>
+        <div className="content-overlay" style={{position:"relative",zIndex:1,padding:"16px 24px",textAlign:"center",margin:"12px auto 0",borderRadius:16,flexShrink:0,maxWidth:"50%"}}>
+          <div style={{fontSize:10,color:OC.text,letterSpacing:4,textTransform:"uppercase",marginBottom:4}}>Swarm Visualization</div>
           <div style={{fontSize:20,fontWeight:700,color:"#fff",marginBottom:4}}>The Complete Swarm</div>
-          <div style={{fontSize:12,color:OC.textMid,marginBottom:16}}>Each fish swims near the coral reef of their strongest dimension. Reef heights show group averages.</div>
+          <div style={{fontSize:12,color:"#b8dcff",marginBottom:12}}>Each fish swims near the coral reef of their strongest dimension.</div>
+          <div style={{textAlign:"left",marginBottom:12}}>
+            <ScoreBars scores={groupAvg} compact={true} />
+          </div>
+          <button onClick={()=>goTo("feedbackDone")} className="btn-ocean" style={{padding:"6px 16px",borderRadius:8,border:`1px solid ${OC.border}`,background:"rgba(4,24,48,0.6)",color:"#fff",fontSize:12,cursor:"pointer"}}>← Back to surface</button>
         </div>
-        <div style={{position:"relative",zIndex:1,flex:"1 1 auto",minHeight:"calc(100vh - 280px)",padding:"0 20px"}}>
+        <div style={{position:"relative",zIndex:1,flex:"1 1 auto",minHeight:0,padding:"0 20px"}}>
           <ParticipantSwarm participants={participants} onFishClick={(idx)=>setSelectedFish(idx)} selectedFish={selectedFish} />
         </div>
         {selectedFish !== null && participants[selectedFish] && (
-          <div style={{position:"relative",zIndex:1,padding:"0 16px 16px",maxHeight:"40vh",overflowY:"auto"}}>
-            <div className="card-float" style={{background:"linear-gradient(135deg,#041830 0%,#061c35 100%)",border:`1px solid ${OC.accent}44`,borderRadius:18,padding:"18px 20px",boxShadow:`0 0 40px ${OC.accent}18`,position:"relative",overflow:"hidden",animation:"slideUp 0.35s ease-out"}}>
+          <div style={{position:"absolute",bottom:20,right:20,zIndex:10,maxWidth:320,width:"100%"}}>
+            <div className="card-float" style={{background:"linear-gradient(135deg,#041830 0%,#061c35 100%)",border:`1px solid ${OC.accent}44`,borderRadius:14,padding:"14px 16px",boxShadow:`0 0 30px ${OC.accent}18`,position:"relative",overflow:"hidden",animation:"slideUp 0.35s ease-out"}}>
               <div style={{position:"absolute",top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${OC.accent},transparent)`}} />
-              <div style={{fontSize:10,color:OC.textDim,letterSpacing:3,textTransform:"uppercase",marginBottom:10}}>Signal #{String(selectedFish+1).padStart(2,"0")}</div>
+              <div style={{fontSize:10,color:"#fff",letterSpacing:3,textTransform:"uppercase",marginBottom:8}}>Signal #{String(selectedFish+1).padStart(2,"0")}</div>
               <ScoreBars scores={participants[selectedFish].scores} compact={true} />
               {annotations[selectedFish]?.trim() && (
-                <div style={{marginTop:14,padding:"10px 14px",background:`${OC.accent}0d`,borderRadius:10,border:`1px solid ${OC.accent}22`}}>
-                  <div style={{fontSize:9,color:OC.accent+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:5}}>Notes</div>
-                  <div style={{fontSize:11,color:OC.text,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{annotations[selectedFish]}</div>
+                <div style={{marginTop:10,padding:"8px 10px",background:`${OC.accent}0d`,borderRadius:8,border:`1px solid ${OC.accent}22`}}>
+                  <div style={{fontSize:9,color:OC.accent+"88",letterSpacing:2,textTransform:"uppercase",marginBottom:4}}>Notes</div>
+                  <div style={{fontSize:10,color:OC.text,lineHeight:1.5,whiteSpace:"pre-wrap"}}>{annotations[selectedFish]}</div>
                 </div>
               )}
-              <button onClick={()=>setSelectedFish(null)} className="btn-ocean" style={{marginTop:12,width:"100%",padding:"8px",borderRadius:8,background:"none",border:`1px solid ${OC.border}`,color:OC.textMid,fontSize:12,cursor:"pointer"}}>Close</button>
+              <button onClick={()=>setSelectedFish(null)} className="btn-ocean" style={{marginTop:10,width:"100%",padding:"6px",borderRadius:6,background:"none",border:`1px solid ${OC.border}`,color:OC.textMid,fontSize:11,cursor:"pointer"}}>Close</button>
             </div>
           </div>
         )}
-        <div style={{position:"relative",zIndex:1,padding:"12px 20px 28px"}}>
-          <button onClick={()=>goTo("feedbackDone")} className="btn-ocean content-overlay" style={{width:"100%",padding:12,borderRadius:12,border:`1px solid ${OC.border}`,color:OC.textDim,fontSize:13,cursor:"pointer"}}>← Back</button>
-        </div>
       </div>
     );
   }
